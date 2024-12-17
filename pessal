@@ -818,8 +818,8 @@ end
 
 -- Cria o botão para executar o script
 local Button = Tab4:Button({
-    Title = "Executar Script",
-    Desc = "Executa o script de pegar a ferramenta",
+    Title = "pegar sofa",
+    Desc = "",
     Callback = function()
         local args = {
             [1] = "PickingTools",
@@ -865,5 +865,4 @@ local Toggle = Tab4:Toggle({
 
 
 --------------------------------------------------------------------------------------
-
 
