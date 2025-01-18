@@ -877,11 +877,12 @@ local Dropdown = Tab4:Dropdown({
     AllowNone = true,
     Values = playerList,
     Callback = function(selectedPlayer)
+        print(selectedPlayer)
         local targetPlayer = Players:FindFirstChild(selectedPlayer)
         if targetPlayer then
             local character = targetPlayer.Character
             if character then
-                game:GetService("Players").LocalPlayer.Character:SetPrimaryPartCFrame(character:GetPrimaryPartCFrame())
+                game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(character:GetPrimaryPartCFrame())
                 print("Teleportado para " .. selectedPlayer)
             end
         end
@@ -898,18 +899,4 @@ local function addPlayer(player)
     print(player.Name .. " entrou no servidor.")
 end
 
-local function removePlayer(player)
-    for i, playerName in ipairs(playerList) do
-        if playerName == player.Name then
-            table.remove(playerList, i)
-            updateDropdown()
-            print(player.Name .. " saiu do servidor.")
-            break
-        end
-    end
-end
-
 Players.PlayerAdded:Connect(addPlayer)
-Players.PlayerRemoving:Connect(removePlayer)
-
---jjjjjjj666
