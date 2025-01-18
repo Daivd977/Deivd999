@@ -558,6 +558,21 @@ game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rV
 })
 
 
+local Button = Tab2:Button({
+    Title = "risado doida",
+    Desc = "load meme",
+    Callback = function()
+        local args = {
+    [1] = "PickingScooterMusicText",
+    [2] = "7752143456"
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
+    end,
+})
+
+
+
 
 --scripts tab3 abaixo acima somente scripts tab2
 
