@@ -866,26 +866,17 @@ local Toggle = Tab4:Toggle({
 
 --------------------------------------------------------------------------------------
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local playerList = {}
 
 local Dropdown = Tab4:Dropdown({
     Title = "Lista de Jogadores",
-    Desc = "Selecione um jogador para teleportar",
+    Desc = "Selecione um jogador",
     Value = "Selecione um jogador",
     Multi = false,
     AllowNone = true,
     Values = playerList,
     Callback = function(selectedPlayer)
-        print(selectedPlayer)
-        local targetPlayer = Players:FindFirstChild(selectedPlayer)
-        if targetPlayer then
-            local character = targetPlayer.Character
-            if character then
-                game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(character:GetPrimaryPartCFrame())
-                print("Teleportado para " .. selectedPlayer)
-            end
-        end
+        print("Jogador selecionado: " .. selectedPlayer)
     end
 })
 
@@ -896,6 +887,11 @@ end
 local function addPlayer(player)
     table.insert(playerList, player.Name)
     updateDropdown()
+    print(player.Name .. " entrou no servidor.")
+end
+
+Players.PlayerAdded:Connect(addPlayer)
+
     print(player.Name .. " entrou no servidor.")
 end
 
