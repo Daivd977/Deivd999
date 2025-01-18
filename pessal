@@ -867,18 +867,16 @@ local Toggle = Tab4:Toggle({
 --------------------------------------------------------------------------------------
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
--- Lista de jogadores
 local playerList = {}
+
 local Dropdown = Tab4:Dropdown({
-    Title = "Permissions",
-    Desc = "Permission options",
+    Title = "Lista de Jogadores",
+    Desc = "Selecione um jogador para teleportar",
     Value = "Selecione um jogador",
     Multi = false,
     AllowNone = true,
     Values = playerList,
     Callback = function(selectedPlayer)
-        -- Teleportar para o jogador selecionado
         local targetPlayer = Players:FindFirstChild(selectedPlayer)
         if targetPlayer then
             local character = targetPlayer.Character
@@ -890,35 +888,26 @@ local Dropdown = Tab4:Dropdown({
     end
 })
 
--- Função para adicionar um player na lista
+local function updateDropdown()
+    Dropdown.Values = playerList
+end
+
 local function addPlayer(player)
     table.insert(playerList, player.Name)
-    Dropdown.Values = playerList -- Atualizar a lista no Dropdown
+    updateDropdown()
     print(player.Name .. " entrou no servidor.")
 end
 
--- Função para remover um player da lista
 local function removePlayer(player)
     for i, playerName in ipairs(playerList) do
         if playerName == player.Name then
             table.remove(playerList, i)
-            Dropdown.Values = playerList -- Atualizar a lista no Dropdown
+            updateDropdown()
             print(player.Name .. " saiu do servidor.")
             break
         end
     end
 end
 
--- Eventos para detectar quando um player entra ou sai
 Players.PlayerAdded:Connect(addPlayer)
 Players.PlayerRemoving:Connect(removePlayer)
-
--- Botão para testar
-local Button = Tab4:Button({
-    Title = "Button",
-    Desc = "Button Desc",
-    Callback = function()
-        print("Clicked!")
-    end,
-})
-
