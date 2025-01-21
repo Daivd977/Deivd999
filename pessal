@@ -516,7 +516,7 @@ local Dropdown = Tab2:Dropdown({
         "Option 1", "Option 2", "Option 3", "Option 4", "Option 5", "Option 6", "Option 7", "Option 8", "Option 9",
     },
     Callback = function(Tab)
-        if Tab == "telefone finaf" then
+        if Tab == "Option 1" then
             local args = {
                 [1] = "PickingScooterMusicText",
                 [2] = "4835346587"
@@ -526,7 +526,7 @@ local Dropdown = Tab2:Dropdown({
              
          
 
-        elseif Tab == "hellou hay hahaha" then
+        elseif Tab == "Option 2" then
             local args = {
                 [1] = "PickingScooterMusicText",
                 [2] = "5608077885"
@@ -960,4 +960,5 @@ local Toggle = Tab4:Toggle({
 
 
 --------------------------------------------------------------------------------------
+
 
