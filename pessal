@@ -506,6 +506,38 @@ local Paragraph = Tab2:Paragraph({
     Desc = "",
 })
 
+local Dropdown = Tab2:Dropdown({
+    Title = "music",
+    Desc = "pass",
+    Value = "Option 1",
+    Multi = false,
+    AllowNone = true,
+    Values = {
+        "Option 1", "Option 2", "Option 3", "Option 4", "Option 5", "Option 6", "Option 7", "Option 8", "Option 9",
+    },
+    Callback = function(Tab)
+        if Tab == "telefone finaf" then
+            local args = {
+                [1] = "PickingScooterMusicText",
+                [2] = "4835346587"
+            }
+            
+         game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
+             
+         
+
+        elseif Tab == "hellou hay hahaha" then
+            local args = {
+                [1] = "PickingScooterMusicText",
+                [2] = "5608077885"
+            }
+            
+         game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
+        end
+    end
+})
+
+
 local Button = Tab2:Button({
     Title = "STOP",
     Desc = "stop music",
@@ -573,6 +605,16 @@ game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rV
     end,
 })
 
+local Paragraph = Tab2:Paragraph({
+    Title = "carro musica",
+    Desc = "gamepass música",
+})
+
+local Paragraph = Tab2:Paragraph({
+    Title = "precisa da gamepass",
+    Desc = "gamepass música",
+})
+
 -- Criar o input
 local Input = Tab2:Input({
     Title = "musica",
@@ -597,6 +639,18 @@ function updateMusicId(text)
     game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
 end
 
+local Button = Tab2:Button({
+    Title = "stop",
+    Desc = "car music",
+    Callback = function()
+        local args = {
+            [1] = "PickingCarMusicText",
+            [2] = ""
+        }
+        
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
+    end,
+})
 
 
 
