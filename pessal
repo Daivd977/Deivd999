@@ -1,7 +1,4 @@
 -- brookhaven script teste funcionando beta
---mais esse beta ta dificel
---omgd  
---querid
 
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
 
@@ -10,7 +7,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 
 -- ubatuba
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta  beta hub", -- UI Title
+    Title = "Lolyta hub", -- UI Title
     Icon = "door-open", -- Url or rbxassetid or lucide
     Author = "Lolycon666", -- Author & Creator
     Folder = "Lolyta hub v.1.0", -- Folder name for saving data (And key)
@@ -26,7 +23,7 @@ local Window = WindUI:CreateWindow({
     SideBarWidth = 200, -- UI Sidebar Width (number)
     HasOutline = false, -- Adds Oultines to the window
 })
--- n togostando 
+
 Window:EditOpenButton({
     Title = "Lolyta",
     Icon = "car",  -- New icon
@@ -576,6 +573,30 @@ game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rV
     end,
 })
 
+-- Criar o input
+local Input = Tab2:Input({
+    Title = "musica",
+    Desc = "colocar o nome da musica",
+    Value = "Text Hello",
+    PlaceholderText = "Enter your message...",
+    ClearTextOnFocus = false,
+    Callback = function(Text)
+        updateMusicId(Text)
+    end
+})
+
+Input:SetTitle("New Title!")
+Input:SetDesc("New Description!")
+
+-- Definir a função de callback para atualizar o MusicID
+function updateMusicId(text)
+    local args = {
+        [1] = "PickingCarMusicText",
+        [2] = text
+    }
+    game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
+end
+
 
 
 
@@ -886,79 +907,3 @@ local Toggle = Tab4:Toggle({
 
 --------------------------------------------------------------------------------------
 
-local Players = game:GetService("Players")
-
--- Função para teletransportar o jogador
-local function teleportToPlayer(player, targetPlayerName)
-    local targetPlayer = Players:FindFirstChild(targetPlayerName)
-    
-    if targetPlayer then
-        local character = player.Character
-        local targetCharacter = targetPlayer.Character
-        
-        if character and targetCharacter then
-            local targetPosition = targetCharacter.PrimaryPart.CFrame
-            local seat = character:FindFirstChildWhichIsA("Seat")
-
-            if seat and seat.Occupant == player.Character.Humanoid then
-                local seatCFrame = seat.CFrame
-                character:SetPrimaryPartCFrame(targetPosition)
-                seat.CFrame = seatCFrame
-                seat:Sit(seat.Occupant)
-            else
-                character:SetPrimaryPartCFrame(targetPosition)
-            end
-        end
-    end
-end
-
--- Função para atualizar a lista de jogadores no dropdown
-local function updatePlayerList(dropdown)
-    local playerNames = {}
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= Players.LocalPlayer then
-            table.insert(playerNames, player.Name)
-        end
-    end
-    dropdown:Refresh(playerNames)
-end
-
--- Configuração do Dropdown e Botões
-local Tab = ... -- Certifique-se de que isto aponta para o seu Tab
-
-local Dropdown = Tab4:Dropdown({
-    Title = "Select99 Player",
-    Desc = "Select a player to teleport to",
-    Value = "",
-    Multi = false,
-    AllowNone = true,
-    Values = {},
-    Callback = function(selectedPlayer)
-        print("Selected Player: " .. selectedPlayer)
-    end
-})
-
-local TeleportButton = Tab4:Button({
-    Title = "Teleport",
-    Desc = "Teleport to the selected player",
-    Callback = function()
-        local selectedPlayer = Dropdown:GetValue()
-        if selectedPlayer then
-            teleportToPlayer(Players.LocalPlayer, selectedPlayer)
-        end
-    end,
-})
-
-local UpdateButton = Tab4:Button({
-    Title = "Update Player List",
-    Desc = "Refresh the list of players",
-    Callback = function()
-        updatePlayerList(Dropdown)
-    end,
-})
-
-TeleportButton:SetDesc("Click to teleport to the selected player")
-UpdateButton:SetDesc("Click to refresh the list of players")
-
--- Atualizar lista de jogadores inicialmente
-updatePlayerList(Dropdown)
