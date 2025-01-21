@@ -1,3 +1,5 @@
+-- brookhaven script teste funcionando beta
+
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
 
 local Version = "1.4.0"
@@ -880,3 +882,81 @@ local Toggle = Tab4:Toggle({
 
 
 --------------------------------------------------------------------------------------
+
+local Players = game:GetService("Players")
+local TeleportButton = script.Parent.TeleportButton -- Refere-se ao botão de teleporte
+local UpdateButton = script.Parent.UpdateButton -- Refere-se ao botão de atualizar lista
+local Dropdown = script.Parent.Dropdown -- Refere-se ao dropdown
+
+local function teleportToPlayer(targetPlayerName)
+    local player = Players.LocalPlayer
+    local targetPlayer = Players:FindFirstChild(targetPlayerName)
+    
+    if targetPlayer then
+        local character = player.Character
+        local targetCharacter = targetPlayer.Character
+        
+        if character and targetCharacter then
+            local targetPosition = targetCharacter.PrimaryPart.Position
+            local seat = character:FindFirstChildWhichIsA("Seat")
+
+            if seat and seat.Occupant == player.Humanoid then
+                seat.CFrame = CFrame.new(targetPosition)
+            else
+                character:SetPrimaryPartCFrame(CFrame.new(targetPosition))
+            end
+        end
+    end
+end
+
+TeleportButton.MouseButton1Click:Connect(function()
+    local selectedPlayer = Dropdown:GetValue()
+    if selectedPlayer then
+        teleportToPlayer(selectedPlayer)
+    end
+end)
+
+UpdateButton.MouseButton1Click:Connect(function()
+    local playerNames = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= Players.LocalPlayer then
+            table.insert(playerNames, player.Name)
+        end
+    end
+    Dropdown:Refresh(playerNames)
+end)
+
+local Tab = ... -- Certifique-se de que isto aponta para o seu Tab
+
+local Dropdown = Tab4:Dropdown({
+    Title = "Select Player",
+    Desc = "Select a player to teleport to",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = {},
+    Callback = function(selectedPlayer)
+        print("Selected Player: " .. selectedPlayer)
+    end
+})
+
+local TeleportButton = Tab4:Button({
+    Title = "Teleport",
+    Desc = "Teleport to the selected player",
+    Callback = function()
+        -- Callback vazio, será tratado no LocalScript
+    end,
+})
+
+local UpdateButton = Tab4:Button({
+    Title = "Update Player List",
+    Desc = "Refresh the list of players",
+    Callback = function()
+        -- Callback vazio, será tratado no LocalScript
+    end,
+})
+
+-- Certifique-se de que esses botões e dropdown são configurados corretamente no script local
+TeleportButton:SetDesc("Click to teleport to the selected player")
+UpdateButton:SetDesc("Click to refresh the list of players")
+
