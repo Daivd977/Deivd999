@@ -1,6 +1,6 @@
 -- brookhaven script teste funcionando beta
 --mais esse beta ta dificel
---gg maninhos
+--omgd
 
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
 
@@ -896,14 +896,16 @@ local function teleportToPlayer(player, targetPlayerName)
         local targetCharacter = targetPlayer.Character
         
         if character and targetCharacter then
-            local targetPosition = targetCharacter.PrimaryPart.Position
+            local targetPosition = targetCharacter.PrimaryPart.CFrame
             local seat = character:FindFirstChildWhichIsA("Seat")
 
             if seat and seat.Occupant == player.Character.Humanoid then
-                character:SetPrimaryPartCFrame(CFrame.new(targetPosition))
+                local seatCFrame = seat.CFrame
+                character:SetPrimaryPartCFrame(targetPosition)
+                seat.CFrame = seatCFrame
                 seat:Sit(seat.Occupant)
             else
-                character:SetPrimaryPartCFrame(CFrame.new(targetPosition))
+                character:SetPrimaryPartCFrame(targetPosition)
             end
         end
     end
@@ -924,7 +926,7 @@ end
 local Tab = ... -- Certifique-se de que isto aponta para o seu Tab
 
 local Dropdown = Tab4:Dropdown({
-    Title = "Select33 Player",
+    Title = "Select99 Player",
     Desc = "Select a player to teleport to",
     Value = "",
     Multi = false,
@@ -959,4 +961,3 @@ UpdateButton:SetDesc("Click to refresh the list of players")
 
 -- Atualizar lista de jogadores inicialmente
 updatePlayerList(Dropdown)
-
