@@ -1,5 +1,6 @@
 -- brookhaven script teste funcionando beta
 --mais esse beta ta dificel
+--gg maninhos
 
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
 
