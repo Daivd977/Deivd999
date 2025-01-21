@@ -506,37 +506,33 @@ local Paragraph = Tab2:Paragraph({
     Desc = "",
 })
 
-local Dropdown = Tab2:Dropdown({
-    Title = "music",
-    Desc = "pass",
+local Dropdown = Tab1:Dropdown({
+    Title = "Permissions",
+    Desc = "Permission options",
     Value = "Option 1",
     Multi = false,
     AllowNone = true,
     Values = {
-        "Option 1", "Option 2", "Option 3", "Option 4", "Option 5", "Option 6", "Option 7", "Option 8", "Option 9",
+        "Option 1", "Option 2",
     },
-    Callback = function(Tab)
-        if Tab == "Option 1" then
-            local args = {
-                [1] = "PickingScooterMusicText",
-                [2] = "4835346587"
-            }
+ Callback = function(Tab)
+    if Tab == "Option 1" then
+     local args = {
+    [1] = "PickingScooterMusicText",
+    [2] = "4835346587"
+    }
             
-         game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
-             
-         
-
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
         elseif Tab == "Option 2" then
-            local args = {
-                [1] = "PickingScooterMusicText",
-                [2] = "5608077885"
-            }
+     local args = {
+     [1] = "PickingScooterMusicText",
+     [2] = "7752143456"
+     }
             
-         game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
         end
     end
 })
-
 
 local Button = Tab2:Button({
     Title = "STOP",
@@ -960,5 +956,4 @@ local Toggle = Tab4:Toggle({
 
 
 --------------------------------------------------------------------------------------
-
 
