@@ -898,8 +898,9 @@ local function teleportToPlayer(player, targetPlayerName)
             local targetPosition = targetCharacter.PrimaryPart.Position
             local seat = character:FindFirstChildWhichIsA("Seat")
 
-            if seat and seat.Occupant == player.Humanoid then
-                seat.CFrame = CFrame.new(targetPosition)
+            if seat and seat.Occupant == player.Character.Humanoid then
+                character:SetPrimaryPartCFrame(CFrame.new(targetPosition))
+                seat:Sit(seat.Occupant)
             else
                 character:SetPrimaryPartCFrame(CFrame.new(targetPosition))
             end
@@ -922,7 +923,7 @@ end
 local Tab = ... -- Certifique-se de que isto aponta para o seu Tab
 
 local Dropdown = Tab4:Dropdown({
-    Title = "Select Player",
+    Title = "Select33 Player",
     Desc = "Select a player to teleport to",
     Value = "",
     Multi = false,
@@ -957,3 +958,4 @@ UpdateButton:SetDesc("Click to refresh the list of players")
 
 -- Atualizar lista de jogadores inicialmente
 updatePlayerList(Dropdown)
+
