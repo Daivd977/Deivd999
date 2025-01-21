@@ -26,7 +26,7 @@ local Window = WindUI:CreateWindow({
     SideBarWidth = 200, -- UI Sidebar Width (number)
     HasOutline = false, -- Adds Oultines to the window
 })
-
+-- n togostando 
 Window:EditOpenButton({
     Title = "Lolyta",
     Icon = "car",  -- New icon
