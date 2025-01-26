@@ -48,12 +48,12 @@ local Tab2 = Window:Tab({
 
 local Tab3 = Window:Tab({
     Title = "scripts",
-    Icon = "face", -- lucide or rbxassetid
+    Icon = "layers", -- lucide or rbxassetid
 })
 
 local Tab4 = Window:Tab({
     Title = "playes",
-    Icon = "player", -- lucide or rbxassetid
+    Icon = "user", -- lucide or rbxassetid
 })
 
 local Button = Tab1:Button({
