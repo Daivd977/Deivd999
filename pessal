@@ -506,33 +506,30 @@ local Paragraph = Tab2:Paragraph({
     Desc = "",
 })
 
-local Dropdown = Tab1:Dropdown({
-    Title = "Permissions",
-    Desc = "Permission options",
+local Dropdown = Tab2:Dropdown({
+    Title = "selecionar musica",
+    Desc = "musica",
     Value = "Option 1",
     Multi = false,
     AllowNone = true,
     Values = {
-        "Option 1", "Option 2",
+        "128239333476917", "124851979297075", "105832154444494", "111281710445018", "73140398421340",
+        "92893359226454", "90323407842935", "106317184644394", "92218844013653", "110785587594090",
+        "84733736048142", "90999978343771", "132245626038510", "76624449644542", "87968531262747",
+        "125519137635535", "133380680142336", "112068892721408", "100788814736643", "74988570047236",
+        "97765714111493", "109581547453708", "118647447357710", "101543940535825", "105126065014034",
+        "128614784758550"
     },
- Callback = function(Tab)
-    if Tab == "Option 1" then
-     local args = {
-    [1] = "PickingScooterMusicText",
-    [2] = "4835346587"
-    }
-            
-game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
-        elseif Tab == "Option 2" then
-     local args = {
-     [1] = "PickingScooterMusicText",
-     [2] = "7752143456"
-     }
-            
-game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
-        end
+    Callback = function(selectedValue)
+        local args = {
+            [1] = "PickingScooterMusicText",
+            [2] = selectedValue
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
+        print("Argumentos enviados: " .. selectedValue)
     end
 })
+
 
 local Button = Tab2:Button({
     Title = "STOP",
@@ -613,7 +610,7 @@ local Paragraph = Tab2:Paragraph({
 
 local Dropdown = Tab2:Dropdown({
     Title = "selecionar musica",
-    Desc = "",
+    Desc = "musica",
     Value = "Option 1",
     Multi = false,
     AllowNone = true,
