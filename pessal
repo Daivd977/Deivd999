@@ -611,6 +611,31 @@ local Paragraph = Tab2:Paragraph({
     Desc = "gamepass música",
 })
 
+local Dropdown = Tab2:Dropdown({
+    Title = "selecionar musica",
+    Desc = "",
+    Value = "Option 1",
+    Multi = false,
+    AllowNone = true,
+    Values = {
+        "128239333476917", "124851979297075", "105832154444494", "111281710445018", "73140398421340",
+        "92893359226454", "90323407842935", "106317184644394", "92218844013653", "110785587594090",
+        "84733736048142", "90999978343771", "132245626038510", "76624449644542", "87968531262747",
+        "125519137635535", "133380680142336", "112068892721408", "100788814736643", "74988570047236",
+        "97765714111493", "109581547453708", "118647447357710", "101543940535825", "105126065014034",
+        "128614784758550"
+    },
+    Callback = function(selectedValue)
+        local args = {
+            [1] = "PickingCarMusicText",
+            [2] = selectedValue
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
+        print("Argumentos enviados: " .. selectedValue)
+    end
+})
+
+
 -- Criar o input
 local Input = Tab2:Input({
     Title = "musica",
