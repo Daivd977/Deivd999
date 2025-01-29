@@ -7,7 +7,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 
 -- ubatuba
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta hub BETA", -- UI Title
+    Title = "Lolyta hub", -- UI Title
     Icon = "door-open", -- Url or rbxassetid or lucide
     Author = "Lolycon666", -- Author & Creator
     Folder = "Lolyta hub v.1.0", -- Folder name for saving data (And key)
@@ -877,8 +877,8 @@ local function getPlayerNames()
 end
 
 local Dropdown = Tab4:Dropdown({
-    Title = "teste",
-    Desc = "selecionar",
+    Title = "teste beta",
+    Desc = "",
     Value = "",
     Multi = false,
     AllowNone = true,
@@ -898,18 +898,18 @@ Players.PlayerRemoving:Connect(function(player)
     Dropdown:Refresh(getPlayerNames())
 end)
 
-local Toggle = Tab4:Toggle({
-    Title = "EM BETA",
-    Desc = "Toggle Desc",
-    Value = false, -- Começa desativado
-    Callback = function(state)
-        if state then
-            startTracking()
-        else
-            stopTracking()
-        end
+local Button = Tab4:Button({
+    Title = "teste beta",
+    Desc = "",
+    Callback = function()
+        startTracking()
     end,
 })
+
+Button:SetTitle("Novo Título!")
+Button:SetDesc("Nova Descrição!")
+
+local trackingConnection
 
 function startTracking()
     -- Função para encontrar o carro do jogador
@@ -945,10 +945,9 @@ function startTracking()
         
         -- Gira o carro para cima e para baixo rapidamente
         local spin = true
-        local connection
-        connection = game:GetService("RunService").Stepped:Connect(function()
+        trackingConnection = game:GetService("RunService").Stepped:Connect(function()
             if not spin then
-                connection:Disconnect()
+                trackingConnection:Disconnect()
                 return
             end
             car:SetPrimaryPartCFrame(car:GetPrimaryPartCFrame() * CFrame.Angles(math.rad(10), 0, 0))
@@ -960,6 +959,7 @@ function startTracking()
                 spin = false
                 -- Teleporta o carro para baixo quando o jogador entrar
                 car:SetPrimaryPartCFrame(CFrame.new(0, -1000, 0)) -- Muda a posição conforme necessário
+                stopTracking()
             end
         end)
     end
@@ -1005,15 +1005,16 @@ function startTracking()
 end
 
 function stopTracking()
-    -- Lógica para parar o acompanhamento e teletransportar de volta para o local original
-    -- Adicione aqui o código conforme necessário
+    if trackingConnection then
+        trackingConnection:Disconnect()
+        trackingConnection = nil
+    end
+    print("Parando o rastreamento e teletransporte.")
 end
 
 -- Atualiza a lista de jogadores quando o script é iniciado
 Dropdown:Refresh(getPlayerNames())
 
--- Chama a função de tracking inicial
-startTracking()
 
 
 --------------------------------------------------------------------------------------
