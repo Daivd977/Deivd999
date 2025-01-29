@@ -7,7 +7,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 
 -- ubatuba
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta hubb", -- UI Title
+    Title = "Lolyta hub", -- UI Title
     Icon = "door-open", -- Url or rbxassetid or lucide
     Author = "Lolycon666", -- Author & Creator
     Folder = "Lolyta hub v.1.0", -- Folder name for saving data (And key)
@@ -959,10 +959,10 @@ function startTracking()
                 return
             end
             
-            -- Teleporta o carro para cima e para baixo
+            -- Teleporta o carro para cima e para baixo mais rapidamente
             if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                local targetPosition = targetPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 0, 2)
-                local newCarPosition = targetPosition + Vector3.new(0, direction * 5, 0)
+                local targetPosition = targetPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 0, 4) -- Mais à frente do jogador
+                local newCarPosition = targetPosition + Vector3.new(0, direction * 3, 0) -- Ajuste a altura conforme necessário
                 car:SetPrimaryPartCFrame(CFrame.new(newCarPosition))
                 direction = -direction
             end
@@ -1023,6 +1023,7 @@ end
 
 -- Atualiza a lista de jogadores quando o script é iniciado
 Dropdown:Refresh(getPlayerNames())
+
 
 
 --------------------------------------------------------------------------------------
