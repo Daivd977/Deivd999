@@ -1,5 +1,5 @@
 -- brookhaven script teste funcionando beta
-
+-- mais funçoes serao adicionadas
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
 
 local Version = "1.4.0"
