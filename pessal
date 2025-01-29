@@ -1016,7 +1016,7 @@ end
 -- Atualiza a lista de jogadores quando o script é iniciado
 Dropdown:Refresh(getPlayerNames())
 
-
+--currurrrurururururru
 
 --------------------------------------------------------------------------------------
 
