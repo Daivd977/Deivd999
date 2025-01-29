@@ -867,6 +867,7 @@ local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 
 local selectedPlayerName = ""
+local myCarName = "MeuCarro" -- Substitua "MeuCarro" pelo nome do seu carro
 
 local function getPlayerNames()
     local playerNames = {}
@@ -877,8 +878,8 @@ local function getPlayerNames()
 end
 
 local Dropdown = Tab4:Dropdown({
-    Title = "teste beta",
-    Desc = "",
+    Title = "selecionar jogador ",
+    Desc = "beta",
     Value = "",
     Multi = false,
     AllowNone = true,
@@ -899,8 +900,8 @@ Players.PlayerRemoving:Connect(function(player)
 end)
 
 local Button = Tab4:Button({
-    Title = "teste beta",
-    Desc = "",
+    Title = "teste b eta",
+    Desc = "teste beta",
     Callback = function()
         startTracking()
     end,
@@ -917,11 +918,8 @@ function startTracking()
         local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
         if vehiclesFolder then
             for _, vehicle in pairs(vehiclesFolder:GetChildren()) do
-                if vehicle:IsA("Model") and vehicle:FindFirstChild("Owner") then
-                    local owner = vehicle:FindFirstChild("Owner").Value
-                    if owner == player.Name then
-                        return vehicle
-                    end
+                if vehicle:IsA("Model") and vehicle.Name == myCarName then
+                    return vehicle
                 end
             end
         end
@@ -974,7 +972,7 @@ function startTracking()
 
         local car = getPlayerCar(player)
         if not car then
-            warn("Nenhum carro encontrado para o jogador " .. player.Name)
+            warn("Nenhum carro encontrado para você")
             return
         end
 
@@ -1014,6 +1012,7 @@ end
 
 -- Atualiza a lista de jogadores quando o script é iniciado
 Dropdown:Refresh(getPlayerNames())
+
 
 
 
