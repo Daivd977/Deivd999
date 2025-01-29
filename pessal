@@ -868,21 +868,31 @@ local Workspace = game:GetService("Workspace")
 
 local selectedPlayerName = ""
 
-local Input = Tab4:Input({
-    Title = "selecionar player",
-    Desc = "",
-    Value = "",
-    PlaceholderText = "Enter player name...",
-    ClearTextOnFocus = false,
-    Callback = function(text)
-        selectedPlayerName = text
+local Dropdown = Tab4:Dropdown({
+    Title = "em teste jogador",
+    Desc = "Dropdown Desc",
+    Value = "Tab 1",
+    Multi = false,
+    AllowNone = true,
+    Values = {
+        -- Aqui você pode adicionar os nomes dos jogadores dinâmicamente
+    },
+    Callback = function(Tab)
+        selectedPlayerName = Tab
         print("Jogador selecionado: " .. selectedPlayerName)
     end
 })
 
+Dropdown:SetTitle("Novo Título!")  
+Dropdown:SetDesc("Nova Descrição!") 
+Dropdown:Refresh({
+    "Jogador 1", "Jogador 2", "Jogador 3"
+}) 
+Dropdown:Select("Jogador 2")
+
 local Toggle = Tab4:Toggle({
-    Title = "começao o massacre",
-    Desc = "",
+    Title = "em teste",
+    Desc = "Toggle Desc",
     Value = true,
     Callback = function(state)
         if state then
@@ -980,7 +990,7 @@ function startTracking()
         end
     end
 
-    -- Teste o teletransporte chamando a função com o jogador selecionado no input
+    -- Teste o teletransporte chamando a função com o jogador selecionado no dropdown
     if selectedPlayerName ~= "" then
         teleportPlayerCar(selectedPlayerName)
     end
@@ -993,7 +1003,6 @@ end
 
 -- Chama a função de tracking inicial
 startTracking()
-
 
 
 --------------------------------------------------------------------------------------
