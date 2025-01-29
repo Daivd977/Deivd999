@@ -878,7 +878,7 @@ end
 
 local Dropdown = Tab4:Dropdown({
     Title = "teste",
-    Desc = "Dropdown Desc",
+    Desc = "selecionar",
     Value = "",
     Multi = false,
     AllowNone = true,
@@ -899,7 +899,7 @@ Players.PlayerRemoving:Connect(function(player)
 end)
 
 local Toggle = Tab4:Toggle({
-    Title = "teste",
+    Title = "EM BETA",
     Desc = "Toggle Desc",
     Value = false, -- Começa desativado
     Callback = function(state)
