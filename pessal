@@ -7,7 +7,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 
 -- ubatuba
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta hub", -- UI Title
+    Title = "Lolyta hubb", -- UI Title
     Icon = "door-open", -- Url or rbxassetid or lucide
     Author = "Lolycon666", -- Author & Creator
     Folder = "Lolyta hub v.1.0", -- Folder name for saving data (And key)
@@ -878,7 +878,7 @@ local function getPlayerNames()
 end
 
 local Dropdown = Tab4:Dropdown({
-    Title = "betaaaaaa jogador",
+    Title = "selecionar jogador",
     Desc = "Dropdown Desc",
     Value = "",
     Multi = false,
@@ -899,16 +899,21 @@ Players.PlayerRemoving:Connect(function(player)
     Dropdown:Refresh(getPlayerNames())
 end)
 
-local Button = Tab4:Button({
+local Toggle = Tab4:Toggle({
     Title = "Iniciar Teletransporte",
     Desc = "Clique para iniciar o teletransporte",
-    Callback = function()
-        startTracking()
+    Value = false,
+    Callback = function(state)
+        if state then
+            startTracking()
+        else
+            stopTracking()
+        end
     end,
 })
 
-Button:SetTitle("Iniciar Teletransporte")
-Button:SetDesc("Clique para iniciar o teletransporte")
+Toggle:SetTitle("Iniciar Teletransporte")
+Toggle:SetDesc("Clique para iniciar o teletransporte")
 
 local trackingConnection
 
@@ -954,14 +959,12 @@ function startTracking()
                 return
             end
             
-            -- Gira o carro para cima e para baixo
-            car:SetPrimaryPartCFrame(car:GetPrimaryPartCFrame() * CFrame.Angles(math.rad(20 * direction), 0, 0))
-            direction = -direction
-            
-            -- Move o carro para a posição do jogador
+            -- Teleporta o carro para cima e para baixo
             if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                local targetPosition = targetPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 5, 0)
-                car:SetPrimaryPartCFrame(CFrame.new(targetPosition))
+                local targetPosition = targetPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 0, 2)
+                local newCarPosition = targetPosition + Vector3.new(0, direction * 5, 0)
+                car:SetPrimaryPartCFrame(CFrame.new(newCarPosition))
+                direction = -direction
             end
         end)
         
