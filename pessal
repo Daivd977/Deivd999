@@ -7,7 +7,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 
 -- ubatuba
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta hub", -- UI Title
+    Title = "Lolyta hub BETA", -- UI Title
     Icon = "door-open", -- Url or rbxassetid or lucide
     Author = "Lolycon666", -- Author & Creator
     Folder = "Lolyta hub v.1.0", -- Folder name for saving data (And key)
