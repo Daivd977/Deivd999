@@ -878,7 +878,7 @@ local function getPlayerNames()
 end
 
 local Dropdown = Tab4:Dropdown({
-    Title = "selecionar jogador",
+    Title = "betaaaaaa jogador",
     Desc = "Dropdown Desc",
     Value = "",
     Multi = false,
@@ -943,16 +943,22 @@ function startTracking()
 
     -- Função para teleportar e girar o carro do jogador
     local function teleportAndSpinCar(car, targetPlayer)
-        -- Gira o carro para cima e para baixo rapidamente
+        -- Remove a colisão do carro
         car.PrimaryPart.CanCollide = false
+
         local spin = true
+        local direction = 1
         trackingConnection = game:GetService("RunService").Stepped:Connect(function()
             if not spin then
                 trackingConnection:Disconnect()
                 return
             end
-            car:SetPrimaryPartCFrame(car:GetPrimaryPartCFrame() * CFrame.Angles(math.rad(10), 0, 0))
-
+            
+            -- Gira o carro para cima e para baixo
+            car:SetPrimaryPartCFrame(car:GetPrimaryPartCFrame() * CFrame.Angles(math.rad(20 * direction), 0, 0))
+            direction = -direction
+            
+            -- Move o carro para a posição do jogador
             if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
                 local targetPosition = targetPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 5, 0)
                 car:SetPrimaryPartCFrame(CFrame.new(targetPosition))
@@ -1014,6 +1020,7 @@ end
 
 -- Atualiza a lista de jogadores quando o script é iniciado
 Dropdown:Refresh(getPlayerNames())
+
 
 --------------------------------------------------------------------------------------
 
