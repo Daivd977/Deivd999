@@ -1,5 +1,5 @@
 -- brookhaven script teste funcionando beta
--- mais funçoes serao adicionadas
+
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
 
 local Version = "1.4.0"
@@ -7,10 +7,10 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 
 -- ubatuba
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta hub teste", -- UI Title
+    Title = "Lolyta hub", -- UI Title
     Icon = "door-open", -- Url or rbxassetid or lucide
     Author = "Lolycon666", -- Author & Creator
-    Folder = "Lolyta hub v.1.1", -- Folder name for saving data (And key)
+    Folder = "Lolyta hub v.1.0", -- Folder name for saving data (And key)
     Size = UDim2.fromOffset(580, 460), -- UI Size
     KeySystem = { -- Creates key system
         Key = "1234", -- key
@@ -867,6 +867,7 @@ local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 
 local selectedPlayerName = ""
+local originalPosition = nil
 
 local function getPlayerNames()
     local playerNames = {}
@@ -912,6 +913,8 @@ Button:SetDesc("Clique para iniciar o teletransporte")
 local trackingConnection
 
 function startTracking()
+    originalPosition = Players.LocalPlayer.Character.HumanoidRootPart.Position -- Armazena a posição original do jogador local
+    
     -- Função para encontrar o carro do jogador
     local function getPlayerCar(player)
         local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
@@ -939,11 +942,8 @@ function startTracking()
     end
 
     -- Função para teleportar e girar o carro do jogador
-    local function teleportAndSpinCar(car, targetPosition)
-        -- Move o carro para a nova posição
-        car:SetPrimaryPartCFrame(CFrame.new(targetPosition))
-        
-        -- Gira o carro de forma mais rápida e sem colisões
+    local function teleportAndSpinCar(car, targetPlayer)
+        -- Gira o carro para cima e para baixo rapidamente
         car.PrimaryPart.CanCollide = false
         local spin = true
         trackingConnection = game:GetService("RunService").Stepped:Connect(function()
@@ -951,15 +951,20 @@ function startTracking()
                 trackingConnection:Disconnect()
                 return
             end
-            car:SetPrimaryPartCFrame(car:GetPrimaryPartCFrame() * CFrame.Angles(0, math.rad(20), 0))
+            car:SetPrimaryPartCFrame(car:GetPrimaryPartCFrame() * CFrame.Angles(math.rad(10), 0, 0))
+
+            if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local targetPosition = targetPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 5, 0)
+                car:SetPrimaryPartCFrame(CFrame.new(targetPosition))
+            end
         end)
         
         -- Detecta quando o jogador entra no carro e para de girar
         car.ChildAdded:Connect(function(child)
             if child:IsA("Seat") and child.Occupant then
                 spin = false
-                -- Teleporta o carro para baixo quando o jogador entrar
-                car:SetPrimaryPartCFrame(CFrame.new(0, -1000, 0)) -- Muda a posição conforme necessário
+                -- Teleporta o carro para a posição original quando o jogador entrar
+                car:SetPrimaryPartCFrame(CFrame.new(originalPosition))
                 stopTracking()
             end
         end)
@@ -990,13 +995,7 @@ function startTracking()
             end
         end
 
-        local targetPosition = player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character.HumanoidRootPart.Position + Vector3.new(0, 5, 0)
-
-        if targetPosition then
-            teleportAndSpinCar(car, targetPosition)
-        else
-            warn("Nenhuma posição válida encontrada para teletransporte.")
-        end
+        teleportAndSpinCar(car, player)
     end
 
     -- Teste o teletransporte chamando a função com o jogador selecionado no dropdown
@@ -1015,8 +1014,6 @@ end
 
 -- Atualiza a lista de jogadores quando o script é iniciado
 Dropdown:Refresh(getPlayerNames())
-
---currurrrurururururru
 
 --------------------------------------------------------------------------------------
 
