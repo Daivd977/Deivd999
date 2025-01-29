@@ -868,32 +868,40 @@ local Workspace = game:GetService("Workspace")
 
 local selectedPlayerName = ""
 
+local function getPlayerNames()
+    local playerNames = {}
+    for _, player in pairs(Players:GetPlayers()) do
+        table.insert(playerNames, player.Name)
+    end
+    return playerNames
+end
+
 local Dropdown = Tab4:Dropdown({
-    Title = "em teste jogador",
+    Title = "teste",
     Desc = "Dropdown Desc",
-    Value = "Tab 1",
+    Value = "",
     Multi = false,
     AllowNone = true,
-    Values = {
-        -- Aqui você pode adicionar os nomes dos jogadores dinâmicamente
-    },
+    Values = getPlayerNames(),
     Callback = function(Tab)
         selectedPlayerName = Tab
         print("Jogador selecionado: " .. selectedPlayerName)
     end
 })
 
-Dropdown:SetTitle("Novo Título!")  
-Dropdown:SetDesc("Nova Descrição!") 
-Dropdown:Refresh({
-    "Jogador 1", "Jogador 2", "Jogador 3"
-}) 
-Dropdown:Select("Jogador 2")
+-- Atualiza a lista de jogadores quando um novo jogador entra ou sai do jogo
+Players.PlayerAdded:Connect(function(player)
+    Dropdown:Refresh(getPlayerNames())
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    Dropdown:Refresh(getPlayerNames())
+end)
 
 local Toggle = Tab4:Toggle({
-    Title = "em teste",
+    Title = "teste",
     Desc = "Toggle Desc",
-    Value = true,
+    Value = false, -- Começa desativado
     Callback = function(state)
         if state then
             startTracking()
@@ -1000,6 +1008,9 @@ function stopTracking()
     -- Lógica para parar o acompanhamento e teletransportar de volta para o local original
     -- Adicione aqui o código conforme necessário
 end
+
+-- Atualiza a lista de jogadores quando o script é iniciado
+Dropdown:Refresh(getPlayerNames())
 
 -- Chama a função de tracking inicial
 startTracking()
