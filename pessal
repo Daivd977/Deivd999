@@ -7,7 +7,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 
 -- ubatuba
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta hubbeta", -- UI Title
+    Title = "Lolyta hub", -- UI Title
     Icon = "door-open", -- Url or rbxassetid or lucide
     Author = "Lolycon666", -- Author & Creator
     Folder = "Lolyta hub v.1.0", -- Folder name for saving data (And key)
@@ -507,18 +507,21 @@ local Paragraph = Tab2:Paragraph({
 })
 
 local Dropdown = Tab2:Dropdown({
-    Title = "selecionar musica",
-    Desc = "musica",
+    Title = "funk,phonk,mtg",
+    Desc = "over board",
     Value = "Option 1",
     Multi = false,
     AllowNone = true,
     Values = {
-        "128239333476917", "124851979297075", "105832154444494", "111281710445018", "73140398421340",
-        "92893359226454", "90323407842935", "106317184644394", "92218844013653", "110785587594090",
-        "84733736048142", "90999978343771", "132245626038510", "76624449644542", "87968531262747",
-        "125519137635535", "133380680142336", "112068892721408", "100788814736643", "74988570047236",
-        "97765714111493", "109581547453708", "118647447357710", "101543940535825", "105126065014034",
-        "128614784758550"
+        "106322173003761", "124851979297075", "105832154444494", "111281710445018", "73140398421340",
+        "92893359226454", "90323407842935", "106317184644394", "115567432786512", "71304501822029",
+        "84733736048142", "90999978343771", "132245626038510", "102919095332206", "87968531262747",
+        "125519137635535", "117492899936290", "112068892721408", "100788814736643", "72720721570850",
+        "97765714111493", "109581547453708", "118063577904953", "101543940535825", "105126065014034",
+        "132218979961283","116290798570787","102708912256857","138415155024226","140642559093189","13530439660",
+        "87863924786534","109189438638906","133135085604736","97258811783169","92308400487695","139435437308948",
+        "92175624643620","104635713368149","110462970138226","72331463226741","85385155970460","85385155970460",
+        "88402018022826","118740708757685","115016589376700"
     },
     Callback = function(selectedValue)
         local args = {
@@ -530,6 +533,86 @@ local Dropdown = Tab2:Dropdown({
     end
 })
 
+local Dropdown = Tab2:Dropdown({
+    Title = "musica normal",
+    Desc = "over boad",
+    Value = "Option 1",
+    Multi = false,
+    AllowNone = true,
+    Values = {
+        "82406276148517", "129569692779816", "84584808135615", "131116056080033", "119540502924273",
+        "75244543048318", "85439942763713","97001593161206","122473498105749"
+    },
+    Callback = function(selectedValue)
+        local args = {
+            [1] = "PickingScooterMusicText",
+            [2] = selectedValue
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
+        print("Argumentos enviados: " .. selectedValue)
+    end
+})
+
+local Dropdown = Tab2:Dropdown({
+    Title = "meme musica",
+    Desc = "over board",
+    Value = "Option 1",
+    Multi = false,
+    AllowNone = true,
+    Values = {
+        "115199984575713", "71765861754044", "82161110448949", "139639579473440", "92212156099339",
+        "86855540619546", "128027832969902", "118785260057094", "72735474016817", "72739838426009"
+    },
+    Callback = function(selectedValue)
+        local args = {
+            [1] = "PickingScooterMusicText",
+            [2] = selectedValue
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
+        print("Argumentos enviados: " .. selectedValue)
+    end
+})
+
+local Dropdown = Tab2:Dropdown({
+    Title = "terror asustar",
+    Desc = "over board",
+    Value = "Option 1",
+    Multi = false,
+    AllowNone = true,
+    Values = {
+        "72624476289253", "116709209733976", "99430297570707", "102348131944238", "125199445385812",
+        "73562744560566", "106975887314345", "100497166902775", "77874596719163", "83764626839857",
+        "132027370834826"
+    },
+    Callback = function(selectedValue)
+        local args = {
+            [1] = "PickingScooterMusicText",
+            [2] = selectedValue
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
+        print("Argumentos enviados: " .. selectedValue)
+    end
+})
+
+local Dropdown = Tab2:Dropdown({
+    Title = "miside,mita",
+    Desc = "over board",
+    Value = "Option 1",
+    Multi = false,
+    AllowNone = true,
+    Values = {
+        "112170504958980", "106013565624854", "104676632588868", "113222738822583"
+        
+    },
+    Callback = function(selectedValue)
+        local args = {
+            [1] = "PickingScooterMusicText",
+            [2] = selectedValue
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
+        print("Argumentos enviados: " .. selectedValue)
+    end
+})
 
 local Button = Tab2:Button({
     Title = "STOP",
@@ -615,12 +698,15 @@ local Dropdown = Tab2:Dropdown({
     Multi = false,
     AllowNone = true,
     Values = {
-        "128239333476917", "124851979297075", "105832154444494", "111281710445018", "73140398421340",
-        "92893359226454", "90323407842935", "106317184644394", "92218844013653", "110785587594090",
-        "84733736048142", "90999978343771", "132245626038510", "76624449644542", "87968531262747",
-        "125519137635535", "133380680142336", "112068892721408", "100788814736643", "74988570047236",
-        "97765714111493", "109581547453708", "118647447357710", "101543940535825", "105126065014034",
-        "128614784758550"
+        "106322173003761", "124851979297075", "105832154444494", "111281710445018", "73140398421340",
+"92893359226454", "90323407842935", "106317184644394", "115567432786512", "71304501822029",
+"84733736048142", "90999978343771", "132245626038510", "102919095332206", "87968531262747",
+"125519137635535", "117492899936290", "112068892721408", "100788814736643", "72720721570850",
+"97765714111493", "109581547453708", "118063577904953", "101543940535825", "105126065014034",
+"132218979961283","116290798570787","102708912256857","138415155024226","140642559093189","13530439660",
+"87863924786534","109189438638906","133135085604736","97258811783169","92308400487695","139435437308948",
+"92175624643620","104635713368149","110462970138226","72331463226741","85385155970460","85385155970460",
+"88402018022826","118740708757685","115016589376700"
     },
     Callback = function(selectedValue)
         local args = {
@@ -878,7 +964,7 @@ local function getPlayerNames()
 end
 
 local Dropdown = Tab4:Dropdown({
-    Title = "selecionar jogador",
+    Title = "betaaaaaa jogador",
     Desc = "Dropdown Desc",
     Value = "",
     Multi = false,
@@ -899,21 +985,16 @@ Players.PlayerRemoving:Connect(function(player)
     Dropdown:Refresh(getPlayerNames())
 end)
 
-local Toggle = Tab4:Toggle({
+local Button = Tab4:Button({
     Title = "Iniciar Teletransporte",
     Desc = "Clique para iniciar o teletransporte",
-    Value = false,
-    Callback = function(state)
-        if state then
-            startTracking()
-        else
-            stopTracking()
-        end
+    Callback = function()
+        startTracking()
     end,
 })
 
-Toggle:SetTitle("Iniciar Teletransporte")
-Toggle:SetDesc("Clique para iniciar o teletransporte")
+Button:SetTitle("Iniciar Teletransporte")
+Button:SetDesc("Clique para iniciar o teletransporte")
 
 local trackingConnection
 
@@ -959,12 +1040,14 @@ function startTracking()
                 return
             end
             
-            -- Teleporta o carro para frente, cima e baixo do jogador rapidamente
+            -- Gira o carro para cima e para baixo
+            car:SetPrimaryPartCFrame(car:GetPrimaryPartCFrame() * CFrame.Angles(math.rad(20 * direction), 0, 0))
+            direction = -direction
+            
+            -- Move o carro para a posição do jogador
             if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                local targetPosition = targetPlayer.Character.HumanoidRootPart.Position + targetPlayer.Character.HumanoidRootPart.CFrame.LookVector * 6 -- Mais à frente do jogador
-                local newCarPosition = targetPosition + Vector3.new(0, direction * 3, 0) -- Ajuste a altura conforme necessário
-                car:SetPrimaryPartCFrame(CFrame.new(newCarPosition))
-                direction = -direction
+                local targetPosition = targetPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 5, 0)
+                car:SetPrimaryPartCFrame(CFrame.new(targetPosition))
             end
         end)
         
@@ -1023,7 +1106,6 @@ end
 
 -- Atualiza a lista de jogadores quando o script é iniciado
 Dropdown:Refresh(getPlayerNames())
-
 
 
 --------------------------------------------------------------------------------------
