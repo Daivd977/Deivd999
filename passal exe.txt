@@ -1,4 +1,4 @@
--- brookhaven script teste funcionando beta
+-- brookhaven script teste funcionando beta n funciona correta mente
 
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
 
