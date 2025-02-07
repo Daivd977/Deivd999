@@ -1,5 +1,5 @@
 -- brookhaven script teste funcionando beta n funciona correta mente
-
+-- so server para brookhaven n sei pq meis e isso so para atualizar
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
 
 local Version = "1.4.0"
@@ -7,10 +7,10 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 
 -- ubatuba
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta hub", -- UI Title
+    Title = "Lolyta Hub", -- UI Title
     Icon = "door-open", -- Url or rbxassetid or lucide
     Author = "Lolycon666", -- Author & Creator
-    Folder = "Lolyta hub v.1.0", -- Folder name for saving data (And key)
+    Folder = "Lolyta hub v.1.1", -- Folder name for saving data (And key)
     Size = UDim2.fromOffset(580, 460), -- UI Size
     KeySystem = { -- Creates key system
         Key = "pizza", -- key
