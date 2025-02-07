@@ -162,8 +162,8 @@ local Toggle = Tab1:Toggle({
 
 
 local Dropdown = Tab1:Dropdown({
-    Title = "Permissions",
-    Desc = "Permission options",
+    Title = "pegar permissao das casas",
+    Desc = "",
     Value = "Option 1",
     Multi = false,
     AllowNone = true,
@@ -965,7 +965,7 @@ local function getPlayerNames()
 end
 
 local Dropdown = Tab4:Dropdown({
-    Title = "betaaaaaa jogador",
+    Title = "betaaaa jogador",
     Desc = "Dropdown Desc",
     Value = "",
     Multi = false,
