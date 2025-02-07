@@ -58,7 +58,7 @@ local Tab4 = Window:Tab({
 
 local Button = Tab1:Button({
     Title = "pegar sofá",
-    Desc = "brookhaven",
+    Desc = "",
     Callback = function()
         local args = {
     [1] = "PickingTools",
