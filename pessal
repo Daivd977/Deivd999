@@ -1247,10 +1247,11 @@ local Toggle = Tab4:Toggle({
         teleportActive = state
         if teleportActive then
             teleportPlayerToPosition(Vector3.new(1143, 75, -1065))  -- Teleporta para a posição especificada
-            wait(1)  -- Aguarda um pouco
+            wait(0.5)  -- Aguarda um pouco
             pickCar()  -- Executa o comando para pegar o carro
-            wait(1)  -- Aguarda um pouco
+            wait(0.5)  -- Aguarda um pouco
             sitInDriverSeat()  -- Teleporta para o assento do motorista
+            wait(0.5)  -- Aguarda um pouco
             if selectedPlayerName ~= "" then
                 teleportPlayerCar(selectedPlayerName)
             end
