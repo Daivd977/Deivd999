@@ -991,14 +991,14 @@ local function teleportAndSpinCar(car, targetPlayer)
             return
         end
         
-        -- Gira o carro para cima e para baixo
-        car:SetPrimaryPartCFrame(car:GetPrimaryPartCFrame() * CFrame.Angles(math.rad(20 * direction), 0, 0))
+        -- Gira o carro rapidamente para dar backflips
+        car:SetPrimaryPartCFrame(car:GetPrimaryPartCFrame() * CFrame.Angles(math.rad(45 * direction), 0, 0))
         direction = -direction
         
-        -- Move o carro para a posição do jogador
+        -- Move o carro para a posição do jogador (pé do jogador)
         if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            local targetPosition = targetPlayer.Character.HumanoidRootPart.Position - Vector3.new(0, 5, 0)
-            local forceDirection = (targetPosition - car.PrimaryPart.Position).unit * 100
+            local targetPosition = targetPlayer.Character.HumanoidRootPart.Position - Vector3.new(0, 3, 0)
+            local forceDirection = Vector3.new(0, 5000, 0) -- Joga o jogador o mais alto possível
             car:SetPrimaryPartCFrame(CFrame.new(targetPosition))
             car.PrimaryPart:ApplyImpulse(forceDirection)
         end
@@ -1085,6 +1085,7 @@ local Toggle = Tab4:Toggle({
 
 -- Atualiza a lista de jogadores inicialmente
 Dropdown:Refresh(getPlayerNames())
+
 
 
 --------------------------------------------------------------------------------------
