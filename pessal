@@ -1202,6 +1202,12 @@ local function deleteAllVehicles()
     ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
 end
 
+-- Função para sentar no banco do motorista
+local function sitInDriverSeat()
+    local seatCFrame = CFrame.new(1132.72314, 75.6949005, -1072.46082, -0.0132326381, -3.16897822e-05, 0.999912441, 0.00264345924, 0.999996483, 6.66754495e-05, -0.999908924, 0.00264411024, -0.0132325077)
+    Players.LocalPlayer.Character.HumanoidRootPart.CFrame = seatCFrame
+end
+
 -- Função para atualizar o dropdown com a lista de jogadores
 local function getPlayerNames()
     local playerNames = {}
@@ -1241,9 +1247,10 @@ local Toggle = Tab4:Toggle({
         teleportActive = state
         if teleportActive then
             teleportPlayerToPosition(Vector3.new(1143, 75, -1065))  -- Teleporta para a posição especificada
+            wait(1)  -- Aguarda um pouco
             pickCar()  -- Executa o comando para pegar o carro
-            -- Teleporta para o assento do motorista (ajuste a posição conforme necessário)
-            Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(1143, 75, -1065)
+            wait(1)  -- Aguarda um pouco
+            sitInDriverSeat()  -- Teleporta para o assento do motorista
             if selectedPlayerName ~= "" then
                 teleportPlayerCar(selectedPlayerName)
             end
