@@ -1092,9 +1092,11 @@ Dropdown:Refresh(getPlayerNames())
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local selectedPlayerName = ""
 local teleportActive = false
+local connection
 
 -- Função para encontrar o carro do jogador
 local function getPlayerCar(player)
@@ -1124,8 +1126,7 @@ end
 
 -- Função para teleportar e girar o carro do jogador
 local function teleportAndSpinCar(car, targetPlayer)
-    local spin = true
-    local connection
+    local direction = 1
     connection = RunService.Stepped:Connect(function()
         if not teleportActive then
             if connection then
@@ -1177,6 +1178,30 @@ local function teleportPlayerCar(playerName)
     teleportAndSpinCar(car, player)
 end
 
+-- Função para teletransportar o jogador para uma posição específica
+local function teleportPlayerToPosition(position)
+    if Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(position)
+    end
+end
+
+-- Função para pegar o carro
+local function pickCar()
+    local args = {
+        [1] = "PickingCar",
+        [2] = "SchoolBus"
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
+end
+
+-- Função para deletar todos os veículos
+local function deleteAllVehicles()
+    local args = {
+        [1] = "DeleteAllVehicles"
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
+end
+
 -- Função para atualizar o dropdown com a lista de jogadores
 local function getPlayerNames()
     local playerNames = {}
@@ -1214,12 +1239,19 @@ local Toggle = Tab4:Toggle({
     Value = false,
     Callback = function(state)
         teleportActive = state
-        if teleportActive and selectedPlayerName ~= "" then
-            teleportPlayerCar(selectedPlayerName)
+        if teleportActive then
+            teleportPlayerToPosition(Vector3.new(1143, 75, -1065))  -- Teleporta para a posição especificada
+            pickCar()  -- Executa o comando para pegar o carro
+            -- Teleporta para o assento do motorista (ajuste a posição conforme necessário)
+            Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(1143, 75, -1065)
+            if selectedPlayerName ~= "" then
+                teleportPlayerCar(selectedPlayerName)
+            end
+        else
+            deleteAllVehicles()  -- Executa o comando para deletar todos os veículos
         end
     end
 })
 
 -- Atualiza a lista de jogadores inicialmente
 Dropdown:Refresh(getPlayerNames())
-
