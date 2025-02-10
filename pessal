@@ -1253,6 +1253,8 @@ local Toggle = Tab4:Toggle({
             sitInDriverSeat()  -- Teleporta para o assento do motorista
             wait(0.5)  -- Aguarda um pouco
             if selectedPlayerName ~= "" then
+                -- Adiciona uma pequena espera para garantir que o carro seja gerado antes de iniciar o teletransporte
+                wait(1)
                 teleportPlayerCar(selectedPlayerName)
             end
         else
