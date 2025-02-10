@@ -1109,155 +1109,81 @@ Dropdown:Refresh(getPlayerNames())
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 
-local selectedPlayerName = ""
-local originalPosition = nil
-
-local function getPlayerNames()
-    local playerNames = {}
-    for _, player in pairs(Players:GetPlayers()) do
-        table.insert(playerNames, player.Name)
-    end
-    return playerNames
-end
-
-local Dropdown = Tab4:Dropdown({
-    Title = "betaaaaaa jogador",
-    Desc = "Dropdown Desc",
-    Value = "",
-    Multi = false,
-    AllowNone = true,
-    Values = getPlayerNames(),
-    Callback = function(Tab)
-        selectedPlayerName = Tab
-        print("Jogador selecionado: " .. selectedPlayerName)
-    end
-})
-
--- Atualiza a lista de jogadores quando um novo jogador entra ou sai do jogo
-Players.PlayerAdded:Connect(function(player)
-    Dropdown:Refresh(getPlayerNames())
-end)
-
-Players.PlayerRemoving:Connect(function(player)
-    Dropdown:Refresh(getPlayerNames())
-end)
-
-local Button = Tab4:Button({
-    Title = "Iniciar Teletransporte",
-    Desc = "Clique para iniciar o teletransporte",
-    Callback = function()
-        startTracking()
-    end,
-})
-
-Button:SetTitle("Iniciar Teletransporte")
-Button:SetDesc("Clique para iniciar o teletransporte")
-
-local trackingConnection
-
-function startTracking()
-    originalPosition = Players.LocalPlayer.Character.HumanoidRootPart.Position -- Armazena a posição original do jogador local
-    
-    -- Função para encontrar o carro do jogador
-    local function getPlayerCar(player)
-        local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
-        if vehiclesFolder then
-            for _, vehicle in pairs(vehiclesFolder:GetChildren()) do
-                if vehicle:IsA("Model") and vehicle:FindFirstChild("Owner") then
-                    local owner = vehicle:FindFirstChild("Owner").Value
-                    if owner == player.Name then
-                        return vehicle
-                    end
+-- Função para encontrar o carro do jogador
+local function getPlayerCar(player)
+    local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
+    if vehiclesFolder then
+        for _, vehicle in pairs(vehiclesFolder:GetChildren()) do
+            if vehicle:IsA("Model") and vehicle:FindFirstChild("Owner") then
+                local owner = vehicle:FindFirstChild("Owner").Value
+                if owner == player.Name then
+                    return vehicle
                 end
             end
         end
-        return nil
+    end
+    return nil
+end
+
+-- Função para teleportar o carro do jogador para um alvo específico
+local function teleportPlayerCarToTarget(player, targetPlayer)
+    local car = getPlayerCar(player)
+
+    if not car then
+        warn("Nenhum carro encontrado para o jogador " .. player.Name)
+        return
     end
 
-    -- Função para encontrar um jogador pelo nome
-    local function findPlayerByName(name)
-        for _, player in pairs(Players:GetPlayers()) do
-            if player.Name:lower():find(name:lower()) then
-                return player
-            end
-        end
-        return nil
-    end
-
-    -- Função para teleportar e girar o carro do jogador
-    local function teleportAndSpinCar(car, targetPlayer)
-        -- Remove a colisão do carro
-        car.PrimaryPart.CanCollide = false
-
-        local spin = true
-        trackingConnection = game:GetService("RunService").Stepped:Connect(function()
-            if not spin then
-                trackingConnection:Disconnect()
-                return
-            end
-            
-            -- Gira o carro rapidamente dando mortais
-            car:SetPrimaryPartCFrame(car:GetPrimaryPartCFrame() * CFrame.Angles(math.rad(10000), 0, 0))
-            
-            -- Move o carro para a posição do jogador
-            if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                local targetPosition = targetPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 5, 0)
-                car:SetPrimaryPartCFrame(CFrame.new(targetPosition))
-            end
-        end)
-        
-        -- Detecta quando o jogador entra no carro e para de girar
-        car.ChildAdded:Connect(function(child)
-            if child:IsA("Seat") and child.Occupant then
-                spin = false
-                -- Teleporta o carro para a posição original quando o jogador entrar
-                car:SetPrimaryPartCFrame(CFrame.new(originalPosition))
-                stopTracking()
-            end
-        end)
-    end
-
-    -- Função para executar o teletransporte do carro do jogador
-    local function teleportPlayerCar(playerName)
-        local player = findPlayerByName(playerName)
-        if not player then
-            warn("Jogador não encontrado: " .. playerName)
+    -- Define o PrimaryPart do carro, se necessário
+    if not car.PrimaryPart then
+        local body = car:FindFirstChild("Body")
+        if body then
+            car.PrimaryPart = body
+        else
+            warn("O carro não tem um PrimaryPart válido!")
             return
         end
-
-        local car = getPlayerCar(Players.LocalPlayer)
-        if not car then
-            warn("Nenhum carro encontrado para o jogador " .. Players.LocalPlayer.Name)
-            return
-        end
-
-        -- Define o PrimaryPart do carro, se necessário
-        if not car.PrimaryPart then
-            local body = car:FindFirstChild("Body")
-            if body then
-                car.PrimaryPart = body
-            else
-                warn("O carro não tem um PrimaryPart válido!")
-                return
-            end
-        end
-
-        teleportAndSpinCar(car, player)
     end
 
-    -- Teste o teletransporte chamando a função com o jogador selecionado no dropdown
-    if selectedPlayerName ~= "" then
-        teleportPlayerCar(selectedPlayerName)
+    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local targetPosition = targetPlayer.Character.HumanoidRootPart.Position
+
+        -- Ajusta a posição do carro para evitar colisões
+        local newCarPosition = targetPosition + Vector3.new(0, 5, 0)
+
+        -- Move o carro para a nova posição
+        car:SetPrimaryPartCFrame(CFrame.new(newCarPosition))
+
+        print("Carro do jogador " .. player.Name .. " teleportado para " .. targetPlayer.Name)
+    else
+        warn("Nenhum jogador válido encontrado para teletransporte.")
     end
 end
 
-function stopTracking()
-    if trackingConnection then
-        trackingConnection:Disconnect()
-        trackingConnection = nil
+-- Dropdown de jogadores
+local Dropdown = Tab4:Dropdown({
+    Title = "Selecionar Jogador",
+    Desc = "Selecione um jogador para teleportar o carro",
+    Value = "Selecionar",
+    Multi = false,
+    AllowNone = true,
+    Values = Players:GetPlayers(),
+    Callback = function(selectedPlayerName)
+        selectedPlayer = Players:FindFirstChild(selectedPlayerName)
     end
-    print("Parando o rastreamento e teletransporte.")
-end
+})
 
--- Atualiza a lista de jogadores quando o script é iniciado
-Dropdown:Refresh(getPlayerNames())
+-- Toggle para ativar/desativar o teletransporte
+local Toggle = Tab4:Toggle({
+    Title = "Ativar Teletransporte",
+    Desc = "Ativa ou desativa o teletransporte do carro",
+    Value = false,
+    Callback = function(state)
+        if state and selectedPlayer then
+            teleportPlayerCarToTarget(Players.LocalPlayer, selectedPlayer)
+        end
+    end
+})
+
+-- Atualiza o dropdown com a lista de jogadores
+Dropdown:Refresh(Players:GetPlayers())
