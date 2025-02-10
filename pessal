@@ -951,6 +951,10 @@ local Toggle = Tab4:Toggle({
 ---------------------------------------------------------------------------------------
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+
+local selectedPlayerName = ""
+local originalPosition = nil
 
 -- Função para encontrar o carro do jogador
 local function getPlayerCar(player)
@@ -968,12 +972,58 @@ local function getPlayerCar(player)
     return nil
 end
 
--- Função para teleportar o carro do jogador para um alvo específico
-local function teleportPlayerCarToTarget(player, targetPlayer)
-    local car = getPlayerCar(player)
+-- Função para encontrar um jogador pelo nome
+local function findPlayerByName(name)
+    for _, player in pairs(Players:GetPlayers()) do
+        if player.Name:lower():find(name:lower()) then
+            return player
+        end
+    end
+    return nil
+end
 
+-- Função para teleportar e girar o carro do jogador
+local function teleportAndSpinCar(car, targetPlayer)
+    local spin = true
+    local direction = 1
+    RunService.Stepped:Connect(function()
+        if not spin then
+            return
+        end
+        
+        -- Gira o carro para cima e para baixo
+        car:SetPrimaryPartCFrame(car:GetPrimaryPartCFrame() * CFrame.Angles(math.rad(20 * direction), 0, 0))
+        direction = -direction
+        
+        -- Move o carro para a posição do jogador
+        if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local targetPosition = targetPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 10, 0)
+            local forceDirection = (targetPosition - car.PrimaryPart.Position).unit * 100
+            car:SetPrimaryPartCFrame(CFrame.new(targetPosition))
+            car.PrimaryPart:ApplyImpulse(forceDirection)
+        end
+    end)
+    
+    -- Detecta quando o jogador entra no carro e para de girar
+    car.ChildAdded:Connect(function(child)
+        if child:IsA("Seat") and child.Occupant then
+            spin = false
+            car:SetPrimaryPartCFrame(CFrame.new(originalPosition))
+        end
+    end)
+end
+
+-- Função para executar o teletransporte do carro do jogador
+local function teleportPlayerCar(playerName)
+    local player = findPlayerByName(playerName)
+    if not player then
+        warn("Jogador não encontrado: " .. playerName)
+        return
+    end
+
+    local car = getPlayerCar(Players.LocalPlayer)
     if not car then
-        warn("Nenhum carro encontrado para o jogador " .. player.Name)
+        warn("Nenhum carro encontrado para o jogador " .. Players.LocalPlayer.Name)
         return
     end
 
@@ -988,80 +1038,53 @@ local function teleportPlayerCarToTarget(player, targetPlayer)
         end
     end
 
-    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        local targetPosition = targetPlayer.Character.HumanoidRootPart.Position
-
-        -- Ajusta a posição do carro para evitar colisões
-        local newCarPosition = targetPosition + Vector3.new(0, 5, 0)
-
-        -- Move o carro para a nova posição
-        car:SetPrimaryPartCFrame(CFrame.new(newCarPosition))
-
-        print("Carro do jogador " .. player.Name .. " teleportado para " .. targetPlayer.Name)
-    else
-        warn("Nenhum jogador válido encontrado para teletransporte.")
-    end
+    teleportAndSpinCar(car, player)
 end
 
 -- Função para atualizar o dropdown com a lista de jogadores
-local function updateDropdown(dropdown)
+local function getPlayerNames()
     local playerNames = {}
     for _, player in pairs(Players:GetPlayers()) do
         table.insert(playerNames, player.Name)
     end
-    dropdown:Refresh(playerNames)
+    return playerNames
 end
 
--- Variáveis para armazenar o jogador selecionado e o estado do toggle
-local selectedPlayer = nil
-local teleportActive = false
-
--- Dropdown de jogadores
 local Dropdown = Tab4:Dropdown({
     Title = "Selecionar Jogador",
     Desc = "Selecione um jogador para teleportar o carro",
     Value = "",
     Multi = false,
     AllowNone = true,
-    Values = {},
-    Callback = function(selectedPlayerName)
-        selectedPlayer = Players:FindFirstChild(selectedPlayerName)
+    Values = getPlayerNames(),
+    Callback = function(Tab)
+        selectedPlayerName = Tab
+        print("Jogador selecionado: " .. selectedPlayerName)
     end
 })
 
--- Atualiza o dropdown inicialmente
-updateDropdown(Dropdown)
-
--- Conecta a atualização do dropdown ao evento de adição de jogador
-Players.PlayerAdded:Connect(function()
-    updateDropdown(Dropdown)
+-- Atualiza a lista de jogadores quando um novo jogador entra ou sai do jogo
+Players.PlayerAdded:Connect(function(player)
+    Dropdown:Refresh(getPlayerNames())
 end)
 
--- Conecta a atualização do dropdown ao evento de remoção de jogador
-Players.PlayerRemoving:Connect(function()
-    updateDropdown(Dropdown)
+Players.PlayerRemoving:Connect(function(player)
+    Dropdown:Refresh(getPlayerNames())
 end)
 
--- Toggle para ativar/desativar o teletransporte
 local Toggle = Tab4:Toggle({
     Title = "Ativar Teletransporte",
     Desc = "Ativa ou desativa o teletransporte do carro",
     Value = false,
     Callback = function(state)
-        teleportActive = state
-        if teleportActive and selectedPlayer then
-            teleportPlayerCarToTarget(Players.LocalPlayer, selectedPlayer)
+        if state and selectedPlayerName ~= "" then
+            teleportPlayerCar(selectedPlayerName)
         end
     end
 })
 
--- Função para teletransportar o carro continuamente enquanto o toggle estiver ativado
-game:GetService("RunService").Stepped:Connect(function()
-    if teleportActive and selectedPlayer then
-        teleportPlayerCarToTarget(Players.LocalPlayer, selectedPlayer)
-    end
-end)
-
+-- Atualiza a lista de jogadores inicialmente
+Dropdown:Refresh(getPlayerNames())
 
 --------------------------------------------------------------------------------------
 
