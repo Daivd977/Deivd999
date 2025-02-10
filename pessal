@@ -1164,10 +1164,10 @@ end
 local Dropdown = Tab4:Dropdown({
     Title = "Selecionar Jogador",
     Desc = "Selecione um jogador para teleportar o carro",
-    Value = "Selecionar",
+    Value = "",
     Multi = false,
     AllowNone = true,
-    Values = Players:GetPlayers(),
+    Values = {},
     Callback = function(selectedPlayerName)
         selectedPlayer = Players:FindFirstChild(selectedPlayerName)
     end
@@ -1185,5 +1185,20 @@ local Toggle = Tab4:Toggle({
     end
 })
 
--- Atualiza o dropdown com a lista de jogadores
-Dropdown:Refresh(Players:GetPlayers())
+-- Função para atualizar o dropdown com a lista de jogadores
+local function updateDropdown()
+    local playerNames = {}
+    for _, player in pairs(Players:GetPlayers()) do
+        table.insert(playerNames, player.Name)
+    end
+    Dropdown:Refresh(playerNames)
+end
+
+-- Atualiza o dropdown inicialmente
+updateDropdown()
+
+-- Conecta a atualização do dropdown ao evento de adição de jogador
+Players.PlayerAdded:Connect(updateDropdown)
+
+-- Conecta a atualização do dropdown ao evento de remoção de jogador
+Players.PlayerRemoving:Connect(updateDropdown)
