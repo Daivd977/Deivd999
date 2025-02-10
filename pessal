@@ -997,7 +997,7 @@ local function teleportAndSpinCar(car, targetPlayer)
         
         -- Move o carro para a posição do jogador
         if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            local targetPosition = targetPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 10, 0)
+            local targetPosition = targetPlayer.Character.HumanoidRootPart.Position - Vector3.new(0, 5, 0)
             local forceDirection = (targetPosition - car.PrimaryPart.Position).unit * 100
             car:SetPrimaryPartCFrame(CFrame.new(targetPosition))
             car.PrimaryPart:ApplyImpulse(forceDirection)
@@ -1085,6 +1085,7 @@ local Toggle = Tab4:Toggle({
 
 -- Atualiza a lista de jogadores inicialmente
 Dropdown:Refresh(getPlayerNames())
+
 
 --------------------------------------------------------------------------------------
 
