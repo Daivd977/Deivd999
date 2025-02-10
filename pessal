@@ -1142,7 +1142,7 @@ local function teleportAndSpinCar(car, targetPlayer)
         -- Gira o carro rapidamente para dar backflips
         car:SetPrimaryPartCFrame(car:GetPrimaryPartCFrame() * CFrame.Angles(math.rad(45), 0, 0))
 
-        -- Move o carro para a posição do jogador (pé do jogador)
+        -- Move o carro para a posição do jogador (barriga do jogador) e puxa o jogador para baixo
         if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
             local targetPosition = targetPlayer.Character.HumanoidRootPart.Position - Vector3.new(0, 3, 0)
             car:SetPrimaryPartCFrame(CFrame.new(targetPosition))
@@ -1253,8 +1253,6 @@ local Toggle = Tab4:Toggle({
             sitInDriverSeat()  -- Teleporta para o assento do motorista
             wait(0.5)  -- Aguarda um pouco
             if selectedPlayerName ~= "" then
-                -- Adiciona uma pequena espera para garantir que o carro seja gerado antes de iniciar o teletransporte
-                wait(1)
                 teleportPlayerCar(selectedPlayerName)
             end
         else
@@ -1265,3 +1263,4 @@ local Toggle = Tab4:Toggle({
 
 -- Atualiza a lista de jogadores inicialmente
 Dropdown:Refresh(getPlayerNames())
+
