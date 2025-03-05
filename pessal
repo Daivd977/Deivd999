@@ -14,7 +14,7 @@ local Window = WindUI:CreateWindow({
     Size = UDim2.fromOffset(580, 460), -- UI Size
     KeySystem = { -- Creates key system
         Key = "pizza", -- key
-        Note = "pode nao man", -- Note
+        Note = "pode nao man!", -- Note
         URL = "https://github.com/Footagesus/WindUI", -- URL To get key (example: Discord)
         SaveKey = true, -- Saves the key in the folder specified above
     }, 
