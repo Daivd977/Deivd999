@@ -55,7 +55,7 @@ local Tab4 = Window:Tab({
     Title = "playes",
     Icon = "user", -- lucide or rbxassetid
 })
-
+-- dddddsla
 local Button = Tab1:Button({
     Title = "ser desbanido do voice!!!! so funciona se tiver avabado de ser banido",
     Desc = "universal",
