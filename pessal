@@ -7,7 +7,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 
 -- ubatuba
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub BETA!", -- UI Title
+    Title = "Lolyta Hub BETA", -- UI Title
     Icon = "door-open", -- Url or rbxassetid or lucide
     Author = "Lolycon666", -- Author & Creator
     Folder = "Lolyta hub v.1.0", -- Folder name for saving data (And key)
@@ -15,7 +15,7 @@ local Window = WindUI:CreateWindow({
     KeySystem = { -- Creates key system
         Key = "pizza", -- key
         Note = "pode nao man!", -- Note
-        URL = "https://github.com/Footagesus/WindUI", -- URL To get key (example: Discord)
+        URL = "oi esse hub era pra ser privado ok ", -- URL To get key (example: Discord)
         SaveKey = true, -- Saves the key in the folder specified above
     }, 
     Transparent = true,-- UI Transparency
@@ -57,7 +57,7 @@ local Tab4 = Window:Tab({
 })
 -- dddddsla
 local Button = Tab1:Button({
-    Title = "ser desbanido do voice!!!! so funciona se tiver avabado de ser banido",
+    Title = "ser desbanido do voice!!!! so funciona se tiver acabado de ser banido",
     Desc = "universal",
     Callback = function()
     game:GetService("VoiceChatService"):joinVoice()
