@@ -170,8 +170,8 @@ local Toggle = Tab1:Toggle({
 
 
 local Dropdown = Tab1:Dropdown({
-    Title = "Permissions",
-    Desc = "Permission options",
+    Title = "pegar permissao das casas",
+    Desc = "BROOKHAVEN",
     Value = "Option 1",
     Multi = false,
     AllowNone = true,
