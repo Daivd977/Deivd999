@@ -57,6 +57,14 @@ local Tab4 = Window:Tab({
 })
 
 local Button = Tab1:Button({
+    Title = "ser desbanido do voice!!!! so funciona se tiver avabado de ser banido",
+    Desc = "universal",
+    Callback = function()
+    game:GetService("VoiceChatService"):joinVoice()
+    end,
+})
+
+local Button = Tab1:Button({
     Title = "pegar sofá",
     Desc = "brookhaven",
     Callback = function()
