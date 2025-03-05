@@ -516,7 +516,7 @@ local Dropdown = Tab2:Dropdown({
         "musica brasil","88033569921555","132436320685732","105832154444494","92893359226454","90323407842935","132245626038510",
          "111995323199676","86354476776559","81854768837868","115016589376700","118740708757685","139435437308948",
          "109189438638906","138415155024226","105126065014034","102919095332206","132245626038510","97765714111493",
-         "100788814736643","72720721570850","138487820505005","87968531262747","","111281710445018", "73140398421340",
+         "100788814736643","72720721570850","138487820505005","87968531262747","111281710445018", "73140398421340",
          "106317184644394","musica do meu interece","123723674864058","112068892721408", "musica dls por elas","115567432786512", "71304501822029",
          "84733736048142","78482061425700","106322173003761","94604796823780", "118063577904953",
          "132218979961283","102708912256857","140642559093189","13530439660",
@@ -524,7 +524,7 @@ local Dropdown = Tab2:Dropdown({
          "104635713368149","88064647826500","85385155970460","122871512353520",
          "122852029094656","115016589376700","meme abaixo","94395705857835","136804576009416",
          "108494476595033","131804436682424","80291355054807","137774355552052","127944706557246","82284055473737","102906880476838",
-         "91502410121438","","81694110949920","estourada","92175624643620"
+         "91502410121438","81694110949920","estourada","92175624643620"
     },
     Callback = function(selectedValue)
         local args = {
@@ -704,7 +704,7 @@ local Dropdown = Tab2:Dropdown({
          "musica brasil","88033569921555","132436320685732","105832154444494","92893359226454","90323407842935","132245626038510",
          "111995323199676","86354476776559","81854768837868","115016589376700","118740708757685","139435437308948",
          "109189438638906","138415155024226","105126065014034","102919095332206","132245626038510","97765714111493",
-         "100788814736643","72720721570850","138487820505005","87968531262747","","111281710445018", "73140398421340",
+         "100788814736643","72720721570850","138487820505005","87968531262747","111281710445018", "73140398421340",
          "106317184644394","musica do meu interece","123723674864058","112068892721408", "musica dls por elas","115567432786512", "71304501822029",
          "84733736048142","78482061425700","106322173003761","94604796823780", "118063577904953",
          "132218979961283","102708912256857","140642559093189","13530439660",
@@ -712,7 +712,7 @@ local Dropdown = Tab2:Dropdown({
          "104635713368149","88064647826500","85385155970460","122871512353520",
          "122852029094656","115016589376700","meme abaixo","94395705857835","136804576009416",
          "108494476595033","131804436682424","80291355054807","137774355552052","127944706557246","82284055473737","102906880476838",
-         "91502410121438","","81694110949920","estourada","92175624643620"
+         "91502410121438","81694110949920","estourada","92175624643620"
     },
     Callback = function(selectedValue)
         local args = {
@@ -765,6 +765,58 @@ local Button = Tab2:Button({
 
 
 --scripts tab3 abaixo acima somente scripts tab2
+
+local Button = Tab3:Button({
+    Title = "invisible,system brook. ynfinite yeld",
+    Desc = "mic up,universal",
+    Callback = function()
+    loadstring(game:HttpGet("https://scriptblox.com/raw/Universal-Script-fe-invisible-4366"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/H20CalibreYT/SystemBroken/main/script"))()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+loadstring(game:HttpGet('https://pastebin.com/raw/3Rnd9rHf'))()
+    end,
+})
+
+local Button = Tab3:Button({
+    Title = "FE jerk off hub matrix",
+    Desc = "universal",
+    Callback = function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ExploitFin/AquaMatrix/refs/heads/AquaMatrix/AquaMatrix"))()
+    end,
+})
+
+local Button = Tab3:Button({
+    Title = "FE HUGG",
+    Desc = "universal",
+    Callback = function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/JSFKGBASDJKHIOAFHDGHIUODSGBJKLFGDKSB/fe/refs/heads/main/FEHUGG"))()
+    end,
+})
+
+local Button = Tab3:Button({
+    Title = "auto piano panda hub",
+    Desc = "universal",
+    Callback = function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/MADNESSTEST/Pqoeirnfjw/main/AP3-5.lua", true))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Sgesa/RandomCatsAutoplay/main/Protected_1274635038188005.lua.txt", true))()
+    end,
+})
+
+local Button = Tab3:Button({
+    Title = "shadown hub",
+    Desc = "brookhaven",
+    Callback = function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/realgengar/Brookhaven/refs/heads/main/Source.lua"))()
+    end,
+})
+
+local Button = Tab3:Button({
+    Title = "chaos hub",
+    Desc = "brookhaven",
+    Callback = function()
+    loadstring(game:HttpGet("https://pastebin.com/raw/58jNvV3h"))()
+    end,
+})
 
 local Button = Tab3:Button({
     Title = "buraco negro",
