@@ -940,6 +940,99 @@ local Dropdown = Tab3:Dropdown({
     end
 })
 
+-- Variável para controlar o loop
+local loopAtivo = false
+
+-- Criação do Dropdown para selecionar a música
+local Dropdown = Tab3:Dropdown({
+    Title = "Selecione uma música",
+    Desc = "Escolha o som para tocar no servidor",
+    Value = "Som 1",
+    Multi = false,
+    AllowNone = true,
+    Values = {
+        "Som 1", "Som 2", "Som 3", "Som 4"
+    },
+    Callback = function(SomSelecionado)
+        -- IDs das músicas correspondentes
+        local musicIDs = {
+            ["Som 1"] = 6832470734,
+            ["Som 2"] = 1778829098,
+            ["Som 3"] = 7807987190,
+            ["Som 4"] = 123592956882621
+        }
+
+        local selectedID = musicIDs[SomSelecionado]
+
+        if selectedID then
+            -- Toca o som para o servidor
+            local args = {
+                [1] = workspace,
+                [2] = selectedID,
+                [3] = 1
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Gu1nSound1s"):FireServer(unpack(args))
+
+            -- Toca o som globalmente para você
+            local globalSound = Instance.new("Sound", workspace)
+            globalSound.SoundId = "rbxassetid://" .. selectedID
+            globalSound.Looped = false
+            globalSound:Play()
+            task.wait(3) -- Reproduz por 3 segundos
+            globalSound:Destroy()
+        else
+            warn("ID da música não encontrado!")
+        end
+    end
+})
+
+-- Criação do Toggle para ativar/desativar o loop
+local Toggle = Tab3:Toggle({
+    Title = "Loop",
+    Desc = "Ative para colocar o som em loop",
+    Icon = "check",
+    Value = false,
+    Callback = function(state)
+        loopAtivo = state -- Atualiza o estado do loop
+        if loopAtivo then
+            print("Loop ativado!")
+            -- Inicia o loop
+            while loopAtivo do
+                -- Verifica a música atualmente selecionada no Dropdown
+                local musicIDs = {
+                    ["Som 1"] = 6832470734,
+                    ["Som 2"] = 1778829098,
+                    ["Som 3"] = 7807987190,
+                    ["Som 4"] = 123592956882621
+                }
+
+                local selectedID = musicIDs[Dropdown.Value]
+
+                if selectedID then
+                    -- Toca o som para o servidor
+                    local args = {
+                        [1] = workspace,
+                        [2] = selectedID,
+                        [3] = 1
+                    }
+                    game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Gu1nSound1s"):FireServer(unpack(args))
+
+                    -- Toca o som globalmente para você
+                    local globalSound = Instance.new("Sound", workspace)
+                    globalSound.SoundId = "rbxassetid://" .. selectedID
+                    globalSound.Looped = false
+                    globalSound:Play()
+                    task.wait(3) -- Espera 3 segundos antes de continuar o loop
+                    globalSound:Destroy()
+                else
+                    warn("ID da música não encontrado!")
+                end
+            end
+        else
+            print("Loop desativado!")
+        end
+    end
+})
 
 
 
