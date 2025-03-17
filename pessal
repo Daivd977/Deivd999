@@ -1,607 +1,4 @@
---  script teste nao funcional beta
---  beta e ele era para ser privado ok!! 666
--- script privado 
--- script privado
--- script privado
--- script privado
--- script privado
--- script privado
-
--- script privado
-
-
-
-
--- script privado
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
---  beta e ele era para ser privado ok!! 666
--- script privado 
--- script privado
--- script privado
--- script privado
--- script privado
--- script privado
-
--- script privado
-
-
-
-
--- script privado
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
---  beta e ele era para ser privado ok!! 666
--- script privado 
--- script privado
--- script privado
--- script privado
--- script privado
--- script privado
-
--- script privado
-
-
-
-
--- script privado
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
---  beta e ele era para ser privado ok!! 666
--- script privado 
--- script privado
--- script privado
--- script privado
--- script privado
--- script privado
-
--- script privado
-
-
-
-
--- script privado
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
---  beta e ele era para ser privado ok!! 666
--- script privado 
--- script privado
--- script privado
--- script privado
--- script privado
--- script privado
-
--- script privado
-
-
-
-
--- script privado
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
---  beta e ele era para ser privado ok!! 666
--- script privado 
--- script privado
--- script privado
--- script privado
--- script privado
--- script privado
-
--- script privado
-
-
-
-
--- script privado
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
---  beta e ele era para ser privado ok!! 666
--- script privado 
--- script privado
--- script privado
--- script privado
--- script privado
--- script privado
-
--- script privado
-
-
-
-
--- script privado
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
---  beta e ele era para ser privado ok!! 666
--- script privado 
--- script privado
--- script privado
--- script privado
--- script privado
--- script privado
-
--- script privado
-
-
-
-
--- script privado
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
---  beta e ele era para ser privado ok!! 666
--- script privado 
--- script privado
--- script privado
--- script privado
--- script privado
--- script privado
-
--- script privado
-
-
-
-
--- script privado
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
---  beta e ele era para ser privado ok!! 666
--- script privado 
--- script privado
--- script privado
--- script privado
--- script privado
--- script privado
-
--- script privado
-
-
-
-
--- script privado
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
---  beta e ele era para ser privado ok!! 666
--- script privado 
--- script privado
--- script privado
--- script privado
--- script privado
--- script privado
-
--- script privado
-
-
-
-
--- script privado
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
---  beta e ele era para ser privado ok!! 666
--- script privado 
--- script privado
--- script privado
--- script privado
--- script privado
--- script privado
-
--- script privado
-
-
-
-
--- script privado
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
---  beta e ele era para ser privado ok!! 666
--- script privado 
--- script privado
--- script privado
--- script privado
--- script privado
--- script privado
-
--- script privado
-
-
-
-
--- script privado
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
---  beta e ele era para ser privado ok!! 666
--- script privado 
--- script privado
--- script privado
--- script privado
--- script privado
--- script privado
-
--- script privado
-
-
-
-
--- script privado
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
-
-
-
-
-
-
--- script privado
-
-
--- para bens voce chegou mandrake fdp!!!
-
+-- brookhaven script teste funcionando beta
 
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
 
@@ -650,14 +47,20 @@ local Tab2 = Window:Tab({
 })
 
 local Tab3 = Window:Tab({
+    Title = "music all",
+    Icon = "audio-lines", -- lucide or rbxassetid
+})
+
+local Tab4 = Window:Tab({
     Title = "scripts",
     Icon = "layers", -- lucide or rbxassetid
 })
 
-local Tab4 = Window:Tab({
+local Tab5 = Window:Tab({
     Title = "playes",
     Icon = "user", -- lucide or rbxassetid
 })
+
 
 local Button = Tab1:Button({
     Title = "ser desbanido do voice!!!! so funciona se tiver avabado de ser banido",
@@ -1375,11 +778,107 @@ local Button = Tab2:Button({
     end,
 })
 
-
-
 --scripts tab3 abaixo acima somente scripts tab2
 
-local Button = Tab3:Button({
+local Input = Tab3:Input({
+    Title = "tocar som para all",
+    Desc = "Digite o ID do som que deseja tocar",
+    Value = "",
+    PlaceholderText = "Exemplo: 6832470734",
+    ClearTextOnFocus = true,
+    Callback = function(Text)
+        -- Verifica se um ID foi inserido
+        local inputID = tonumber(Text) -- Converte o texto para número
+        if inputID then
+            -- Toca o som para o servidor
+            local args = {
+                [1] = workspace,
+                [2] = inputID,
+                [3] = 1
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Gu1nSound1s"):FireServer(unpack(args))
+
+            -- Toca o som globalmente para você
+            local globalSound = Instance.new("Sound", workspace)
+            globalSound.SoundId = "rbxassetid://" .. inputID
+            globalSound.Looped = false
+            globalSound:Play()
+            task.wait(3) -- Reproduz o som por 3 segundos
+            globalSound:Destroy() -- Remove o som após 3 segundos
+        else
+            warn("Por favor, insira um ID válido de música!")
+        end
+    end
+})
+
+
+local Dropdown = Tab3:Dropdown({
+    Title = "Selecione um id",
+    Desc = "Escolha o som para tocar no servidor",
+    Value = "Som 1",
+    Multi = false,
+    AllowNone = true,
+    Values = {
+        "Som 1", "Som 2", "Som 3", "Som 4"
+    },
+    Callback = function(SomSelecionado)
+        -- IDs das músicas correspondentes
+        local musicIDs = {
+            ["Som 1"] = 6832470734,
+            ["Som 2"] = 1778829098,
+            ["Som 3"] = 7807987190,
+            ["Som 4"] = 123592956882621
+        }
+
+        local selectedID = musicIDs[SomSelecionado]
+
+        if selectedID then
+            -- Toca o som para o servidor
+            local args = {
+                [1] = workspace,
+                [2] = selectedID,
+                [3] = 1
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Gu1nSound1s"):FireServer(unpack(args))
+
+            -- Toca o som globalmente para você
+            local globalSound = Instance.new("Sound", workspace)
+            globalSound.SoundId = "rbxassetid://" .. selectedID
+            globalSound.Looped = false
+            globalSound:Play()
+            task.wait(3) -- Reproduz por 3 segundos
+            globalSound:Destroy() -- Remove o som após 3 segundos
+        else
+            warn("ID da música não encontrado!")
+        end
+    end
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--scripts tab4 abaixo acima somente scripts tab3
+
+local Button = Tab4:Button({
     Title = "invisible,system brook. ynfinite yeld",
     Desc = "mic up,universal",
     Callback = function()
@@ -1390,7 +889,7 @@ loadstring(game:HttpGet('https://pastebin.com/raw/3Rnd9rHf'))()
     end,
 })
 
-local Button = Tab3:Button({
+local Button = Tab4:Button({
     Title = "FE jerk off hub matrix",
     Desc = "universal",
     Callback = function()
@@ -1398,7 +897,7 @@ local Button = Tab3:Button({
     end,
 })
 
-local Button = Tab3:Button({
+local Button = Tab4:Button({
     Title = "FE HUGG",
     Desc = "universal",
     Callback = function()
@@ -1406,7 +905,7 @@ local Button = Tab3:Button({
     end,
 })
 
-local Button = Tab3:Button({
+local Button = Tab4:Button({
     Title = "auto piano panda hub",
     Desc = "universal",
     Callback = function()
@@ -1415,7 +914,7 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/Sgesa/RandomCatsAutop
     end,
 })
 
-local Button = Tab3:Button({
+local Button = Tab4:Button({
     Title = "shadown hub",
     Desc = "brookhaven",
     Callback = function()
@@ -1423,7 +922,7 @@ local Button = Tab3:Button({
     end,
 })
 
-local Button = Tab3:Button({
+local Button = Tab4:Button({
     Title = "chaos hub",
     Desc = "brookhaven",
     Callback = function()
@@ -1431,7 +930,7 @@ local Button = Tab3:Button({
     end,
 })
 
-local Button = Tab3:Button({
+local Button = Tab4:Button({
     Title = "buraco negro",
     Desc = "universal",
     Callback = function()
@@ -1439,7 +938,7 @@ local Button = Tab3:Button({
     end,
 })
 
-local Button = Tab3:Button({
+local Button = Tab4:Button({
     Title = "sistem broochk",
     Desc = "universal",
     Callback = function()
@@ -1447,7 +946,7 @@ local Button = Tab3:Button({
     end,
 })
 
-local Button = Tab3:Button({
+local Button = Tab4:Button({
     Title = "roships",
     Desc = "universal",
     Callback = function()
@@ -1455,7 +954,7 @@ local Button = Tab3:Button({
     end,
 })
 
-local Button = Tab3:Button({
+local Button = Tab4:Button({
     Title = "sander x",
     Desc = "somente para brookhaven",
     Callback = function()
@@ -1463,7 +962,7 @@ local Button = Tab3:Button({
     end,
 })
 
-local Button = Tab3:Button({
+local Button = Tab4:Button({
     Title = "reverso",
     Desc = "universal",
     Callback = function()
@@ -1471,7 +970,7 @@ local Button = Tab3:Button({
     end,
 })
 
-local Button = Tab3:Button({
+local Button = Tab4:Button({
     Title = "RD4",
     Desc = "somente para brookhaven",
     Callback = function()
@@ -1479,7 +978,7 @@ local Button = Tab3:Button({
     end,
 })
 
---scripts tab4 abaixo acima somente scripts tab3
+--scripts tab5 abaixo acima somente scripts tab4
 
 -----------------------------------------------------------------------------------------------------
 -- Função para atualizar o dropdown com a lista de jogadores
@@ -1508,7 +1007,7 @@ local function teleportToPlayer(playerName)
 end
 
 -- Cria o dropdown para selecionar o jogador
-local Dropdown = Tab4:Dropdown({
+local Dropdown = Tab5:Dropdown({
     Title = "Selecionar Jogador",
     Desc = "Selecione o jogador para teletransportar",
     Value = "",
@@ -1533,7 +1032,7 @@ game.Players.PlayerRemoving:Connect(function()
 end)
 
 -- Cria o botão para teletransportar para o jogador
-local Button = Tab4:Button({
+local Button = Tab5:Button({
     Title = "Teleportar para Jogador",
     Desc = "Clique para teletransportar para o jogador selecionado",
     Callback = function()
@@ -1578,7 +1077,7 @@ local function stopSpectating()
 end
 
 -- Cria o dropdown para selecionar o jogador
-local Dropdown = Tab4:Dropdown({
+local Dropdown = Tab5:Dropdown({
     Title = "Selecionar Jogador",
     Desc = "Selecione o jogador para espectar",
     Value = "",
@@ -1603,7 +1102,7 @@ game.Players.PlayerRemoving:Connect(function()
 end)
 
 -- Cria o toggle para espectar o jogador
-local Toggle = Tab4:Toggle({
+local Toggle = Tab5:Toggle({
     Title = "Espectar Jogador",
     Desc = "Ativar/Desativar espectar o jogador selecionado",
     Value = false,
@@ -1720,7 +1219,7 @@ local function getPlayerNames()
     return playerNames
 end
 
-local Dropdown = Tab4:Dropdown({
+local Dropdown = Tab5:Dropdown({
     Title = "Selecionar Jogador",
     Desc = "Selecione um jogador para teleportar o carro",
     Value = "",
@@ -1742,7 +1241,7 @@ Players.PlayerRemoving:Connect(function(player)
     Dropdown:Refresh(getPlayerNames())
 end)
 
-local Toggle = Tab4:Toggle({
+local Toggle = Tab5:Toggle({
     Title = "Ativar Teletransporte",
     Desc = "Ativa ou desativa o teletransporte do carro",
     Value = false,
@@ -1887,7 +1386,7 @@ local function getPlayerNames()
     return playerNames
 end
 
-local Dropdown = Tab4:Dropdown({
+local Dropdown = Tab5:Dropdown({
     Title = "Selecionar Jogador",
     Desc = "Selecione um jogador para teleportar o carro",
     Value = "",
@@ -1909,7 +1408,7 @@ Players.PlayerRemoving:Connect(function(player)
     Dropdown:Refresh(getPlayerNames())
 end)
 
-local Toggle = Tab4:Toggle({
+local Toggle = Tab5:Toggle({
     Title = "Ativar Teletransporte",
     Desc = "Ativa ou desativa o teletransporte do carro",
     Value = false,
