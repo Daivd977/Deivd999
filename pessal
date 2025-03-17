@@ -780,6 +780,92 @@ local Button = Tab2:Button({
 
 --scripts tab3 abaixo acima somente scripts tab2
 
+-- Variável para controlar o loop
+local loopAtivo = false
+
+-- Criação do Input para inserir o ID
+local InputID = ""
+local Input = Tab3:Input({
+    Title = "incira o id audio all",
+    Desc = "Digite o ID do som que deseja tocar",
+    Value = "",
+    PlaceholderText = "Exemplo: 6832470734",
+    ClearTextOnFocus = true,
+    Callback = function(Text)
+        -- Atualiza o valor do ID inserido
+        InputID = tonumber(Text) -- Converte o texto para número
+        if not InputID then
+            warn("Por favor, insira um ID válido!")
+        end
+    end
+})
+
+-- Criação do Botão para tocar o som
+local Button = Tab3:Button({
+    Title = "Tocar Som",
+    Desc = "Clique para tocar a música inserida",
+    Callback = function()
+        if InputID then
+            -- Toca o som para o servidor
+            local args = {
+                [1] = workspace,
+                [2] = InputID,
+                [3] = 1
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Gu1nSound1s"):FireServer(unpack(args))
+
+            -- Toca o som globalmente para você
+            local globalSound = Instance.new("Sound", workspace)
+            globalSound.SoundId = "rbxassetid://" .. InputID
+            globalSound.Looped = false
+            globalSound:Play()
+            task.wait(3) -- Reproduz por 3 segundos
+            globalSound:Destroy()
+        else
+            warn("Nenhum ID válido foi inserido!")
+        end
+    end
+})
+
+-- Criação do Toggle para ativar/desativar o loop
+local Toggle = Tab3:Toggle({
+    Title = "Loop",
+    Desc = "Ative para colocar o som em loop",
+    Icon = "check",
+    Value = false,
+    Callback = function(state)
+        loopAtivo = state -- Atualiza o estado do loop
+        if loopAtivo then
+            print("Loop ativado!")
+            -- Inicia o loop
+            while loopAtivo do
+                if InputID then
+                    -- Toca o som para o servidor
+                    local args = {
+                        [1] = workspace,
+                        [2] = InputID,
+                        [3] = 1
+                    }
+                    game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Gu1nSound1s"):FireServer(unpack(args))
+
+                    -- Toca o som globalmente para você
+                    local globalSound = Instance.new("Sound", workspace)
+                    globalSound.SoundId = "rbxassetid://" .. InputID
+                    globalSound.Looped = false
+                    globalSound:Play()
+                    task.wait(3) -- Espera 3 segundos antes de continuar o loop
+                    globalSound:Destroy()
+                else
+                    warn("Nenhum ID válido foi inserido!")
+                end
+            end
+        else
+            print("Loop desativado!")
+        end
+    end
+})
+
+
 local Input = Tab3:Input({
     Title = "tocar som para all",
     Desc = "Digite o ID do som que deseja tocar",
