@@ -62,11 +62,39 @@ local Tab5 = Window:Tab({
 })
 
 
+
 local Button = Tab1:Button({
-    Title = "ser desbanido do voice!!!! so funciona se tiver avabado de ser banido",
+    Title = "ser desbanido do voice!!!! so funciona se tiver acabado de ser banido",
     Desc = "universal",
     Callback = function()
     game:GetService("VoiceChatService"):joinVoice()
+    end,
+})
+
+local Button = Tab1:Button({
+    Title = "voltar tamanho normal sise 1",
+    Desc = "brookhaven",
+    Callback = function()
+        local args = {
+            [1] = "CharacterSizeUp",
+            [2] = 1
+        }
+        
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer(unpack(args))
+    end,
+})
+
+
+local Button = Tab1:Button({
+    Title = "invisivel sise 4",
+    Desc = "brookhaven",
+    Callback = function()
+        local args = {
+            [1] = "CharacterSizeDown",
+            [2] = 4
+        }
+        
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer(unpack(args))
     end,
 })
 
@@ -779,7 +807,7 @@ local Button = Tab2:Button({
 })
 
 --scripts tab3 abaixo acima somente scripts tab2
-
+-----------------------------------------------------------------------------------
 -- Variável para controlar o loop
 local loopAtivo = false
 
@@ -865,80 +893,7 @@ local Toggle = Tab3:Toggle({
     end
 })
 
-
-local Input = Tab3:Input({
-    Title = "tocar som para all",
-    Desc = "Digite o ID do som que deseja tocar",
-    Value = "",
-    PlaceholderText = "Exemplo: 6832470734",
-    ClearTextOnFocus = true,
-    Callback = function(Text)
-        -- Verifica se um ID foi inserido
-        local inputID = tonumber(Text) -- Converte o texto para número
-        if inputID then
-            -- Toca o som para o servidor
-            local args = {
-                [1] = workspace,
-                [2] = inputID,
-                [3] = 1
-            }
-            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Gu1nSound1s"):FireServer(unpack(args))
-
-            -- Toca o som globalmente para você
-            local globalSound = Instance.new("Sound", workspace)
-            globalSound.SoundId = "rbxassetid://" .. inputID
-            globalSound.Looped = false
-            globalSound:Play()
-            task.wait(3) -- Reproduz o som por 3 segundos
-            globalSound:Destroy() -- Remove o som após 3 segundos
-        else
-            warn("Por favor, insira um ID válido de música!")
-        end
-    end
-})
-
-
-local Dropdown = Tab3:Dropdown({
-    Title = "Selecione um id",
-    Desc = "Escolha o som para tocar no servidor",
-    Value = "Som 1",
-    Multi = false,
-    AllowNone = true,
-    Values = {
-        "Som 1", "Som 2", "Som 3", "Som 4"
-    },
-    Callback = function(SomSelecionado)
-        -- IDs das músicas correspondentes
-        local musicIDs = {
-            ["Som 1"] = 6832470734,
-            ["Som 2"] = 1778829098,
-            ["Som 3"] = 7807987190,
-            ["Som 4"] = 123592956882621
-        }
-
-        local selectedID = musicIDs[SomSelecionado]
-
-        if selectedID then
-            -- Toca o som para o servidor
-            local args = {
-                [1] = workspace,
-                [2] = selectedID,
-                [3] = 1
-            }
-            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Gu1nSound1s"):FireServer(unpack(args))
-
-            -- Toca o som globalmente para você
-            local globalSound = Instance.new("Sound", workspace)
-            globalSound.SoundId = "rbxassetid://" .. selectedID
-            globalSound.Looped = false
-            globalSound:Play()
-            task.wait(3) -- Reproduz por 3 segundos
-            globalSound:Destroy() -- Remove o som após 3 segundos
-        else
-            warn("ID da música não encontrado!")
-        end
-    end
-})
+----------------------------------------------------------------------------------
 
 -- Variável para controlar o loop
 local loopAtivo = false
