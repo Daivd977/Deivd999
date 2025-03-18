@@ -906,7 +906,7 @@ local Dropdown = Tab3:Dropdown({
     Multi = false,
     AllowNone = true,
     Values = {
-        "Som 1", "Som 2", "Som 3", "Som 4"
+        "pankapakan", "Som 2", "Som 3", "Som 4"
     },
     Callback = function(SomSelecionado)
         -- IDs das músicas correspondentes
