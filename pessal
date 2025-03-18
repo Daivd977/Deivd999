@@ -906,15 +906,34 @@ local Dropdown = Tab3:Dropdown({
     Multi = false,
     AllowNone = true,
     Values = {
-        "Som 1", "Som 2", "Som 3", "Som 4"
+        "pankapakan", "gritomedo", "metal", "araara", "tiro", "jumpscar", "gemido", "sometourado", "gritodoido", "off", "Hahahah", "Carropeid", "Error", "Estouradoespad", "Chernobyl1", "Chernobyl5", "Radioxiado", "Nukesiren", "Sirenhead", "Alertescola", "Memealert", "Alerta3S"
     },
     Callback = function(SomSelecionado)
         -- IDs das músicas correspondentes
         local musicIDs = {
-            ["Som 1"] = 6832470734,
-            ["Som 2"] = 1778829098,
-            ["Som 3"] = 7807987190,
-            ["Som 4"] = 123592956882621
+            ["pankapakan"] = 122547522269143,
+            ["gritomedo"] = 113029085566978,
+            ["metal"] = 71251935617451,
+            ["araara"] = 18388861760,
+            ["tiro"] = 104223019424522,
+            ["jumpscar"] = 91784486966761,
+            ["gemido"] = 106835463235574,
+            ["sometourado"] = 123592956882621,
+            ["gritodoido"] = 7807987190,
+            ["off"] = 1778829098,
+            ["Hahahah"] = 90096947219465,
+            ["Carropeid"] = 88883922248256,
+            ["Error"] = 101446887200514,
+            ["Estouradoespad"] = 136179020015211,
+            ["Chernobyl1"] = 134433437151072,
+            ["Chernobyl5"] = 101927395686044,
+            ["Radioorror"] = 3200130016,
+            ["Radioxiado"] = 8028069841,
+            ["Nukesiren"] = 9067330158,
+            ["Sirenhead"] = 5681392074,
+            ["Alertescola"] = 6607047008,
+            ["Memealert"] = 8379374771,
+            ["Alerta3S"] = 402404861
         }
 
         local selectedID = musicIDs[SomSelecionado]
