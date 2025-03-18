@@ -1,5 +1,5 @@
 -- brookhaven script teste funcionando beta
--- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- -----brookhaven script teste funcionando beta
+-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta
 
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
 
@@ -8,7 +8,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 
 -- ubatuba
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 50.0", -- UI Title
+    Title = "Lolyta Hub 5.0", -- UI Title
     Icon = "door-open", -- Url or rbxassetid or lucide
     Author = "Lolycon66609", -- Author & Creator
     Folder = "Lolyta hub v.1.0", -- Folder name for saving data (And key)
