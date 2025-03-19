@@ -7,7 +7,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 
 -- ubatuba
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub teste", -- UI Title
+    Title = "Lolyta Hub teste 01", -- UI Title
     Icon = "door-open", -- Url or rbxassetid or lucide
     Author = "Lolycon666", -- Author & Creator
     Folder = "Lolyta hub v.1.0", -- Folder name for saving data (And key)
@@ -16,7 +16,7 @@ local Window = WindUI:CreateWindow({
         Key = "", -- key
         Note = "pode nao man", -- Note
         URL = "https://github.com/Footagesus/WindUI", -- URL To get key (example: Discord)
-        SaveKey = false, -- Saves the key in the folder specified above
+        SaveKey = true, -- Saves the key in the folder specified above
     }, 
     Transparent = true,-- UI Transparency
     Theme = "Dark", -- UI Theme
@@ -41,6 +41,9 @@ local Tab1 = Window:Tab({
     Icon = "house", -- lucide or rbxassetid
 })
 
+
+
+
 -- Assumindo que 'Tab' já está definido na sua UI Library
 local localPlayer = game.Players.LocalPlayer
 local ball = game.Workspace:WaitForChild("SoccerBall") -- A bola vista no Explorer
@@ -61,6 +64,7 @@ end
 
 -- Criar o Dropdown para selecionar jogadores
 local playerNames = getPlayerNames()
+
 local Dropdown = Tab1:Dropdown({
     Title = "Select Player",
     Desc = "Choose a player for the ball to follow",
