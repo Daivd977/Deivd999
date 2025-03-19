@@ -31,8 +31,8 @@ local Window = WindUI:CreateWindow({
     Folder = "Lolyta hub v.1.0", -- Folder name for saving data (And key)
     Size = UDim2.fromOffset(580, 460), -- UI Size
     KeySystem = { -- Creates key system
-        Key = "", -- key
-        Note = "pode nao man", -- Note
+        Key = "666", -- key
+        Note = "sera", -- Note
         URL = "https://github.com/Footagesus/WindUI", -- URL To get key (example: Discord)
         SaveKey = true, -- Saves the key in the folder specified above
     }, 
