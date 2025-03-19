@@ -1,68 +1,34 @@
--- brookhaven script teste funcionando beta
--- brookhaven script teste funcionando beta
--- brookhaven script teste funcionando beta
--- brookhaven script teste funcionando beta
--- brookhaven script teste funcionando beta
--- brookhaven script teste funcionando beta
--- brookhaven script teste funcionando beta
--- brookhaven script teste funcionando beta
--- brookhaven script teste funcionando beta
--- brookhaven script teste funcionando beta
--- brookhaven script teste funcionando beta
--- brookhaven script teste funcionando beta
--- brookhaven script teste funcionando beta
--- brookhaven script teste funcionando beta
--- brookhaven script teste funcionando beta
--- brookhaven script teste funcionando beta
--- brookhaven script teste funcionando beta
--- brookhaven script teste funcionando beta
--- brookhaven script teste funcionando beta
-
-local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
-
+-- Inicialização da UI (baseado no seu script)
+local WINDU = loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/NewMainScript.lua", true))()
 local Version = "1.4.0"
-local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
+local WINDUUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/main/ui.lua", true))()
 
--- ubatuba
-local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub teste 01", -- UI Title
-    Icon = "door-open", -- Url or rbxassetid or lucide
-    Author = "Lolycon666", -- Author & Creator
-    Folder = "Lolyta hub v.1.0", -- Folder name for saving data (And key)
-    Size = UDim2.fromOffset(580, 460), -- UI Size
-    KeySystem = { -- Creates key system
-        Key = "666", -- key
-        Note = "sera", -- Note
-        URL = "https://github.com/Footagesus/WindUI", -- URL To get key (example: Discord)
-        SaveKey = true, -- Saves the key in the folder specified above
-    }, 
-    Transparent = true,-- UI Transparency
-    Theme = "Dark", -- UI Theme
-    SideBarWidth = 200, -- UI Sidebar Width (number)
-    HasOutline = false, -- Adds Oultines to the window
+-- Criação da janela e do tab
+local ubatuba = WINDU:CreateWindow({
+    Title = "Lolita Hub teste",
+    Icon = "door-open",
+    Author = "LOLYCON666",
+    Folder = "Lolita Hub v.1.0",
+    Size = UDim2.fromOffset(580, 460),
+    KeySystem = {
+        CreatesKeySystem = true,
+        Key = "666",
+        Note = "pode nao man",
+        URL = "https://link-hub.vercel.app/api/UI/WINDU/",
+        SaveKey = false,
+        Transparent = true,
+        Theme = "Dark",
+        SideBarWidth = 260,
+        HasOutline = false
+    }
 })
 
-Window:EditOpenButton({
-    Title = "Lolyta",
-    Icon = "car",  -- New icon
-    CornerRadius = UDim.new(0,10),
-    StrokeThickness = 3,
-    Color = ColorSequence.new(
-        Color3.fromHex("FF0F7B"), 
-        Color3.fromHex("F89B29")
-    )
-})
-
-
-local Tab1 = Window:Tab({
+local Tab = ubatuba:NewTab({
     Title = "teste",
-    Icon = "house", -- lucide or rbxassetid
+    Icon = "house"
 })
 
-
-
-
--- Assumindo que 'Tab' já está definido na sua UI Library
+-- Script da bola
 local localPlayer = game.Players.LocalPlayer
 local ball = game.Workspace:WaitForChild("SoccerBall") -- A bola vista no Explorer
 local isFollowing = false
@@ -82,22 +48,13 @@ end
 
 -- Criar o Dropdown para selecionar jogadores
 local playerNames = getPlayerNames()
-
-local Dropdown = Tab1:Dropdown({
-    Title = "Select Player",
-    Desc = "Choose a player for the ball to follow",
-    Value = playerNames[1] or "None",
-    Multi = false,
-    AllowNone = true,
-    Values = playerNames,
-    Callback = function(selected)
-        selectedPlayerName = selected
-    end
-})
+local Dropdown = Tab:NewDropdown("Select Player", "Choose a player for the ball to follow", playerNames, function(selected)
+    selectedPlayerName = selected
+end)
 
 -- Função para iniciar o seguimento da bola
 local function startFollowing()
-    if not selectedPlayerName or selectedPlayerName == "None" then
+    if not selectedPlayerName then
         return
     end
     isFollowing = true
@@ -123,27 +80,20 @@ local function stopFollowing()
 end
 
 -- Criar o Toggle para ativar/desativar o seguimento
-local Toggle = Tab1:Toggle({
-    Title = "Follow Player",
-    Desc = "Toggle to start/stop following",
-    Icon = "check",
-    Value = false,
-    Callback = function(state)
-        if state then
-            startFollowing()
-        else
-            stopFollowing()
-        end
-    end,
-})
+local Toggle = Tab:NewToggle("Follow Player", "Toggle to start/stop following", false, function(state)
+    if state then
+        startFollowing()
+    else
+        stopFollowing()
+    end
+end)
 
--- Opcional: Atualizar o dropdown dinamicamente quando jogadores entram/saem
+-- Atualizar o dropdown dinamicamente quando jogadores entram/saem
 game.Players.PlayerAdded:Connect(function()
     local newPlayerNames = getPlayerNames()
     Dropdown:Refresh(newPlayerNames)
     if not table.find(newPlayerNames, selectedPlayerName) then
         selectedPlayerName = nil
-        Dropdown:Select("None")
     end
 end)
 
@@ -152,7 +102,6 @@ game.Players.PlayerRemoving:Connect(function(player)
     Dropdown:Refresh(newPlayerNames)
     if player.Name == selectedPlayerName then
         selectedPlayerName = nil
-        Dropdown:Select("None")
         stopFollowing()
     end
 end)
