@@ -1590,3 +1590,130 @@ Dropdown:Refresh(getPlayerNames())
 ---
 
 
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+
+local selectedPlayerName = ""
+local followActive = false
+local connection
+
+-- Função para encontrar um jogador pelo nome
+local function findPlayerByName(name)
+    for _, player in pairs(Players:GetPlayers()) do
+        if player.Name:lower():find(name:lower()) then
+            return player
+        end
+    end
+    return nil
+end
+
+-- Função para fazer a bola seguir o jogador
+local function followPlayer(playerName)
+    local player = findPlayerByName(playerName)
+    if not player then
+        warn("Jogador não encontrado: " .. playerName)
+        return
+    end
+
+    local ball = Workspace:FindFirstChild("SoccerBall")
+    if not ball then
+        warn("Bola não encontrada no Workspace!")
+        return
+    end
+
+    -- Define o PrimaryPart da bola, se necessário
+    if not ball.PrimaryPart then
+        ball.PrimaryPart = ball -- Assume que a bola é uma única parte
+    end
+
+    connection = RunService.Stepped:Connect(function()
+        if not followActive then
+            if connection then
+                connection:Disconnect()
+                connection = nil
+            end
+            ball.Anchored = false -- Desancora a bola quando parar
+            return
+        end
+
+        -- Ancora a bola para evitar física
+        ball.Anchored = true
+
+        -- Move a bola para a posição do jogador (barriga do jogador)
+        if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local targetPosition = player.Character.HumanoidRootPart.Position
+            ball:SetPrimaryPartCFrame(CFrame.new(targetPosition))
+        end
+    end)
+end
+
+-- Função para atualizar o dropdown com a lista de jogadores
+local function getPlayerNames()
+    local playerNames = {}
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= Players.LocalPlayer then -- Exclui o jogador local
+            table.insert(playerNames, player.Name)
+        end
+    end
+    return playerNames
+end
+
+-- Cria o Dropdown para selecionar jogadores
+local Dropdown = Tab5:Dropdown({
+    Title = "Selecionar Jogador",
+    Desc = "Selecione um jogador para a bola seguir",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = getPlayerNames(),
+    Callback = function(Tab)
+        selectedPlayerName = Tab
+        print("Jogador selecionado: " .. selectedPlayerName)
+    end
+})
+
+-- Atualiza a lista de jogadores quando um novo jogador entra ou sai do jogo
+Players.PlayerAdded:Connect(function(player)
+    Dropdown:Refresh(getPlayerNames())
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    Dropdown:Refresh(getPlayerNames())
+    if player.Name == selectedPlayerName then
+        selectedPlayerName = ""
+        followActive = false
+        if connection then
+            connection:Disconnect()
+            connection = nil
+        end
+    end
+end)
+
+-- Cria o Toggle para ativar/desativar o seguimento
+local Toggle = Tab5:Toggle({
+    Title = "Ativar Seguimento",
+    Desc = "Ativa ou desativa o seguimento da bola",
+    Value = false,
+    Callback = function(state)
+        followActive = state
+        if followActive then
+            if selectedPlayerName ~= "" then
+                followPlayer(selectedPlayerName)
+            end
+        else
+            -- Para o seguimento
+            if connection then
+                connection:Disconnect()
+                connection = nil
+            end
+            local ball = Workspace:FindFirstChild("SoccerBall")
+            if ball then
+                ball.Anchored = false
+            end
+        end
+    end
+})
+
+-- Atualiza a lista de jogadores inicialmente
+Dropdown:Refresh(getPlayerNames())
