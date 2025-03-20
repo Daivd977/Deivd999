@@ -1590,3 +1590,171 @@ Dropdown:Refresh(getPlayerNames())
 ---
 
 
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+
+local selectedPlayerName = ""
+local followActive = false
+local connection
+
+-- Função para encontrar um jogador pelo nome
+local function findPlayerByName(name)
+    for _, player in pairs(Players:GetPlayers()) do
+        if player.Name:lower():find(name:lower()) then
+            return player
+        end
+    end
+    return nil
+end
+
+-- Função para mover a bola suavemente até o jogador
+local function moveBallToPlayer(ball, targetPosition, duration)
+    local tweenInfo = TweenInfo.new(
+        duration, -- Duração da transição (em segundos)
+        Enum.EasingStyle.Linear, -- Estilo de easing
+        Enum.EasingDirection.InOut -- Direção do easing
+    )
+    local tween = TweenService:Create(ball, tweenInfo, {CFrame = CFrame.new(targetPosition)})
+    tween:Play()
+    tween.Completed:Wait() -- Espera até a transição terminar
+end
+
+-- Função para fazer a bola seguir o jogador
+local function followPlayer(playerName)
+    local player = findPlayerByName(playerName)
+    if not player then
+        warn("Jogador não encontrado: " .. playerName)
+        return
+    end
+
+    local ball = Workspace:FindFirstChild("SoccerBall")
+    if not ball then
+        warn("Bola não encontrada no Workspace!")
+        return
+    end
+
+    -- Define o PrimaryPart da bola, se necessário
+    if not ball.PrimaryPart then
+        -- Tenta encontrar uma parte chamada "Handle" ou a primeira parte do modelo
+        local handle = ball:FindFirstChild("Handle") or ball:FindFirstChildWhichIsA("BasePart")
+        if handle then
+            ball.PrimaryPart = handle
+        else
+            warn("A bola não tem uma parte válida para ser o PrimaryPart!")
+            return
+        end
+    end
+
+    -- Move a bola até o jogador suavemente
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local targetPosition = player.Character.HumanoidRootPart.Position
+        ball.Anchored = true -- Ancora a bola para evitar física durante a transição
+        moveBallToPlayer(ball, targetPosition, 1) -- Move a bola até o jogador em 1 segundo
+    end
+
+    -- Inicia o seguimento
+    connection = RunService.Stepped:Connect(function()
+        if not followActive then
+            if connection then
+                connection:Disconnect()
+                connection = nil
+            end
+            ball.Anchored = false -- Desancora a bola quando parar
+            return
+        end
+
+        -- Move a bola para a posição do jogador (barriga do jogador)
+        if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local targetPosition = player.Character.HumanoidRootPart.Position
+            ball.CFrame = CFrame.new(targetPosition) -- Usa CFrame diretamente, já que a bola está ancorada
+        else
+            -- Para o seguimento se o jogador não estiver mais disponível
+            followActive = false
+            if connection then
+                connection:Disconnect()
+                connection = nil
+            end
+            ball.Anchored = false
+        end
+    end)
+end
+
+-- Função para atualizar o dropdown com a lista de jogadores
+local function getPlayerNames()
+    local playerNames = {}
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= Players.LocalPlayer then -- Exclui o jogador local
+            table.insert(playerNames, player.Name)
+        end
+    end
+    return playerNames
+end
+
+-- Cria o Dropdown para selecionar jogadores
+local Dropdown = Tab5:Dropdown({
+    Title = "Selecionar Jogador",
+    Desc = "Selecione um jogador para a bola seguir",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = getPlayerNames(),
+    Callback = function(Tab)
+        selectedPlayerName = Tab
+        print("Jogador selecionado: " .. selectedPlayerName)
+    end
+})
+
+-- Atualiza a lista de jogadores quando um novo jogador entra ou sai do jogo
+Players.PlayerAdded:Connect(function(player)
+    Dropdown:Refresh(getPlayerNames())
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    Dropdown:Refresh(getPlayerNames())
+    if player.Name == selectedPlayerName then
+        selectedPlayerName = ""
+        followActive = false
+        if connection then
+            connection:Disconnect()
+            connection = nil
+        end
+        local ball = Workspace:FindFirstChild("SoccerBall")
+        if ball then
+            ball.Anchored = false
+        end
+    end
+end)
+
+-- Cria o Toggle para ativar/desativar o seguimento
+local Toggle = Tab5:Toggle({
+    Title = "Ativar Seguimento",
+    Desc = "Ativa ou desativa o seguimento da bola",
+    Value = false,
+    Callback = function(state)
+        followActive = state
+        if followActive then
+            if selectedPlayerName ~= "" then
+                followPlayer(selectedPlayerName)
+            else
+                warn("Nenhum jogador selecionado!")
+                followActive = false
+                Toggle:SetValue(false) -- Desativa o toggle se não houver jogador selecionado
+            end
+        else
+            -- Para o seguimento
+            if connection then
+                connection:Disconnect()
+                connection = nil
+            end
+            local ball = Workspace:FindFirstChild("SoccerBall")
+            if ball then
+                ball.Anchored = false
+            end
+        end
+    end
+})
+
+-- Atualiza a lista de jogadores inicialmente
+Dropdown:Refresh(getPlayerNames())
