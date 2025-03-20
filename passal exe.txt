@@ -7,7 +7,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 
 -- ubatuba
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.1", -- UI Title
+    Title = "Lolyta Hub 2.0", -- UI Title
     Icon = "door-open", -- Url or rbxassetid or lucide
     Author = "Lolycon666", -- Author & Creator
     Folder = "Lolyta hub v.1.0", -- Folder name for saving data (And key)
@@ -1594,10 +1594,20 @@ local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local selectedPlayerName = ""
 local followActive = false
 local connection
+
+-- Função para "pegar" a bola
+local function pickSoccerBall()
+    local args = {
+        [1] = "PickingTools",
+        [2] = "SoccerBall"
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
+end
 
 -- Função para encontrar um jogador pelo nome
 local function findPlayerByName(name)
@@ -1621,6 +1631,24 @@ local function moveBallToPlayer(ball, targetPosition, duration)
     tween.Completed:Wait() -- Espera até a transição terminar
 end
 
+-- Função para desativar a colisão da bola
+local function disableBallCollision(ball)
+    for _, part in pairs(ball:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+        end
+    end
+end
+
+-- Função para reativar a colisão da bola
+local function enableBallCollision(ball)
+    for _, part in pairs(ball:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = true
+        end
+    end
+end
+
 -- Função para fazer a bola seguir o jogador
 local function followPlayer(playerName)
     local player = findPlayerByName(playerName)
@@ -1629,15 +1657,27 @@ local function followPlayer(playerName)
         return
     end
 
-    local ball = Workspace:FindFirstChild("SoccerBall")
+    -- Pega a bola
+    pickSoccerBall()
+
+    -- Espera a bola aparecer no Workspace
+    local ball
+    local timeout = 5 -- Tempo máximo de espera (em segundos)
+    local startTime = tick()
+    while not ball and (tick() - startTime) < timeout do
+        ball = Workspace:FindFirstChild("SoccerBall")
+        if not ball then
+            wait(0.1) -- Espera um pouco antes de tentar novamente
+        end
+    end
+
     if not ball then
-        warn("Bola não encontrada no Workspace!")
+        warn("Bola não encontrada no Workspace após " .. timeout .. " segundos!")
         return
     end
 
     -- Define o PrimaryPart da bola, se necessário
     if not ball.PrimaryPart then
-        -- Tenta encontrar uma parte chamada "Handle" ou a primeira parte do modelo
         local handle = ball:FindFirstChild("Handle") or ball:FindFirstChildWhichIsA("BasePart")
         if handle then
             ball.PrimaryPart = handle
@@ -1646,6 +1686,9 @@ local function followPlayer(playerName)
             return
         end
     end
+
+    -- Desativa a colisão da bola para evitar interferências
+    disableBallCollision(ball)
 
     -- Move a bola até o jogador suavemente
     if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
@@ -1662,6 +1705,7 @@ local function followPlayer(playerName)
                 connection = nil
             end
             ball.Anchored = false -- Desancora a bola quando parar
+            enableBallCollision(ball) -- Reativa a colisão
             return
         end
 
@@ -1677,6 +1721,7 @@ local function followPlayer(playerName)
                 connection = nil
             end
             ball.Anchored = false
+            enableBallCollision(ball)
         end
     end)
 end
@@ -1723,6 +1768,7 @@ Players.PlayerRemoving:Connect(function(player)
         local ball = Workspace:FindFirstChild("SoccerBall")
         if ball then
             ball.Anchored = false
+            enableBallCollision(ball)
         end
     end
 end)
@@ -1751,6 +1797,7 @@ local Toggle = Tab5:Toggle({
             local ball = Workspace:FindFirstChild("SoccerBall")
             if ball then
                 ball.Anchored = false
+                enableBallCollision(ball)
             end
         end
     end
