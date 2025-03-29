@@ -1,1 +1,1622 @@
 
+-- brookhaven script teste funcionando beta
+
+-- Lista de usuários permitidos (adicione os nomes do Roblox que você quer permitir)
+local AllowedUsers = {
+    "BED1BAN_YT", -- Seu nome do Roblox
+    -- Adicione mais nomes aqui, por exemplo:
+    -- "outro_usuario",
+    -- "amigo123",
+}
+
+-- Verifica se o jogador atual está na lista de permitidos
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local PlayerName = LocalPlayer.Name
+local isAllowed = false
+
+for _, user in pairs(AllowedUsers) do
+    if user == PlayerName then
+        isAllowed = true
+        break
+    end
+end
+
+-- Se o jogador não estiver na lista, exibe mensagem de erro e encerra o script
+if not isAllowed then
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "Acesso Negado",
+        Text = "Você não tem permissão para usar o Lolyta Hub 2.0. Contate o criador para ser adicionado à lista.",
+        Duration = 5
+    })
+    return -- Encerra o script aqui
+end
+
+-- Se o jogador estiver permitido, continua carregando o hub
+local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
+
+local Version = "1.4.0"
+local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
+
+-- ubatuba
+local Window = WindUI:CreateWindow({
+    Title = "Lolyta Hub 2.1", -- UI Title
+    Icon = "door-open", -- Url or rbxassetid or lucide
+    Author = "Lolycon666", -- Author & Creator
+    Folder = "Lolyta hub v.1.0", -- Folder name for saving data (And key)
+    Size = UDim2.fromOffset(580, 460), -- UI Size
+    KeySystem = { -- Creates key system
+        Key = "666", -- key
+        Note = "pode nao man", -- Note
+        URL = "https://github.com/Footagesus/WindUI", -- URL To get key (example: Discord)
+        SaveKey = true, -- Saves the key in the folder specified above
+    }, 
+    Transparent = true,-- UI Transparency
+    Theme = "Dark", -- UI Theme
+    SideBarWidth = 200, -- UI Sidebar Width (number)
+    HasOutline = false, -- Adds Oultines to the window
+})
+
+
+Window:EditOpenButton({
+    Title = "Lolyta",
+    Icon = "car",  -- New icon
+    CornerRadius = UDim.new(0,10),
+    StrokeThickness = 3,
+    Color = ColorSequence.new(
+        Color3.fromHex("FF0F7B"), 
+        Color3.fromHex("F89B29")
+    )
+})
+
+
+local Tab1 = Window:Tab({
+    Title = "Main",
+    Icon = "house", -- lucide or rbxassetid
+})
+
+local Tab2 = Window:Tab({
+    Title = "troll musica",
+    Icon = "music", -- lucide or rbxassetid
+})
+
+local Tab3 = Window:Tab({
+    Title = "music all",
+    Icon = "audio-lines", -- lucide or rbxassetid
+})
+
+local Tab4 = Window:Tab({
+    Title = "scripts",
+    Icon = "layers", -- lucide or rbxassetid
+})
+
+local Tab5 = Window:Tab({
+    Title = "playes",
+    Icon = "user", -- lucide or rbxassetid
+})
+
+
+
+local Button = Tab1:Button({
+    Title = "ser desbanido do voice!!!! so funciona se tiver acabado de ser banido",
+    Desc = "universal",
+    Callback = function()
+    game:GetService("VoiceChatService"):joinVoice()
+    end,
+})
+
+local Button = Tab1:Button({
+    Title = "voltar tamanho normal sise 1",
+    Desc = "brookhaven",
+    Callback = function()
+        local args = {
+            [1] = "CharacterSizeUp",
+            [2] = 1
+        }
+        
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer(unpack(args))
+    end,
+})
+
+
+local Button = Tab1:Button({
+    Title = "invisivel sise 4",
+    Desc = "brookhaven",
+    Callback = function()
+        local args = {
+            [1] = "CharacterSizeDown",
+            [2] = 4
+        }
+        
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer(unpack(args))
+    end,
+})
+
+local Button = Tab1:Button({
+    Title = "pegar sofá",
+    Desc = "brookhaven",
+    Callback = function()
+        local args = {
+    [1] = "PickingTools",
+    [2] = "Couch"
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
+            
+    end,
+})
+
+local Button = Tab1:Button({
+    Title = "TP ALL",
+    Desc = "telebporte para todos os players",
+    Callback = function()
+        local startingPosition = game.Players.LocalPlayer.Character:GetPrimaryPartCFrame()
+        local players = game.Players:GetPlayers()
+        for i, player in ipairs(players) do
+            if player ~= game.Players.LocalPlayer then
+                game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(player.Character:GetPrimaryPartCFrame())
+                wait(1)
+            end
+        end
+        game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(startingPosition)
+    end,
+})
+
+local Toggle = Tab1:Toggle({
+    Title = "ESP",
+    Desc = "para visualizar jogadores",
+    Value = false,
+    Callback = function(state)
+        local Players = game:GetService("Players")
+        local RunService = game:GetService("RunService")
+        local LocalPlayer = Players.LocalPlayer
+
+        -- Função para calcular a idade da conta em dias
+        local function getAccountAge(player)
+            return player.AccountAge -- Retorna o número de dias desde a criação da conta
+        end
+
+        -- Função para criar ESP para cada jogador
+        local function createESP(player)
+            if player == LocalPlayer then return end -- Ignorar o próprio jogador
+            local character = player.Character or player.CharacterAdded:Wait()
+            local head = character:WaitForChild("Head")
+            
+            -- Criar BillboardGui para mostrar informações
+            local billboard = Instance.new("BillboardGui", head)
+            billboard.Adornee = head
+            billboard.Size = UDim2.new(0, 200, 0, 50)
+            billboard.StudsOffset = Vector3.new(0, 3, 0)
+            billboard.AlwaysOnTop = true
+
+            -- Criar Label para exibir o texto
+            local textLabel = Instance.new("TextLabel", billboard)
+            textLabel.Size = UDim2.new(1, 0, 1, 0)
+            textLabel.BackgroundTransparency = 1
+            textLabel.TextColor3 = Color3.new(1, 1, 1)
+            textLabel.TextStrokeTransparency = 0.5
+            textLabel.Font = Enum.Font.SourceSansBold
+            textLabel.TextSize = 14
+
+            -- Atualizar texto com o nome do jogador e a idade da conta (em dias)
+            local accountAge = getAccountAge(player)
+            textLabel.Text = player.Name .. " | " .. accountAge .. " dias"
+        end
+
+        -- Aplicar ESP a todos os jogadores atuais
+        if state then
+            for _, player in pairs(Players:GetPlayers()) do
+                createESP(player)
+            end
+
+
+            -- Adicionar ESP para novos jogadores que entrarem
+            Players.PlayerAdded:Connect(function(player)
+                player.CharacterAdded:Connect(function()
+                    createESP(player)
+                end)
+            end)
+        else
+            -- Remover ESP de todos os jogadores
+            for _, player in pairs(Players:GetPlayers()) do
+                if player.Character and player.Character:FindFirstChild("Head") then
+                    local billboard = player.Character.Head:FindFirstChild("BillboardGui")
+                    if billboard then
+                        billboard:Destroy()
+                    end
+                end
+            end
+
+            -- Desconectar os eventos de PlayerAdded e CharacterAdded
+            Players.PlayerAdded:Disconnect()
+            for _, player in pairs(Players:GetPlayers()) do
+                player.CharacterAdded:Disconnect()
+            end
+        end
+    end,
+})
+
+
+local Dropdown = Tab1:Dropdown({
+    Title = "Permissions",
+    Desc = "Permission options",
+    Value = "Option 1",
+    Multi = false,
+    AllowNone = true,
+    Values = {
+        "Option 1", "Option 2", "Option 3", "Option 4", "Option 5", "Option 6", "Option 7", "Option 8", "Option 9", "Option 10", "Option 11", "Option 12", "Option 13", "Option 14", "Option 15", "Option 16", "Option 17", "Option 18", "Option 19", "Option 20", "Option 21", "Option 22", "Option 23", "Option 24", "Option 25", "Option 26", "Option 27", "Option 28", "Option 29", "Option 30", "Option 31", "Option 32", "Option 33", "Option 34", "Option 35"
+    },
+    Callback = function(Tab)
+        if Tab == "Option 1" then
+           local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 1
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 2" then
+           local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 2
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 3" then
+           local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 3
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 4" then
+           local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 4
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 5" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 5
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 6" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 6
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 7" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 7
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 8" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 8
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 9" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 9
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 10" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 10
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 11" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 11
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 12" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 12
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 13" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 13
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 14" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 14
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 15" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 15
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 16" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 16
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 17" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 17
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 18" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 18
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 19" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 19
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 20" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 20
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 21" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 21
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 22" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 22
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 23" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 23
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 24" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 24
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 25" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 25
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 26" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 26
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 27" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 27
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 28" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 28
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 29" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 29
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 30" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 30
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 31" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 31
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 32" then
+           local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 32
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 33" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 33
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 34" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 34
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        elseif Tab == "Option 35" then
+            local args = {
+    [1] = "GivePermissionLoopToServer",
+    [2] = game:GetService("Players").LocalPlayer,
+    [3] = 35
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        end
+    end
+})
+
+local Paragraph = Tab1:Paragraph({
+    Title = "jogador",
+    Desc = "",
+})
+
+local Slider = Tab1:Slider({
+    Title = "super velocidade",
+    Step = 1,
+    Value = {
+        Min = 1,
+        Max = 300,
+        Default = 70,
+    },
+    Callback = function(value)
+        -- Define a velocidade do personagem com base no valor do slider
+        local player = game.Players.LocalPlayer
+        if player and player.Character and player.Character:FindFirstChild("Humanoid") then
+            player.Character.Humanoid.WalkSpeed = value
+        end
+    end
+})
+
+local Slider = Tab1:Slider({
+    Title = "super pulo",
+    Step = 1,
+    Value = {
+        Min = 1,
+        Max = 300,
+        Default = 70,
+    },
+    Callback = function(value)
+        -- Define a altura do salto do personagem com base no valor do slider
+        local player = game.Players.LocalPlayer
+        if player and player.Character and player.Character:FindFirstChild("Humanoid") then
+            player.Character.Humanoid.JumpPower = value
+        end
+    end
+})
+
+
+--scripts tab2 abaixo acima somente scripts tab1
+local Paragraph = Tab2:Paragraph({
+    Title = "precisa da gamepass",
+    Desc = "gamepass música",
+})
+
+local Paragraph = Tab2:Paragraph({
+    Title = "so funciona em veículos do tip over board",
+    Desc = "",
+})
+
+local Dropdown = Tab2:Dropdown({
+    Title = "funk,phonk,mtg",
+    Desc = "over board",
+    Value = "Option 1",
+    Multi = false,
+    AllowNone = true,
+    Values = {
+         "musica brasil","77501611905348","77212776812241","126887144190812","88033569921555","132436320685732","105832154444494","92893359226454","90323407842935","132245626038510",
+        "111995323199676","86354476776559","81854768837868","115016589376700","118740708757685","139435437308948",
+        "109189438638906","138415155024226","105126065014034","102919095332206","132245626038510","97765714111493",
+        "100788814736643","72720721570850","138487820505005","87968531262747","","111281710445018","106317184644394",
+        "musica do  meu interece","77212776812241","123592956882621","108494476595033","106835463235574","123723674864058","112068892721408", "musica dls por elas","91760524161503",
+        "73140398421340","86012716607673","137962454483542",
+        "84733736048142","78482061425700","106322173003761","94604796823780", "118063577904953","115567432786512", "71304501822029",
+        "132218979961283","102708912256857","140642559093189","13530439660",
+        "87863924786534","133135085604736","97258811783169","92308400487695",
+        "104635713368149","88064647826500","85385155970460","122871512353520",
+        "122852029094656","115016589376700","meme abaixo","94395705857835","136804576009416",
+        "108494476595033","131804436682424","80291355054807","137774355552052","127944706557246","82284055473737","102906880476838",
+        "91502410121438","","81694110949920","estourada","92175624643620","108099943758978"
+    },
+    Callback = function(selectedValue)
+        local args = {
+            [1] = "PickingScooterMusicText",
+            [2] = selectedValue
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
+        print("Argumentos enviados: " .. selectedValue)
+    end
+})
+
+local Dropdown = Tab2:Dropdown({
+    Title = "musica normal",
+    Desc = "over boad",
+    Value = "Option 1",
+    Multi = false,
+    AllowNone = true,
+    Values = {
+        "82406276148517", "129569692779816", "84584808135615", "131116056080033", "119540502924273",
+        "75244543048318", "85439942763713","97001593161206","122473498105749"
+    },
+    Callback = function(selectedValue)
+        local args = {
+            [1] = "PickingScooterMusicText",
+            [2] = selectedValue
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
+        print("Argumentos enviados: " .. selectedValue)
+    end
+})
+
+local Dropdown = Tab2:Dropdown({
+    Title = "meme musica",
+    Desc = "over board",
+    Value = "Option 1",
+    Multi = false,
+    AllowNone = true,
+    Values = {
+        "115199984575713", "71765861754044", "82161110448949", "139639579473440", "92212156099339",
+        "86855540619546", "128027832969902", "118785260057094", "72735474016817", "72739838426009"
+    },
+    Callback = function(selectedValue)
+        local args = {
+            [1] = "PickingScooterMusicText",
+            [2] = selectedValue
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
+        print("Argumentos enviados: " .. selectedValue)
+    end
+})
+
+local Dropdown = Tab2:Dropdown({
+    Title = "terror asustar",
+    Desc = "over board",
+    Value = "Option 1",
+    Multi = false,
+    AllowNone = true,
+    Values = {
+        "72624476289253", "116709209733976", "99430297570707", "102348131944238", "125199445385812",
+        "73562744560566", "106975887314345", "100497166902775", "77874596719163", "83764626839857",
+        "132027370834826"
+    },
+    Callback = function(selectedValue)
+        local args = {
+            [1] = "PickingScooterMusicText",
+            [2] = selectedValue
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
+        print("Argumentos enviados: " .. selectedValue)
+    end
+})
+
+local Dropdown = Tab2:Dropdown({
+    Title = "miside,mita",
+    Desc = "over board",
+    Value = "Option 1",
+    Multi = false,
+    AllowNone = true,
+    Values = {
+        "112170504958980", "106013565624854", "104676632588868", "113222738822583","98552734554697"
+        
+    },
+    Callback = function(selectedValue)
+        local args = {
+            [1] = "PickingScooterMusicText",
+            [2] = selectedValue
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
+        print("Argumentos enviados: " .. selectedValue)
+    end
+})
+
+local Button = Tab2:Button({
+    Title = "STOP",
+    Desc = "stop music",
+    Callback = function()
+        local args = {
+    [1] = "PickingScooterMusicText",
+    [2] = ""
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
+    end,
+})
+
+
+local Button = Tab2:Button({
+    Title = "telefone fnaf",
+    Desc = "fnaf",
+    Callback = function()
+        local args = {
+    [1] = "PickingScooterMusicText",
+    [2] = "4835346587"
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
+    end,
+})
+
+local Button = Tab2:Button({
+    Title = "HELOU HAY AHAHAHA",
+    Desc = "fnaf",
+    Callback = function()
+        local args = {
+    [1] = "PickingScooterMusicText",
+    [2] = "5608077885"
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
+    end,
+})
+
+local Button = Tab2:Button({
+    Title = "grito ohor",
+    Desc = "fnaf",
+    Callback = function()
+        local args = {
+    [1] = "PickingScooterMusicText",
+    [2] = "268116333"
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
+    end,
+})
+
+
+local Button = Tab2:Button({
+    Title = "risado doida",
+    Desc = "load meme",
+    Callback = function()
+        local args = {
+    [1] = "PickingScooterMusicText",
+    [2] = "7752143456"
+}
+
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(args))
+    end,
+})
+
+local Paragraph = Tab2:Paragraph({
+    Title = "carro musica",
+    Desc = "gamepass música",
+})
+
+local Paragraph = Tab2:Paragraph({
+    Title = "precisa da gamepass",
+    Desc = "",
+})
+
+local Dropdown = Tab2:Dropdown({
+    Title = "selecionar musica",
+    Desc = "musica",
+    Value = "Option 1",
+    Multi = false,
+    AllowNone = true,
+    Values = {
+         "musica brasil","77501611905348","77212776812241","126887144190812","88033569921555","132436320685732","105832154444494","92893359226454","90323407842935","132245626038510",
+         "111995323199676","86354476776559","81854768837868","115016589376700","118740708757685","139435437308948",
+         "109189438638906","138415155024226","105126065014034","102919095332206","132245626038510","97765714111493",
+         "100788814736643","72720721570850","138487820505005","87968531262747","","111281710445018","106317184644394",
+         "musica do  meu interece","77212776812241","123592956882621","108494476595033","106835463235574","123723674864058","112068892721408", "musica dls por elas","91760524161503",
+         "73140398421340","86012716607673","137962454483542",
+         "84733736048142","78482061425700","106322173003761","94604796823780", "118063577904953","115567432786512", "71304501822029",
+         "132218979961283","102708912256857","140642559093189","13530439660",
+         "87863924786534","133135085604736","97258811783169","92308400487695",
+         "104635713368149","88064647826500","85385155970460","122871512353520",
+         "122852029094656","115016589376700","meme abaixo","94395705857835","136804576009416",
+         "108494476595033","131804436682424","80291355054807","137774355552052","127944706557246","82284055473737","102906880476838",
+         "91502410121438","","81694110949920","estourada","92175624643620","108099943758978"
+    },
+    Callback = function(selectedValue)
+        local args = {
+            [1] = "PickingCarMusicText",
+            [2] = selectedValue
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
+        print("Argumentos enviados: " .. selectedValue)
+    end
+})
+
+
+-- Criar o input
+local Input = Tab2:Input({
+    Title = "musica",
+    Desc = "colocar o nome da musica",
+    Value = "",
+    PlaceholderText = "Enter your message...",
+    ClearTextOnFocus = false,
+    Callback = function(Text)
+        updateMusicId(Text)
+    end
+})
+
+Input:SetTitle("New Title!")
+Input:SetDesc("New Description!")
+
+-- Definir a função de callback para atualizar o MusicID
+function updateMusicId(text)
+    local args = {
+        [1] = "PickingCarMusicText",
+        [2] = text
+    }
+    game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
+end
+
+local Button = Tab2:Button({
+    Title = "stop",
+    Desc = "car music",
+    Callback = function()
+        local args = {
+            [1] = "PickingCarMusicText",
+            [2] = ""
+        }
+        
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
+    end,
+})
+
+--scripts tab3 abaixo acima somente scripts tab2
+-----------------------------------------------------------------------------------
+-- Variável para controlar o loop
+local loopAtivo = false
+
+-- Criação do Input para inserir o ID
+local InputID = ""
+local Input = Tab3:Input({
+    Title = "incira o id audio all",
+    Desc = "Digite o ID do som que deseja tocar",
+    Value = "",
+    PlaceholderText = "Exemplo: 6832470734",
+    ClearTextOnFocus = true,
+    Callback = function(Text)
+        -- Atualiza o valor do ID inserido
+        InputID = tonumber(Text) -- Converte o texto para número
+        if not InputID then
+            warn("Por favor, insira um ID válido!")
+        end
+    end
+})
+
+-- Criação do Botão para tocar o som
+local Button = Tab3:Button({
+    Title = "Tocar Som",
+    Desc = "Clique para tocar a música inserida",
+    Callback = function()
+        if InputID then
+            -- Toca o som para o servidor
+            local args = {
+                [1] = workspace,
+                [2] = InputID,
+                [3] = 1
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Gu1nSound1s"):FireServer(unpack(args))
+
+            -- Toca o som globalmente para você
+            local globalSound = Instance.new("Sound", workspace)
+            globalSound.SoundId = "rbxassetid://" .. InputID
+            globalSound.Looped = false
+            globalSound:Play()
+            task.wait(3) -- Reproduz por 3 segundos
+            globalSound:Destroy()
+        else
+            warn("Nenhum ID válido foi inserido!")
+        end
+    end
+})
+
+-- Criação do Toggle para ativar/desativar o loop
+local Toggle = Tab3:Toggle({
+    Title = "Loop",
+    Desc = "Ative para colocar o som em loop",
+    Icon = "check",
+    Value = false,
+    Callback = function(state)
+        loopAtivo = state -- Atualiza o estado do loop
+        if loopAtivo then
+            print("Loop ativado!")
+            -- Inicia o loop
+            while loopAtivo do
+                if InputID then
+                    -- Toca o som para o servidor
+                    local args = {
+                        [1] = workspace,
+                        [2] = InputID,
+                        [3] = 1
+                    }
+                    game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Gu1nSound1s"):FireServer(unpack(args))
+
+                    -- Toca o som globalmente para você
+                    local globalSound = Instance.new("Sound", workspace)
+                    globalSound.SoundId = "rbxassetid://" .. InputID
+                    globalSound.Looped = false
+                    globalSound:Play()
+                    task.wait(3) -- Espera 3 segundos antes de continuar o loop
+                    globalSound:Destroy()
+                else
+                    warn("Nenhum ID válido foi inserido!")
+                end
+            end
+        else
+            print("Loop desativado!")
+        end
+    end
+})
+
+----------------------------------------------------------------------------------
+
+-- Variável para controlar o loop
+local loopAtivo = false
+
+-- Criação do Dropdown para selecionar a música
+local Dropdown = Tab3:Dropdown({ 
+    Title = "Selecione uma música",
+    Desc = "Escolha o som para tocar no servidor",
+    Value = "Som 1",
+    Multi = false,
+    AllowNone = true,
+    Values = {
+        "pankapakan", "gritomedo", "metal", "araara", "tiro", "jumpscar", "gemido", "sometourado", "gritodoido", "off", "Hahahah", "Carropeid", "Error", "Estouradoespad", "Chernobyl1", "Chernobyl5", "Radioxiado", "Nukesiren", "Sirenhead", "Alertescola", "Memealert", "Alerta3S"
+    },
+    Callback = function(SomSelecionado)
+        -- IDs das músicas correspondentes
+        local musicIDs = {
+            ["pankapakan"] = 122547522269143,
+            ["gritomedo"] = 113029085566978,
+            ["metal"] = 71251935617451,
+            ["araara"] = 18388861760,
+            ["tiro"] = 104223019424522,
+            ["jumpscar"] = 91784486966761,
+            ["gemido"] = 106835463235574,
+            ["sometourado"] = 123592956882621,
+            ["gritodoido"] = 7807987190,
+            ["off"] = 1778829098,
+            ["Hahahah"] = 90096947219465,
+            ["Carropeid"] = 88883922248256,
+            ["Error"] = 101446887200514,
+            ["Estouradoespad"] = 136179020015211,
+            ["Chernobyl1"] = 134433437151072,
+            ["Chernobyl5"] = 101927395686044,
+            ["Radioorror"] = 3200130016,
+            ["Radioxiado"] = 8028069841,
+            ["Nukesiren"] = 9067330158,
+            ["Sirenhead"] = 5681392074,
+            ["Alertescola"] = 6607047008,
+            ["Memealert"] = 8379374771,
+            ["Alerta3S"] = 402404861
+        }
+
+        local selectedID = musicIDs[SomSelecionado]
+
+        if selectedID then
+            -- Toca o som para o servidor
+            local args = {
+                [1] = workspace,
+                [2] = selectedID,
+                [3] = 1
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Gu1nSound1s"):FireServer(unpack(args))
+
+            -- Toca o som globalmente para você
+            local globalSound = Instance.new("Sound", workspace)
+            globalSound.SoundId = "rbxassetid://" .. selectedID
+            globalSound.Looped = false
+            globalSound:Play()
+            task.wait(3) -- Reproduz por 3 segundos
+            globalSound:Destroy()
+        else
+            warn("ID da música não encontrado!")
+        end
+    end
+})
+
+-- Criação do Toggle para ativar/desativar o loop
+local Toggle = Tab3:Toggle({
+    Title = "Loop",
+    Desc = "Ative para colocar o som em loop",
+    Icon = "check",
+    Value = false,
+    Callback = function(state)
+        loopAtivo = state -- Atualiza o estado do loop
+        if loopAtivo then
+            print("Loop ativado!")
+            -- Inicia o loop
+            while loopAtivo do
+                -- Verifica a música atualmente selecionada no Dropdown
+                local musicIDs = {
+                    ["Som 1"] = 6832470734,
+                    ["Som 2"] = 1778829098,
+                    ["Som 3"] = 7807987190,
+                    ["Som 4"] = 123592956882621
+                }
+
+                local selectedID = musicIDs[Dropdown.Value]
+
+                if selectedID then
+                    -- Toca o som para o servidor
+                    local args = {
+                        [1] = workspace,
+                        [2] = selectedID,
+                        [3] = 1
+                    }
+                    game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Gu1nSound1s"):FireServer(unpack(args))
+
+                    -- Toca o som globalmente para você
+                    local globalSound = Instance.new("Sound", workspace)
+                    globalSound.SoundId = "rbxassetid://" .. selectedID
+                    globalSound.Looped = false
+                    globalSound:Play()
+                    task.wait(3) -- Espera 3 segundos antes de continuar o loop
+                    globalSound:Destroy()
+                else
+                    warn("ID da música não encontrado!")
+                end
+            end
+        else
+            print("Loop desativado!")
+        end
+    end
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--scripts tab4 abaixo acima somente scripts tab3
+
+local Button = Tab4:Button({
+    Title = "invisible,system brook. ynfinite yeld",
+    Desc = "mic up,universal",
+    Callback = function()
+    loadstring(game:HttpGet("https://scriptblox.com/raw/Universal-Script-fe-invisible-4366"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/H20CalibreYT/SystemBroken/main/script"))()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
+loadstring(game:HttpGet('https://pastebin.com/raw/3Rnd9rHf'))()
+    end,
+})
+
+local Button = Tab4:Button({
+    Title = "FE jerk off hub matrix",
+    Desc = "universal",
+    Callback = function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ExploitFin/AquaMatrix/refs/heads/AquaMatrix/AquaMatrix"))()
+    end,
+})
+
+local Button = Tab4:Button({
+    Title = "FE HUGG",
+    Desc = "universal",
+    Callback = function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/JSFKGBASDJKHIOAFHDGHIUODSGBJKLFGDKSB/fe/refs/heads/main/FEHUGG"))()
+    end,
+})
+
+local Button = Tab4:Button({
+    Title = "auto piano panda hub",
+    Desc = "universal",
+    Callback = function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/MADNESSTEST/Pqoeirnfjw/main/AP3-5.lua", true))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Sgesa/RandomCatsAutoplay/main/Protected_1274635038188005.lua.txt", true))()
+    end,
+})
+
+local Button = Tab4:Button({
+    Title = "shadown hub",
+    Desc = "brookhaven",
+    Callback = function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/realgengar/Brookhaven/refs/heads/main/Source.lua"))()
+    end,
+})
+
+local Button = Tab4:Button({
+    Title = "chaos hub",
+    Desc = "brookhaven",
+    Callback = function()
+    loadstring(game:HttpGet("https://pastebin.com/raw/58jNvV3h"))()
+    end,
+})
+
+local Button = Tab4:Button({
+    Title = "buraco negro",
+    Desc = "universal",
+    Callback = function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Bac0nHck/Scripts/main/BringFlingPlayers"))("More Scripts: t.me/arceusxscripts")
+    end,
+})
+
+local Button = Tab4:Button({
+    Title = "sistem broochk",
+    Desc = "universal",
+    Callback = function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/H20CalibreYT/SystemBroken/main/script"))()
+    end,
+})
+
+local Button = Tab4:Button({
+    Title = "roships",
+    Desc = "universal",
+    Callback = function()
+    loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-rochips-universal-18294"))()
+    end,
+})
+
+local Button = Tab4:Button({
+    Title = "sander x",
+    Desc = "somente para brookhaven",
+    Callback = function()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/kigredns/SanderXV4.2.2/refs/heads/main/New.lua'))() 
+    end,
+})
+
+local Button = Tab4:Button({
+    Title = "reverso",
+    Desc = "universal",
+    Callback = function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/0Ben1/fe./main/L"))()
+    end,
+})
+
+local Button = Tab4:Button({
+    Title = "RD4",
+    Desc = "somente para brookhaven",
+    Callback = function()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/M1ZZ001/BrookhavenR4D/main/Brookhaven%20R4D%20Script'))()
+    end,
+})
+
+--scripts tab5 abaixo acima somente scripts tab4
+
+-----------------------------------------------------------------------------------------------------
+-- Função para atualizar o dropdown com a lista de jogadores
+local function updateDropdown(dropdown)
+    local players = game.Players:GetPlayers()
+    local playerNames = {}
+    for _, player in ipairs(players) do
+        table.insert(playerNames, player.Name)
+    end
+
+    dropdown:Refresh(playerNames)
+end
+
+-- Função para teletransportar para o jogador
+local function teleportToPlayer(playerName)
+    local player = game.Players.LocalPlayer
+    local targetPlayer = game.Players:FindFirstChild(playerName)
+    
+    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local targetPos = targetPlayer.Character.HumanoidRootPart.Position
+        player.Character:SetPrimaryPartCFrame(CFrame.new(targetPos))
+        print("Teletransportado para o jogador: " .. playerName)
+    else
+        print("Jogador não encontrado.")
+    end
+end
+
+-- Cria o dropdown para selecionar o jogador
+local Dropdown = Tab5:Dropdown({
+    Title = "Selecionar Jogador",
+    Desc = "Selecione o jogador para teletransportar",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = {},
+    Callback = function(selectedPlayerName)
+        print("Jogador selecionado: " .. selectedPlayerName)
+    end
+})
+
+-- Atualiza o dropdown com a lista de jogadores ao iniciar
+updateDropdown(Dropdown)
+
+-- Atualiza o dropdown quando um jogador entra ou sai do jogo
+game.Players.PlayerAdded:Connect(function()
+    updateDropdown(Dropdown)
+end)
+
+game.Players.PlayerRemoving:Connect(function()
+    updateDropdown(Dropdown)
+end)
+
+-- Cria o botão para teletransportar para o jogador
+local Button = Tab5:Button({
+    Title = "Teleportar para Jogador",
+    Desc = "Clique para teletransportar para o jogador selecionado",
+    Callback = function()
+        local selectedPlayerName = Dropdown.Value
+        teleportToPlayer(selectedPlayerName)
+    end,
+})
+
+
+-- acima um script de teleportar para o jogadores
+---------------------------------------------------------------------------------------------------------------
+-- Função para atualizar o dropdown com a lista de jogadores
+local function updateDropdown(dropdown)
+    local players = game.Players:GetPlayers()
+    local playerNames = {}
+    for _, player in ipairs(players) do
+        table.insert(playerNames, player.Name)
+    end
+
+    dropdown:Refresh(playerNames)
+end
+
+-- Função para espectar o jogador
+local function spectatePlayer(playerName)
+    local targetPlayer = game.Players:FindFirstChild(playerName)
+
+    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Humanoid") then
+        workspace.CurrentCamera.CameraSubject = targetPlayer.Character.Humanoid
+        print("Espectando jogador: " .. targetPlayer.Name)
+    else
+        print("Jogador não encontrado.")
+    end
+end
+
+-- Função para parar de espectar o jogador e voltar à visão do jogador local
+local function stopSpectating()
+    local player = game.Players.LocalPlayer
+    if player and player.Character and player.Character:FindFirstChild("Humanoid") then
+        workspace.CurrentCamera.CameraSubject = player.Character.Humanoid
+        print("Parando de espectar. Voltando à visão do jogador local.")
+    end
+end
+
+-- Cria o dropdown para selecionar o jogador
+local Dropdown = Tab5:Dropdown({
+    Title = "Selecionar Jogador",
+    Desc = "Selecione o jogador para espectar",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = {},
+    Callback = function(selectedPlayerName)
+        print("Jogador selecionado: " .. selectedPlayerName)
+    end
+})
+
+-- Atualiza o dropdown com a lista de jogadores ao iniciar
+updateDropdown(Dropdown)
+
+-- Atualiza o dropdown quando um jogador entra ou sai do jogo
+game.Players.PlayerAdded:Connect(function()
+    updateDropdown(Dropdown)
+end)
+
+game.Players.PlayerRemoving:Connect(function()
+    updateDropdown(Dropdown)
+end)
+
+-- Cria o toggle para espectar o jogador
+local Toggle = Tab5:Toggle({
+    Title = "Espectar Jogador",
+    Desc = "Ativar/Desativar espectar o jogador selecionado",
+    Value = false,
+    Callback = function(state)
+        local selectedPlayerName = Dropdown.Value
+        if state then
+            spectatePlayer(selectedPlayerName)
+        else
+            stopSpectating()
+        end
+    end,
+})
+
+
+---------------------------------------------------------------------------------------
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+
+local selectedPlayerName = ""
+local originalPosition = nil
+
+-- Função para encontrar o carro do jogador
+local function getPlayerCar(player)
+    local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
+    if vehiclesFolder then
+        for _, vehicle in pairs(vehiclesFolder:GetChildren()) do
+            if vehicle:IsA("Model") and vehicle:FindFirstChild("Owner") then
+                local owner = vehicle:FindFirstChild("Owner").Value
+                if owner == player.Name then
+                    return vehicle
+                end
+            end
+        end
+    end
+    return nil
+end
+
+-- Função para encontrar um jogador pelo nome
+local function findPlayerByName(name)
+    for _, player in pairs(Players:GetPlayers()) do
+        if player.Name:lower():find(name:lower()) then
+            return player
+        end
+    end
+    return nil
+end
+
+-- Função para teleportar e girar o carro do jogador
+local function teleportAndSpinCar(car, targetPlayer)
+    local spin = true
+    local direction = 1
+    RunService.Stepped:Connect(function()
+        if not spin then
+            return
+        end
+        
+        -- Gira o carro rapidamente para dar backflips
+        car:SetPrimaryPartCFrame(car:GetPrimaryPartCFrame() * CFrame.Angles(math.rad(45 * direction), 0, 0))
+        direction = -direction
+        
+        -- Move o carro para a posição do jogador (pé do jogador)
+        if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local targetPosition = targetPlayer.Character.HumanoidRootPart.Position - Vector3.new(0, 3, 0)
+            local forceDirection = Vector3.new(0, 5000, 0) -- Joga o jogador o mais alto possível
+            car:SetPrimaryPartCFrame(CFrame.new(targetPosition))
+            car.PrimaryPart:ApplyImpulse(forceDirection)
+        end
+    end)
+    
+    -- Detecta quando o jogador entra no carro e para de girar
+    car.ChildAdded:Connect(function(child)
+        if child:IsA("Seat") and child.Occupant then
+            spin = false
+            car:SetPrimaryPartCFrame(CFrame.new(originalPosition))
+        end
+    end)
+end
+
+-- Função para executar o teletransporte do carro do jogador
+local function teleportPlayerCar(playerName)
+    local player = findPlayerByName(playerName)
+    if not player then
+        warn("Jogador não encontrado: " .. playerName)
+        return
+    end
+
+    local car = getPlayerCar(Players.LocalPlayer)
+    if not car then
+        warn("Nenhum carro encontrado para o jogador " .. Players.LocalPlayer.Name)
+        return
+    end
+
+    -- Define o PrimaryPart do carro, se necessário
+    if not car.PrimaryPart then
+        local body = car:FindFirstChild("Body")
+        if body then
+            car.PrimaryPart = body
+        else
+            warn("O carro não tem um PrimaryPart válido!")
+            return
+        end
+    end
+
+    teleportAndSpinCar(car, player)
+end
+
+-- Função para atualizar o dropdown com a lista de jogadores
+local function getPlayerNames()
+    local playerNames = {}
+    for _, player in pairs(Players:GetPlayers()) do
+        table.insert(playerNames, player.Name)
+    end
+    return playerNames
+end
+
+local Dropdown = Tab5:Dropdown({
+    Title = "Selecionar Jogador",
+    Desc = "Selecione um jogador para teleportar o carro",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = getPlayerNames(),
+    Callback = function(Tab)
+        selectedPlayerName = Tab
+        print("Jogador selecionado: " .. selectedPlayerName)
+    end
+})
+
+-- Atualiza a lista de jogadores quando um novo jogador entra ou sai do jogo
+Players.PlayerAdded:Connect(function(player)
+    Dropdown:Refresh(getPlayerNames())
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    Dropdown:Refresh(getPlayerNames())
+end)
+
+local Toggle = Tab5:Toggle({
+    Title = "Ativar Teletransporte",
+    Desc = "Ativa ou desativa o teletransporte do carro",
+    Value = false,
+    Callback = function(state)
+        if state and selectedPlayerName ~= "" then
+            teleportPlayerCar(selectedPlayerName)
+        end
+    end
+})
+
+-- Atualiza a lista de jogadores inicialmente
+Dropdown:Refresh(getPlayerNames())
+
+
+
+--------------------------------------------------------------------------------------
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local selectedPlayerName = ""
+local teleportActive = false
+local connection
+
+-- Função para encontrar o carro do jogador
+local function getPlayerCar(player)
+    local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
+    if vehiclesFolder then
+        for _, vehicle in pairs(vehiclesFolder:GetChildren()) do
+            if vehicle:IsA("Model") and vehicle:FindFirstChild("Owner") then
+                local owner = vehicle:FindFirstChild("Owner").Value
+                if owner == player.Name then
+                    return vehicle
+                end
+            end
+        end
+    end
+    return nil
+end
+
+-- Função para encontrar um jogador pelo nome
+local function findPlayerByName(name)
+    for _, player in pairs(Players:GetPlayers()) do
+        if player.Name:lower():find(name:lower()) then
+            return player
+        end
+    end
+    return nil
+end
+
+-- Função para teleportar e girar o carro do jogador
+local function teleportAndSpinCar(car, targetPlayer)
+    local direction = 1
+    connection = RunService.Stepped:Connect(function()
+        if not teleportActive then
+            if connection then
+                connection:Disconnect()
+                connection = nil
+            end
+            return
+        end
+
+        -- Remove a colisão do carro
+        car.PrimaryPart.CanCollide = false
+
+        -- Gira o carro rapidamente para dar backflips
+        car:SetPrimaryPartCFrame(car:GetPrimaryPartCFrame() * CFrame.Angles(math.rad(45), 0, 0))
+
+        -- Move o carro para a posição do jogador (barriga do jogador) e puxa o jogador para baixo
+        if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local targetPosition = targetPlayer.Character.HumanoidRootPart.Position - Vector3.new(0, 3, 0)
+            car:SetPrimaryPartCFrame(CFrame.new(targetPosition))
+        end
+    end)
+end
+
+-- Função para executar o teletransporte do carro do jogador
+local function teleportPlayerCar(playerName)
+    local player = findPlayerByName(playerName)
+    if not player then
+        warn("Jogador não encontrado: " .. playerName)
+        return
+    end
+
+    local car = getPlayerCar(Players.LocalPlayer)
+    if not car then
+        warn("Nenhum carro encontrado para o jogador " .. Players.LocalPlayer.Name)
+        return
+    end
+
+    -- Define o PrimaryPart do carro, se necessário
+    if not car.PrimaryPart then
+        local body = car:FindFirstChild("Body")
+        if body then
+            car.PrimaryPart = body
+        else
+            warn("O carro não tem um PrimaryPart válido!")
+            return
+        end
+    end
+
+    teleportAndSpinCar(car, player)
+end
+
+-- Função para teletransportar o jogador para uma posição específica
+local function teleportPlayerToPosition(position)
+    if Players.LocalPlayer.Character and Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(position)
+    end
+end
+
+-- Função para pegar o carro
+local function pickCar()
+    local args = {
+        [1] = "PickingCar",
+        [2] = "SchoolBus"
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
+end
+
+-- Função para deletar todos os veículos
+local function deleteAllVehicles()
+    local args = {
+        [1] = "DeleteAllVehicles"
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
+end
+
+-- Função para sentar no banco do motorista
+local function sitInDriverSeat()
+    local seatCFrame = CFrame.new(1132.72314, 75.6949005, -1072.46082, -0.0132326381, -3.16897822e-05, 0.999912441, 0.00264345924, 0.999996483, 6.66754495e-05, -0.999908924, 0.00264411024, -0.0132325077)
+    Players.LocalPlayer.Character.HumanoidRootPart.CFrame = seatCFrame
+end
+
+-- Função para atualizar o dropdown com a lista de jogadores
+local function getPlayerNames()
+    local playerNames = {}
+    for _, player in pairs(Players:GetPlayers()) do
+        table.insert(playerNames, player.Name)
+    end
+    return playerNames
+end
+
+local Dropdown = Tab5:Dropdown({
+    Title = "Selecionar Jogador",
+    Desc = "Selecione um jogador para teleportar o carro",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = getPlayerNames(),
+    Callback = function(Tab)
+        selectedPlayerName = Tab
+        print("Jogador selecionado: " .. selectedPlayerName)
+    end
+})
+
+-- Atualiza a lista de jogadores quando um novo jogador entra ou sai do jogo
+Players.PlayerAdded:Connect(function(player)
+    Dropdown:Refresh(getPlayerNames())
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    Dropdown:Refresh(getPlayerNames())
+end)
+
+local Toggle = Tab5:Toggle({
+    Title = "Ativar Teletransporte",
+    Desc = "Ativa ou desativa o teletransporte do carro",
+    Value = false,
+    Callback = function(state)
+        teleportActive = state
+        if teleportActive then
+            teleportPlayerToPosition(Vector3.new(1143, 75, -1065))  -- Teleporta para a posição especificada
+            wait(0.5)  -- Aguarda um pouco
+            pickCar()  -- Executa o comando para pegar o carro
+            wait(0.5)  -- Aguarda um pouco
+            sitInDriverSeat()  -- Teleporta para o assento do motorista
+            wait(0.5)  -- Aguarda um pouco
+            if selectedPlayerName ~= "" then
+                teleportPlayerCar(selectedPlayerName)
+            end
+        else
+            deleteAllVehicles()  -- Executa o comando para deletar todos os veículos
+        end
+    end
+})
+
+-- Atualiza a lista de jogadores inicialmente
+Dropdown:Refresh(getPlayerNames())
+
