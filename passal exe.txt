@@ -1,9 +1,35 @@
 -- brookhaven script teste funcionando beta
 
+
+
+
+
+-- brookhaven script teste funcionando beta
+
+
+
+
+
+
+
+
+-- brookhaven script teste funcionando beta
+
+
+
+
+
+
+
+
+
+-- brookhaven script teste funcionando beta
+
 -- Lista de usuários permitidos (adicione os nomes do Roblox que você quer permitir)
 local AllowedUsers = {
     "rtrt967", -- Seu nome do Roblox
     "BED1BAN_YT",
+    "woo3j2",
     -- Adicione mais nomes aqui, por exemplo:
     -- "outro_usuario",
     -- "amigo123",
