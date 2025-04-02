@@ -42,7 +42,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.3",
+    Title = "Lolyta Hub 2.2",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -553,13 +553,16 @@ Tab4:Button({
     end,
 })
 
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+
 -- === Tab 5: Players === --
 local function updateDropdown(dropdown)
     local playerNames = {}
     for _, player in ipairs(Players:GetPlayers()) do
         table.insert(playerNames, player.Name)
     end
-    dropdown:Refresh(playerNames)
+    dropdown:Refresh(playerNames) -- Atualiza a lista dinamicamente
 end
 
 local function teleportToPlayer(playerName)
@@ -573,14 +576,14 @@ local function teleportToPlayer(playerName)
 end
 
 local DropdownTeleport = Tab5:Dropdown({
-    Title = "Selecionar Jogador",
+    Title = "Selecionar Jogador (Teleport)",
     Desc = "Selecione o jogador para teletransportar",
     Value = "",
     Multi = false,
     AllowNone = true,
     Values = {},
     Callback = function(selectedPlayerName)
-        print("Jogador selecionado: " .. selectedPlayerName)
+        print("Jogador selecionado para teletransporte: " .. selectedPlayerName)
     end,
 })
 
@@ -614,14 +617,14 @@ local function stopSpectating()
 end
 
 local DropdownSpectate = Tab5:Dropdown({
-    Title = "Selecionar Jogador",
+    Title = "Selecionar Jogador (Espectar)",
     Desc = "Selecione o jogador para espectar",
     Value = "",
     Multi = false,
     AllowNone = true,
     Values = {},
     Callback = function(selectedPlayerName)
-        print("Jogador selecionado: " .. selectedPlayerName)
+        print("Jogador selecionado para espectar: " .. selectedPlayerName)
     end,
 })
 
@@ -641,29 +644,13 @@ Tab5:Toggle({
         end
     end,
 })
- 
------------------------------------------------------------------------------------------------------------------------------------------
 
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local LocalPlayer = Players.LocalPlayer
-
-local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
-local Window = WindUI:CreateWindow({ Title = "Car Teleport", Size = UDim2.fromOffset(580, 460) })
-local Tab5 = Window:Tab({ Title = "Players", Icon = "user" })
-
-local function fireServer(eventPath, args)
-    ReplicatedStorage:WaitForChild("RE"):WaitForChild(eventPath):FireServer(unpack(args))
-end
-
+-- Sistema de Teletransporte de Ônibus
 local selectedPlayerName = ""
 local teleportActive = false
 local connection
 local originalPosition = nil
 
--- === Funções Auxiliares === --
 local function getPlayerCar(player)
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
     if vehiclesFolder then
@@ -705,13 +692,13 @@ local function teleportAndSpinCar(car, targetPlayer)
             teleportActive = false -- Desativa o teletransporte
             if connection then connection:Disconnect() connection = nil end
             
-            -- Teleporta para o void (aproximadamente Y = -1000 no Roblox)
+            -- Teleporta para o void (Y = -1000)
             local voidPosition = Vector3.new(car.PrimaryPart.Position.X, -1000, car.PrimaryPart.Position.Z)
             car:SetPrimaryPartCFrame(CFrame.new(voidPosition))
             wait(0.1) -- Pequena espera para garantir o teletransporte
             
             -- Despawna o ônibus
-            deleteAllVehicles()
+            fireServer("1Ca1r", {"DeleteAllVehicles"})
             
             -- Volta à posição original do jogador
             if originalPosition and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
@@ -743,49 +730,28 @@ local function pickCar()
     fireServer("1Ca1r", {"PickingCar", "SchoolBus"})
 end
 
-local function deleteAllVehicles()
-    fireServer("1Ca1r", {"DeleteAllVehicles"})
-end
-
-local function sitInDriverSeat()
-    LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(1132.72314, 75.6949005, -1072.46082, -0.0132326381, -3.16897822e-05, 0.999912441, 0.00264345924, 0.999996483, 6.66754495e-05, -0.999908924, 0.00264411024, -0.0132325077)
-end
-
--- === Função para Atualizar o Dropdown === --
-local function updateDropdown(dropdown)
-    local playerNames = {}
-    for _, player in ipairs(Players:GetPlayers()) do
-        table.insert(playerNames, player.Name)
-    end
-    dropdown:Refresh(playerNames) -- Atualiza a lista de jogadores
-end
-
--- === Dropdown Reorganizado === --
 local DropdownCar = Tab5:Dropdown({
-    Title = "Selecionar Jogador",
+    Title = "Selecionar Jogador (Ônibus)",
     Desc = "Escolha um jogador para teleportar o ônibus",
-    Value = "", -- Valor inicial vazio
-    Multi = false, -- Apenas uma seleção por vez
-    AllowNone = true, -- Permite desmarcar
-    Values = {}, -- Lista inicial vazia, será preenchida por updateDropdown
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = {},
     Callback = function(tab)
         selectedPlayerName = tab
-        print("Jogador selecionado: " .. selectedPlayerName)
+        print("Jogador selecionado para ônibus: " .. selectedPlayerName)
     end,
 })
 
 -- Configurações adicionais do Dropdown
-DropdownCar:SetTitle("Lista de Jogadores")
+DropdownCar:SetTitle("Lista de Jogadores (Ônibus)")
 DropdownCar:SetDesc("Selecione um jogador para o teletransporte do ônibus")
-
--- Atualiza a lista inicialmente e conecta eventos
 updateDropdown(DropdownCar)
 Players.PlayerAdded:Connect(function() updateDropdown(DropdownCar) end)
 Players.PlayerRemoving:Connect(function() updateDropdown(DropdownCar) end)
 
--- === Toggle para Ativar o Teletransporte === --
 Tab5:Toggle({
-    Title = "Ativar Teletransporte",
+    Title = "Ativar Teletransporte do Ônibus",
     Desc = "Ativa ou desativa o teletransporte do ônibus",
     Value = false,
     Callback = function(state)
@@ -799,12 +765,12 @@ Tab5:Toggle({
             wait(0.5)
             pickCar()
             wait(0.5)
-            sitInDriverSeat()
+            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(1132.72314, 75.6949005, -1072.46082, -0.0132326381, -3.16897822e-05, 0.999912441, 0.00264345924, 0.999996483, 6.66754495e-05, -0.999908924, 0.00264411024, -0.0132325077)
             wait(0.5)
             if selectedPlayerName ~= "" then teleportPlayerCar(selectedPlayerName) end
         else
-            deleteAllVehicles()
-            -- Volta à posição original se o teletransporte for desativado manualmente
+            fireServer("1Ca1r", {"DeleteAllVehicles"})
+            -- Volta à posição original se desativado manualmente
             if originalPosition and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                 LocalPlayer.Character.HumanoidRootPart.CFrame = originalPosition
             end
