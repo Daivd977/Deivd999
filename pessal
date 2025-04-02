@@ -36,13 +36,16 @@ if not isAllowed then
     return
 end
 
--- === Inicialização da Interface === --
+-----------------------------------------------------------------------------------------------------------------------------------
+                                    -- === Inicialização da Interface === --
+-----------------------------------------------------------------------------------------------------------------------------------
+
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
 local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.5",
+    Title = "Lolyta Hub 2.2",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -83,7 +86,10 @@ local function invokeServer(eventPath, args)
     return ReplicatedStorage:WaitForChild("RE"):WaitForChild(eventPath):InvokeServer(unpack(args))
 end
 
--- === Tab 1: Main === --
+---------------------------------------------------------------------------------------------------------------------------------
+                                                   -- === Tab 1: Main === --
+---------------------------------------------------------------------------------------------------------------------------------
+
 Tab1:Button({
     Title = "Ser desbanido do voice (se acabou de ser banido)",
     Desc = "Universal",
@@ -91,6 +97,8 @@ Tab1:Button({
         game:GetService("VoiceChatService"):joinVoice()
     end,
 })
+
+---------------------------------------------------------------------------------------------------------------------------------
 
 Tab1:Button({
     Title = "Voltar tamanho normal (size 1)",
@@ -100,6 +108,8 @@ Tab1:Button({
     end,
 })
 
+---------------------------------------------------------------------------------------------------------------------------------
+
 Tab1:Button({
     Title = "Invisível (size 4)",
     Desc = "Brookhaven",
@@ -108,6 +118,8 @@ Tab1:Button({
     end,
 })
 
+---------------------------------------------------------------------------------------------------------------------------------
+
 Tab1:Button({
     Title = "Pegar sofá",
     Desc = "Brookhaven",
@@ -115,6 +127,8 @@ Tab1:Button({
         invokeServer("1Too1l", {"PickingTools", "Couch"})
     end,
 })
+
+---------------------------------------------------------------------------------------------------------------------------------
 
 Tab1:Button({
     Title = "TP ALL",
@@ -130,6 +144,8 @@ Tab1:Button({
         LocalPlayer.Character:SetPrimaryPartCFrame(startingPosition)
     end,
 })
+
+---------------------------------------------------------------------------------------------------------------------------------
 
 Tab1:Toggle({
     Title = "ESP",
@@ -172,6 +188,8 @@ Tab1:Toggle({
     end,
 })
 
+---------------------------------------------------------------------------------------------------------------------------------
+
 Tab1:Dropdown({
     Title = "Permissions",
     Desc = "Permission options",
@@ -187,6 +205,8 @@ Tab1:Dropdown({
 
 Tab1:Paragraph({ Title = "Jogador", Desc = "" })
 
+---------------------------------------------------------------------------------------------------------------------------------
+
 Tab1:Slider({
     Title = "Super Velocidade",
     Step = 1,
@@ -197,6 +217,8 @@ Tab1:Slider({
         end
     end,
 })
+
+---------------------------------------------------------------------------------------------------------------------------------
 
 Tab1:Slider({
     Title = "Super Pulo",
@@ -209,9 +231,14 @@ Tab1:Slider({
     end,
 })
 
--- === Tab 2: Troll Musica === --
+---------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 2: Troll Musica === --
+---------------------------------------------------------------------------------------------------------------------------------
+
 Tab2:Paragraph({ Title = "Precisa da gamepass", Desc = "Gamepass música" })
 Tab2:Paragraph({ Title = "Só funciona em veículos do tipo over board", Desc = "" })
+
+---------------------------------------------------------------------------------------------------------------------------------
 
 Tab2:Dropdown({
     Title = "Funk, Phonk, MTG",
@@ -236,6 +263,8 @@ Tab2:Dropdown({
     end,
 })
 
+---------------------------------------------------------------------------------------------------------------------------------
+
 Tab2:Dropdown({
     Title = "Música Normal",
     Desc = "Over board",
@@ -248,6 +277,8 @@ Tab2:Dropdown({
         print("Argumentos enviados: " .. selectedValue)
     end,
 })
+
+---------------------------------------------------------------------------------------------------------------------------------
 
 Tab2:Dropdown({
     Title = "Meme Música",
@@ -262,6 +293,8 @@ Tab2:Dropdown({
     end,
 })
 
+---------------------------------------------------------------------------------------------------------------------------------
+
 Tab2:Dropdown({
     Title = "Terror Assustar",
     Desc = "Over board",
@@ -274,6 +307,8 @@ Tab2:Dropdown({
         print("Argumentos enviados: " .. selectedValue)
     end,
 })
+
+---------------------------------------------------------------------------------------------------------------------------------
 
 Tab2:Dropdown({
     Title = "Miside, Mita",
@@ -288,6 +323,8 @@ Tab2:Dropdown({
     end,
 })
 
+---------------------------------------------------------------------------------------------------------------------------------
+
 Tab2:Button({
     Title = "STOP",
     Desc = "Stop music",
@@ -295,6 +332,8 @@ Tab2:Button({
         fireServer("1NoMoto1rVehicle1s", {"PickingScooterMusicText", ""})
     end,
 })
+
+---------------------------------------------------------------------------------------------------------------------------------
 
 Tab2:Button({
     Title = "Telefone FNAF",
@@ -304,6 +343,8 @@ Tab2:Button({
     end,
 })
 
+---------------------------------------------------------------------------------------------------------------------------------
+
 Tab2:Button({
     Title = "HELOU HAY AHAHAHA",
     Desc = "FNAF",
@@ -311,6 +352,8 @@ Tab2:Button({
         fireServer("1NoMoto1rVehicle1s", {"PickingScooterMusicText", "5608077885"})
     end,
 })
+
+---------------------------------------------------------------------------------------------------------------------------------
 
 Tab2:Button({
     Title = "Grito Ohor",
@@ -320,6 +363,8 @@ Tab2:Button({
     end,
 })
 
+---------------------------------------------------------------------------------------------------------------------------------
+
 Tab2:Button({
     Title = "Risada Doida",
     Desc = "Load meme",
@@ -328,8 +373,12 @@ Tab2:Button({
     end,
 })
 
+---------------------------------------------------------------------------------------------------------------------------------
+
 Tab2:Paragraph({ Title = "Carro Música", Desc = "Gamepass música" })
 Tab2:Paragraph({ Title = "Precisa da gamepass", Desc = "" })
+
+---------------------------------------------------------------------------------------------------------------------------------
 
 Tab2:Dropdown({
     Title = "Selecionar Música",
@@ -354,6 +403,8 @@ Tab2:Dropdown({
     end,
 })
 
+---------------------------------------------------------------------------------------------------------------------------------
+
 local Input = Tab2:Input({
     Title = "Música",
     Desc = "Colocar o nome da música",
@@ -368,6 +419,8 @@ local Input = Tab2:Input({
 Input:SetTitle("New Title!")
 Input:SetDesc("New Description!")
 
+---------------------------------------------------------------------------------------------------------------------------------
+
 Tab2:Button({
     Title = "Stop",
     Desc = "Car music",
@@ -376,7 +429,10 @@ Tab2:Button({
     end,
 })
 
--- === Tab 3: Music All === --
+---------------------------------------------------------------------------------------------------------------------------------
+                                                -- === Tab 3: Music All === --
+---------------------------------------------------------------------------------------------------------------------------------
+
 local loopAtivo = false
 local InputID = ""
 
@@ -438,6 +494,8 @@ Tab3:Toggle({
     end,
 })
 
+---------------------------------------------------------------------------------------------------------------------------------------------
+
 Tab3:Dropdown({
     Title = "Selecione uma música",
     Desc = "Escolha o som para tocar no servidor",
@@ -468,15 +526,15 @@ Tab3:Dropdown({
     end,
 })
 
--- === Tab 4: Scripts === --
+----------------------------------------------------------------------------------------------------------------------------------------------
+                                               -- === Tab 4: Scripts === --
+----------------------------------------------------------------------------------------------------------------------------------------------
+
 Tab4:Button({
-    Title = "Invisible, System Brook, Infinite Yield",
-    Desc = "Mic up, universal",
+    Title = "Invisible",
+    Desc = "universal",
     Callback = function()
         loadstring(game:HttpGet("https://scriptblox.com/raw/Universal-Script-fe-invisible-4366"))()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/H20CalibreYT/SystemBroken/main/script"))()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
-        loadstring(game:HttpGet("https://pastebin.com/raw/3Rnd9rHf"))()
     end,
 })
 
@@ -553,10 +611,10 @@ Tab4:Button({
     end,
 })
 
-
+-----------------------------------------------------------------------------------------------------------------------------------------
+                                                -- === Tab 5: Players === --
 -----------------------------------------------------------------------------------------------------------------------------------------
 
--- === Tab 5: Players === --
 local function updateDropdown(dropdown)
     local playerNames = {}
     for _, player in ipairs(Players:GetPlayers()) do
@@ -598,6 +656,8 @@ Tab5:Button({
         teleportToPlayer(DropdownTeleport.Value)
     end,
 })
+
+---------------------------------------------------------------------------------------------------------------------------------------------
 
 local function spectatePlayer(playerName)
     local targetPlayer = Players:FindFirstChild(playerName)
@@ -645,7 +705,9 @@ Tab5:Toggle({
     end,
 })
 
--- Sistema de Teletransporte de Ônibus com Walkfling
+------------------------------------------------------------------------------------------------------------------------------------
+
+-- Sistema de Teletransporte de Ônibus com Backflips
 local selectedPlayerName = ""
 local teleportActive = false
 local connection
@@ -671,10 +733,7 @@ local function findPlayerByName(name)
 end
 
 local function teleportAndSpinCar(car, targetPlayer)
-    local direction = 1
     local spinSpeed = 45 -- Velocidade de rotação em graus por frame
-    local flingSpeed = 50 -- Velocidade de movimento (walkfling)
-    local flingDirection = Vector3.new(math.random(-1, 1), 0, math.random(-1, 1)).Unit -- Direção aleatória no plano XZ
 
     connection = RunService.Stepped:Connect(function()
         if not teleportActive then
@@ -683,44 +742,33 @@ local function teleportAndSpinCar(car, targetPlayer)
         end
         car.PrimaryPart.CanCollide = false
         
-        -- Gira o ônibus em todas as direções (X, Y, Z)
-        car:SetPrimaryPartCFrame(car:GetPrimaryPartCFrame() * CFrame.Angles(math.rad(spinSpeed), math.rad(spinSpeed), math.rad(spinSpeed)))
+        -- Gira o ônibus com backflips (só no eixo X)
+        car:SetPrimaryPartCFrame(car:GetPrimaryPartCFrame() * CFrame.Angles(math.rad(spinSpeed), 0, 0))
         
-        -- Adiciona walkfling: move o ônibus em uma direção enquanto segue o jogador
-        local currentPosition = car.PrimaryPart.Position
-        local targetPosition = targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") and targetPlayer.Character.HumanoidRootPart.Position - Vector3.new(0, 3, 0) or currentPosition
-        local flingOffset = flingDirection * flingSpeed * RunService.Stepped:Wait() -- Movimento suave baseado no tempo
-        car:SetPrimaryPartCFrame(CFrame.new(currentPosition + flingOffset) * car:GetPrimaryPartCFrame().Rotation)
-        
-        -- Corrige a posição para seguir o jogador
+        -- Fica em cima do jogador selecionado
         if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local targetPosition = targetPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 5, 0) -- 5 unidades acima do jogador
             car:SetPrimaryPartCFrame(CFrame.new(targetPosition) * car:GetPrimaryPartCFrame().Rotation)
         end
     end)
 
     -- Verifica os assentos continuamente
-    local function checkSeats()
+    RunService.Heartbeat:Connect(function()
+        if not teleportActive then return end
         for _, seat in pairs(car:GetDescendants()) do
             if seat:IsA("Seat") and seat.Occupant then
                 teleportActive = false
                 if connection then connection:Disconnect() connection = nil end
                 
-                -- Despawna o ônibus imediatamente
-                fireServer("1Ca1r", {"DeleteAllVehicles"})
-                
-                -- Volta à posição original
+                -- Teleporta pro void
+                local voidPosition = Vector3.new(car.PrimaryPart.Position.X, -1000, car.PrimaryPart.Position.Z)
+                car:SetPrimaryPartCFrame(CFrame.new(voidPosition))
+                -- Não despawna o ônibus, apenas deixa no void
                 if originalPosition and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                     LocalPlayer.Character.HumanoidRootPart.CFrame = originalPosition
                 end
-                return true
+                return
             end
-        end
-        return false
-    end
-
-    RunService.Heartbeat:Connect(function()
-        if teleportActive then
-            checkSeats()
         end
     end)
 end
@@ -747,6 +795,14 @@ local function pickCar()
     fireServer("1Ca1r", {"PickingCar", "SchoolBus"})
 end
 
+local function updateDropdown(dropdown)
+    local playerNames = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        table.insert(playerNames, player.Name)
+    end
+    dropdown:Refresh(playerNames)
+end
+
 local DropdownCar = Tab5:Dropdown({
     Title = "Selecionar Jogador (Ônibus)",
     Desc = "Escolha um jogador para teleportar o ônibus",
@@ -764,29 +820,33 @@ updateDropdown(DropdownCar)
 Players.PlayerAdded:Connect(function() updateDropdown(DropdownCar) end)
 Players.PlayerRemoving:Connect(function() updateDropdown(DropdownCar) end)
 
-Tab5:Toggle({
-    Title = "Ativar Teletransporte do Ônibus",
-    Desc = "Ativa ou desativa o teletransporte do ônibus",
-    Value = false,
-    Callback = function(state)
-        teleportActive = state
-        if teleportActive then
-            -- Salva a posição original do jogador
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                originalPosition = LocalPlayer.Character.HumanoidRootPart.CFrame
-            end
-            teleportPlayerToPosition(Vector3.new(1143, 75, -1065))
-            wait(0.5)
-            pickCar()
-            wait(0.5)
+Tab5:Button({
+    Title = "Ativar Ônibus",
+    Desc = "Clique para spawnar o ônibus e iniciar o teletransporte",
+    Callback = function()
+        teleportActive = true
+        -- Salva a posição original do jogador
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            originalPosition = LocalPlayer.Character.HumanoidRootPart.CFrame
+        end
+        teleportPlayerToPosition(Vector3.new(1143, 75, -1065))
+        wait(0.5)
+        pickCar()
+        wait(0.5)
+        -- Teleporta pro assento do motorista
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(1132.72314, 75.6949005, -1072.46082, -0.0132326381, -3.16897822e-05, 0.999912441, 0.00264345924, 0.999996483, 6.66754495e-05, -0.999908924, 0.00264411024, -0.0132325077)
-            wait(0.5)
-            if selectedPlayerName ~= "" then teleportPlayerCar(selectedPlayerName) end
-        else
-            fireServer("1Ca1r", {"DeleteAllVehicles"})
-            if originalPosition and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                LocalPlayer.Character.HumanoidRootPart.CFrame = originalPosition
+            local car = getPlayerCar(LocalPlayer)
+            if car then
+                local driverSeat = car:FindFirstChild("Seat", true)
+                if driverSeat and driverSeat:IsA("Seat") then
+                    LocalPlayer.Character.Humanoid:Sit(false)
+                    wait(0.1)
+                    driverSeat:Sit(LocalPlayer.Character.Humanoid)
+                end
             end
         end
+        wait(0.5)
+        if selectedPlayerName ~= "" then teleportPlayerCar(selectedPlayerName) end
     end,
 })
