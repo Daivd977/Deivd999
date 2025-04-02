@@ -42,7 +42,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.4",
+    Title = "Lolyta Hub 2.2",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -645,7 +645,7 @@ Tab5:Toggle({
     end,
 })
 
--- Sistema de Teletransporte de Ônibus
+-- Sistema de Teletransporte de Ônibus com Walkfling
 local selectedPlayerName = ""
 local teleportActive = false
 local connection
@@ -673,6 +673,9 @@ end
 local function teleportAndSpinCar(car, targetPlayer)
     local direction = 1
     local spinSpeed = 45 -- Velocidade de rotação em graus por frame
+    local flingSpeed = 50 -- Velocidade de movimento (walkfling)
+    local flingDirection = Vector3.new(math.random(-1, 1), 0, math.random(-1, 1)).Unit -- Direção aleatória no plano XZ
+
     connection = RunService.Stepped:Connect(function()
         if not teleportActive then
             if connection then connection:Disconnect() connection = nil end
@@ -683,26 +686,26 @@ local function teleportAndSpinCar(car, targetPlayer)
         -- Gira o ônibus em todas as direções (X, Y, Z)
         car:SetPrimaryPartCFrame(car:GetPrimaryPartCFrame() * CFrame.Angles(math.rad(spinSpeed), math.rad(spinSpeed), math.rad(spinSpeed)))
         
-        -- Segue o jogador alvo
+        -- Adiciona walkfling: move o ônibus em uma direção enquanto segue o jogador
+        local currentPosition = car.PrimaryPart.Position
+        local targetPosition = targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") and targetPlayer.Character.HumanoidRootPart.Position - Vector3.new(0, 3, 0) or currentPosition
+        local flingOffset = flingDirection * flingSpeed * RunService.Stepped:Wait() -- Movimento suave baseado no tempo
+        car:SetPrimaryPartCFrame(CFrame.new(currentPosition + flingOffset) * car:GetPrimaryPartCFrame().Rotation)
+        
+        -- Corrige a posição para seguir o jogador
         if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            local targetPosition = targetPlayer.Character.HumanoidRootPart.Position - Vector3.new(0, 3, 0)
             car:SetPrimaryPartCFrame(CFrame.new(targetPosition) * car:GetPrimaryPartCFrame().Rotation)
         end
     end)
 
-    -- Verifica os assentos existentes para detectar ocupação
+    -- Verifica os assentos continuamente
     local function checkSeats()
         for _, seat in pairs(car:GetDescendants()) do
             if seat:IsA("Seat") and seat.Occupant then
                 teleportActive = false
                 if connection then connection:Disconnect() connection = nil end
                 
-                -- Teleporta para o void (Y = -1000)
-                local voidPosition = Vector3.new(car.PrimaryPart.Position.X, -1000, car.PrimaryPart.Position.Z)
-                car:SetPrimaryPartCFrame(CFrame.new(voidPosition))
-                wait(0.1)
-                
-                -- Despawna o ônibus
+                -- Despawna o ônibus imediatamente
                 fireServer("1Ca1r", {"DeleteAllVehicles"})
                 
                 -- Volta à posição original
@@ -715,7 +718,6 @@ local function teleportAndSpinCar(car, targetPlayer)
         return false
     end
 
-    -- Monitora os assentos continuamente
     RunService.Heartbeat:Connect(function()
         if teleportActive then
             checkSeats()
