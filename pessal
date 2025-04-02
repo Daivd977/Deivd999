@@ -42,7 +42,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.2",
+    Title = "Lolyta Hub 2.4",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -562,7 +562,7 @@ local function updateDropdown(dropdown)
     for _, player in ipairs(Players:GetPlayers()) do
         table.insert(playerNames, player.Name)
     end
-    dropdown:Refresh(playerNames) -- Atualiza a lista dinamicamente
+    dropdown:Refresh(playerNames)
 end
 
 local function teleportToPlayer(playerName)
@@ -672,38 +672,53 @@ end
 
 local function teleportAndSpinCar(car, targetPlayer)
     local direction = 1
+    local spinSpeed = 45 -- Velocidade de rotação em graus por frame
     connection = RunService.Stepped:Connect(function()
         if not teleportActive then
             if connection then connection:Disconnect() connection = nil end
             return
         end
         car.PrimaryPart.CanCollide = false
-        -- Gira o ônibus em backflips (45 graus por frame no eixo X)
-        car:SetPrimaryPartCFrame(car:GetPrimaryPartCFrame() * CFrame.Angles(math.rad(45), 0, 0))
+        
+        -- Gira o ônibus em todas as direções (X, Y, Z)
+        car:SetPrimaryPartCFrame(car:GetPrimaryPartCFrame() * CFrame.Angles(math.rad(spinSpeed), math.rad(spinSpeed), math.rad(spinSpeed)))
+        
+        -- Segue o jogador alvo
         if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
             local targetPosition = targetPlayer.Character.HumanoidRootPart.Position - Vector3.new(0, 3, 0)
-            car:SetPrimaryPartCFrame(CFrame.new(targetPosition))
+            car:SetPrimaryPartCFrame(CFrame.new(targetPosition) * car:GetPrimaryPartCFrame().Rotation)
         end
     end)
 
-    -- Detecta quando alguém senta no ônibus
-    car.ChildAdded:Connect(function(child)
-        if child:IsA("Seat") and child.Occupant then
-            teleportActive = false -- Desativa o teletransporte
-            if connection then connection:Disconnect() connection = nil end
-            
-            -- Teleporta para o void (Y = -1000)
-            local voidPosition = Vector3.new(car.PrimaryPart.Position.X, -1000, car.PrimaryPart.Position.Z)
-            car:SetPrimaryPartCFrame(CFrame.new(voidPosition))
-            wait(0.1) -- Pequena espera para garantir o teletransporte
-            
-            -- Despawna o ônibus
-            fireServer("1Ca1r", {"DeleteAllVehicles"})
-            
-            -- Volta à posição original do jogador
-            if originalPosition and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                LocalPlayer.Character.HumanoidRootPart.CFrame = originalPosition
+    -- Verifica os assentos existentes para detectar ocupação
+    local function checkSeats()
+        for _, seat in pairs(car:GetDescendants()) do
+            if seat:IsA("Seat") and seat.Occupant then
+                teleportActive = false
+                if connection then connection:Disconnect() connection = nil end
+                
+                -- Teleporta para o void (Y = -1000)
+                local voidPosition = Vector3.new(car.PrimaryPart.Position.X, -1000, car.PrimaryPart.Position.Z)
+                car:SetPrimaryPartCFrame(CFrame.new(voidPosition))
+                wait(0.1)
+                
+                -- Despawna o ônibus
+                fireServer("1Ca1r", {"DeleteAllVehicles"})
+                
+                -- Volta à posição original
+                if originalPosition and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = originalPosition
+                end
+                return true
             end
+        end
+        return false
+    end
+
+    -- Monitora os assentos continuamente
+    RunService.Heartbeat:Connect(function()
+        if teleportActive then
+            checkSeats()
         end
     end)
 end
@@ -743,9 +758,6 @@ local DropdownCar = Tab5:Dropdown({
     end,
 })
 
--- Configurações adicionais do Dropdown
-DropdownCar:SetTitle("Lista de Jogadores (Ônibus)")
-DropdownCar:SetDesc("Selecione um jogador para o teletransporte do ônibus")
 updateDropdown(DropdownCar)
 Players.PlayerAdded:Connect(function() updateDropdown(DropdownCar) end)
 Players.PlayerRemoving:Connect(function() updateDropdown(DropdownCar) end)
@@ -770,7 +782,6 @@ Tab5:Toggle({
             if selectedPlayerName ~= "" then teleportPlayerCar(selectedPlayerName) end
         else
             fireServer("1Ca1r", {"DeleteAllVehicles"})
-            -- Volta à posição original se desativado manualmente
             if originalPosition and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                 LocalPlayer.Character.HumanoidRootPart.CFrame = originalPosition
             end
