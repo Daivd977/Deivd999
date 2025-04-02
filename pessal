@@ -42,7 +42,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.3",
+    Title = "Lolyta Hub 2.4",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -675,50 +675,39 @@ local function teleportAndSpinCar(car, targetPlayer)
     local flingSpeed = 50 -- Velocidade de movimento (walkfling)
     local flingDirection = Vector3.new(math.random(-1, 1), 0, math.random(-1, 1)).Unit -- Direção aleatória no plano XZ
 
-    -- Só começa o giro e fling depois que alguém (não o LocalPlayer) senta
-    local function startFling()
-        connection = RunService.Stepped:Connect(function()
-            if not teleportActive then
-                if connection then connection:Disconnect() connection = nil end
-                return
-            end
-            car.PrimaryPart.CanCollide = false
-            
-            -- Gira o ônibus em todas as direções (X, Y, Z)
-            car:SetPrimaryPartCFrame(car:GetPrimaryPartCFrame() * CFrame.Angles(math.rad(spinSpeed), math.rad(spinSpeed), math.rad(spinSpeed)))
-            
-            -- Adiciona walkfling
-            local currentPosition = car.PrimaryPart.Position
-            local targetPosition = targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") and targetPlayer.Character.HumanoidRootPart.Position - Vector3.new(0, 3, 0) or currentPosition
-            local flingOffset = flingDirection * flingSpeed * RunService.Stepped:Wait()
-            car:SetPrimaryPartCFrame(CFrame.new(currentPosition + flingOffset) * car:GetPrimaryPartCFrame().Rotation)
-            
-            -- Segue o jogador
-            if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                car:SetPrimaryPartCFrame(CFrame.new(targetPosition) * car:GetPrimaryPartCFrame().Rotation)
-            end
-        end)
-    end
+    connection = RunService.Stepped:Connect(function()
+        if not teleportActive then
+            if connection then connection:Disconnect() connection = nil end
+            return
+        end
+        car.PrimaryPart.CanCollide = false
+        
+        -- Gira o ônibus em todas as direções (X, Y, Z)
+        car:SetPrimaryPartCFrame(car:GetPrimaryPartCFrame() * CFrame.Angles(math.rad(spinSpeed), math.rad(spinSpeed), math.rad(spinSpeed)))
+        
+        -- Adiciona walkfling
+        local currentPosition = car.PrimaryPart.Position
+        local targetPosition = targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") and targetPlayer.Character.HumanoidRootPart.Position - Vector3.new(0, 3, 0) or currentPosition
+        local flingOffset = flingDirection * flingSpeed * RunService.Stepped:Wait()
+        car:SetPrimaryPartCFrame(CFrame.new(currentPosition + flingOffset) * car:GetPrimaryPartCFrame().Rotation)
+        
+        -- Segue o jogador
+        if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            car:SetPrimaryPartCFrame(CFrame.new(targetPosition) * car:GetPrimaryPartCFrame().Rotation)
+        end
+    end)
 
     -- Verifica os assentos continuamente
-    local hasStartedFling = false
     RunService.Heartbeat:Connect(function()
         if not teleportActive then return end
         for _, seat in pairs(car:GetDescendants()) do
             if seat:IsA("Seat") and seat.Occupant then
-                local occupant = seat.Occupant.Parent -- O HumanoidRootPart está dentro do personagem
+                local occupant = seat.Occupant.Parent
                 local player = Players:GetPlayerFromCharacter(occupant)
-                if player and player ~= LocalPlayer then -- Só ativa se não for o LocalPlayer
-                    if not hasStartedFling then
-                        hasStartedFling = true
-                        startFling()
-                    end
-                elseif player and player == LocalPlayer then
-                    -- Se for o LocalPlayer, não faz nada até outro jogador sentar
-                else
+                if player and player ~= LocalPlayer then -- Só desaparece se não for o LocalPlayer
                     teleportActive = false
                     if connection then connection:Disconnect() connection = nil end
-                    fireServer("1Ca1r", {"DeleteAllVehicles"}) -- Desaparece quando alguém senta
+                    fireServer("1Ca1r", {"DeleteAllVehicles"})
                     if originalPosition and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                         LocalPlayer.Character.HumanoidRootPart.CFrame = originalPosition
                     end
@@ -788,11 +777,11 @@ Tab5:Toggle({
                 LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(1132.72314, 75.6949005, -1072.46082, -0.0132326381, -3.16897822e-05, 0.999912441, 0.00264345924, 0.999996483, 6.66754495e-05, -0.999908924, 0.00264411024, -0.0132325077)
                 local car = getPlayerCar(LocalPlayer)
                 if car then
-                    local driverSeat = car:FindFirstChild("Seat", true) -- Procura o assento do motorista
+                    local driverSeat = car:FindFirstChild("Seat", true)
                     if driverSeat and driverSeat:IsA("Seat") then
-                        LocalPlayer.Character.Humanoid:Sit(false) -- Garante que não esteja sentado em outro lugar
+                        LocalPlayer.Character.Humanoid:Sit(false)
                         wait(0.1)
-                        driverSeat:Sit(LocalPlayer.Character.Humanoid) -- Força o LocalPlayer a sentar
+                        driverSeat:Sit(LocalPlayer.Character.Humanoid)
                     end
                 end
             end
