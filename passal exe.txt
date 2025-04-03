@@ -2,7 +2,7 @@
 
 -- === Configurações Iniciais === --
 local AllowedUsers = {
-    "rtrt967",      -- Seu nome do Roblox
+    "hhjjij76",      -- Seu nome do Roblox
     "BED1BAN_YT",   -- Outro usuário permitido
     -- Adicione mais nomes aqui, por exemplo:
     -- "outro_usuario",
