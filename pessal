@@ -45,7 +45,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.2",
+    Title = "Lolyta Hub 2.3",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -247,15 +247,15 @@ Tab2:Dropdown({
     Multi = false,
     AllowNone = true,
     Values = {
-        "musica brasil", "77501611905348", "77212776812241", "126887144190812", "88033569921555", "132436320685732", "105832154444494", "92893359226454", "90323407842935", "132245626038510",
-        "111995323199676", "86354476776559", "81854768837868", "115016589376700", "118740708757685", "139435437308948",
-        "109189438638906", "138415155024226", "105126065014034", "102919095332206", "132245626038510", "97765714111493",
-        "100788814736643", "72720721570850", "138487820505005", "87968531262747", "", "111281710445018", "106317184644394",
-        "musica do meu interece", "77212776812241", "123592956882621", "108494476595033", "106835463235574", "123723674864058", "112068892721408", "musica dls por elas", "91760524161503",
-        "73140398421340", "86012716607673", "137962454483542", "84733736048142", "78482061425700", "106322173003761", "94604796823780", "118063577904953", "115567432786512", "71304501822029",
-        "132218979961283", "102708912256857", "140642559093189", "13530439660", "87863924786534", "133135085604736", "97258811783169", "92308400487695",
-        "104635713368149", "88064647826500", "85385155970460", "122871512353520", "122852029094656", "115016589376700", "meme abaixo", "94395705857835", "136804576009416",
-        "108494476595033", "131804436682424", "80291355054807", "137774355552052", "127944706557246", "82284055473737", "102906880476838", "91502410121438", "", "81694110949920", "estourada", "92175624643620", "108099943758978"
+        "novas musica adds", "104240235018198", "111668097052966", "93786060174790", "74812784884330", "musica brasil", "77501611905348", "126887144190812", "88033569921555", "132436320685732", "105832154444494", "", "90323407842935", "132245626038510",
+"111995323199676","115016589376700", "118740708757685", "139435437308948",
+"109189438638906", "138415155024226", "105126065014034", "102919095332206", "132245626038510", "97765714111493",
+"100788814736643", "72720721570850", "138487820505005", "87968531262747", "106317184644394",
+"musica do meu interece", "123592956882621", "108494476595033", "106835463235574", "123723674864058", "112068892721408", "musica dls por elas", "91760524161503",
+"73140398421340", "137962454483542", "84733736048142", "106322173003761", "94604796823780", "118063577904953", "115567432786512", "71304501822029",
+"132218979961283", "102708912256857", "140642559093189", "13530439660", "87863924786534", "133135085604736", "97258811783169", "92308400487695",
+"104635713368149", "88064647826500", "85385155970460", "122871512353520", "122852029094656", "115016589376700", "meme abaixo", "94395705857835", "136804576009416",
+"108494476595033", "131804436682424", "80291355054807", "137774355552052", "127944706557246", "82284055473737", "102906880476838", "91502410121438", "81694110949920", "estourada", "92175624643620", "108099943758978"
     },
     Callback = function(selectedValue)
         fireServer("1NoMoto1rVehicle1s", {"PickingScooterMusicText", selectedValue})
@@ -286,7 +286,7 @@ Tab2:Dropdown({
     Value = "Option 1",
     Multi = false,
     AllowNone = true,
-    Values = {"115199984575713", "71765861754044", "82161110448949", "139639579473440", "92212156099339", "86855540619546", "128027832969902", "118785260057094", "72735474016817", "72739838426009"},
+    Values = {"115199984575713", "", "82161110448949", "139639579473440", "92212156099339", "86855540619546", "128027832969902", "118785260057094", "", "72739838426009"},
     Callback = function(selectedValue)
         fireServer("1NoMoto1rVehicle1s", {"PickingScooterMusicText", selectedValue})
         print("Argumentos enviados: " .. selectedValue)
@@ -301,7 +301,7 @@ Tab2:Dropdown({
     Value = "Option 1",
     Multi = false,
     AllowNone = true,
-    Values = {"72624476289253", "116709209733976", "99430297570707", "102348131944238", "125199445385812", "73562744560566", "106975887314345", "100497166902775", "77874596719163", "83764626839857", "132027370834826"},
+    Values = {"72624476289253", "116709209733976", "99430297570707", "102348131944238", "125199445385812", "73562744560566", "106975887314345", "", "77874596719163", "83764626839857", "132027370834826"},
     Callback = function(selectedValue)
         fireServer("1NoMoto1rVehicle1s", {"PickingScooterMusicText", selectedValue})
         print("Argumentos enviados: " .. selectedValue)
@@ -387,15 +387,15 @@ Tab2:Dropdown({
     Multi = false,
     AllowNone = true,
     Values = {
-        "musica brasil", "77501611905348", "77212776812241", "126887144190812", "88033569921555", "132436320685732", "105832154444494", "92893359226454", "90323407842935", "132245626038510",
-        "111995323199676", "86354476776559", "81854768837868", "115016589376700", "118740708757685", "139435437308948",
-        "109189438638906", "138415155024226", "105126065014034", "102919095332206", "132245626038510", "97765714111493",
-        "100788814736643", "72720721570850", "138487820505005", "87968531262747", "", "111281710445018", "106317184644394",
-        "musica do meu interece", "77212776812241", "123592956882621", "108494476595033", "106835463235574", "123723674864058", "112068892721408", "musica dls por elas", "91760524161503",
-        "73140398421340", "86012716607673", "137962454483542", "84733736048142", "78482061425700", "106322173003761", "94604796823780", "118063577904953", "115567432786512", "71304501822029",
-        "132218979961283", "102708912256857", "140642559093189", "13530439660", "87863924786534", "133135085604736", "97258811783169", "92308400487695",
-        "104635713368149", "88064647826500", "85385155970460", "122871512353520", "122852029094656", "115016589376700", "meme abaixo", "94395705857835", "136804576009416",
-        "108494476595033", "131804436682424", "80291355054807", "137774355552052", "127944706557246", "82284055473737", "102906880476838", "91502410121438", "", "81694110949920", "estourada", "92175624643620", "108099943758978"
+        "novas musica adds", "104240235018198", "111668097052966", "93786060174790", "74812784884330", "musica brasil", "77501611905348", "126887144190812", "88033569921555", "132436320685732", "105832154444494", "", "90323407842935", "132245626038510",
+"111995323199676","115016589376700", "118740708757685", "139435437308948",
+"109189438638906", "138415155024226", "105126065014034", "102919095332206", "132245626038510", "97765714111493",
+"100788814736643", "72720721570850", "138487820505005", "87968531262747", "106317184644394",
+"musica do meu interece", "123592956882621", "108494476595033", "106835463235574", "123723674864058", "112068892721408", "musica dls por elas", "91760524161503",
+"73140398421340", "137962454483542", "84733736048142", "106322173003761", "94604796823780", "118063577904953", "115567432786512", "71304501822029",
+"132218979961283", "102708912256857", "140642559093189", "13530439660", "87863924786534", "133135085604736", "97258811783169", "92308400487695",
+"104635713368149", "88064647826500", "85385155970460", "122871512353520", "122852029094656", "115016589376700", "meme abaixo", "94395705857835", "136804576009416",
+"108494476595033", "131804436682424", "80291355054807", "137774355552052", "127944706557246", "82284055473737", "102906880476838", "91502410121438", "81694110949920", "estourada", "92175624643620", "108099943758978"
     },
     Callback = function(selectedValue)
         fireServer("1Player1sCa1r", {"PickingCarMusicText", selectedValue})
@@ -495,36 +495,83 @@ Tab3:Toggle({
 })
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
+local musicOptions = {
+    -- Sons antigos
+    {name = "pankapakan", id = 122547522269143},
+    {name = "gritomedo", id = 113029085566978},
+    {name = "metal", id = 71251935617451},
+    {name = "araara", id = 18388861760},
+    {name = "tiro", id = 104223019424522},
+    {name = "jumpscar", id = 91784486966761},
+    {name = "gemido", id = 106835463235574},
+    {name = "sometourado", id = 123592956882621},
+    {name = "gritodoido", id = 7807987190},
+    {name = "off", id = 1778829098},
+    {name = "Hahahah", id = 90096947219465},
+    {name = "Carropeid", id = 88883922248256},
+    {name = "Error", id = 101446887200514},
+    {name = "Estouradoespad", id = 136179020015211},
+    {name = "Chernobyl1", id = 134433437151072},
+    {name = "Chernobyl5", id = 101927395686044},
+    {name = "Radioxiado", id = 8028069841},
+    {name = "Nukesiren", id = 9067330158},
+    {name = "Sirenhead", id = 5681392074},
+    {name = "Alertescola", id = 6607047008},
+    {name = "Memealert", id = 8379374771},
+    {name = "Alerta3S", id = 402404861},
+    -- Sons novos que você enviou
+    {name = "tomagerk", id = 132603645477541},
+    {name = "ifood", id = 133843750864059},
+    {name = "coringa", id = 84663543883498},
+    {name = "shoope", id = 8747441609},
+    {name = "quenojo", id = 103440368630269},
+    {name = "sai dai lava prato", id = 101232400175829},
+    {name = "se e loko numconpeça", id = 78442476709262},
+    {name = "gritoestourado", id = 7520729342},
+    {name = "nuclear siren", id = 675587093},
+    {name = "rojao apito", id = 6549021381},
+    {name = "mita sequer que eu too uma", id = 94889439372168},
+    {name = "gemido estranho", id = 131219411501419},
+    {name = "gemido kawai", id = 100409245129170}
+}
+
+-- Cria uma tabela com apenas os nomes para o dropdown
+local musicNames = {}
+for _, music in ipairs(musicOptions) do
+    table.insert(musicNames, music.name)
+end
 
 Tab3:Dropdown({
     Title = "Selecione uma música",
     Desc = "Escolha o som para tocar no servidor",
-    Value = "pankapakan",
+    Value = "pankapakan", -- Primeiro som antigo como padrão
     Multi = false,
     AllowNone = true,
-    Values = {"pankapakan", "gritomedo", "metal", "araara", "tiro", "jumpscar", "gemido", "sometourado", "gritodoido", "off", "Hahahah", "Carropeid", "Error", "Estouradoespad", "Chernobyl1", "Chernobyl5", "Radioxiado", "Nukesiren", "Sirenhead", "Alertescola", "Memealert", "Alerta3S"},
-    Callback = function(somSelecionado)
-        local musicIDs = {
-            ["pankapakan"] = 122547522269143, ["gritomedo"] = 113029085566978, ["metal"] = 71251935617451, ["araara"] = 18388861760, ["tiro"] = 104223019424522,
-            ["jumpscar"] = 91784486966761, ["gemido"] = 106835463235574, ["sometourado"] = 123592956882621, ["gritodoido"] = 7807987190, ["off"] = 1778829098,
-            ["Hahahah"] = 90096947219465, ["Carropeid"] = 88883922248256, ["Error"] = 101446887200514, ["Estouradoespad"] = 136179020015211, ["Chernobyl1"] = 134433437151072,
-            ["Chernobyl5"] = 101927395686044, ["Radioxiado"] = 8028069841, ["Nukesiren"] = 9067330158, ["Sirenhead"] = 5681392074, ["Alertescola"] = 6607047008,
-            ["Memealert"] = 8379374771, ["Alerta3S"] = 402404861
-        }
-        local selectedID = musicIDs[somSelecionado]
+    Values = musicNames,
+    Callback = function(selectedSound)
+        local selectedID
+        for _, music in ipairs(musicOptions) do
+            if music.name == selectedSound then
+                selectedID = music.id
+                break
+            end
+        end
+
         if selectedID then
             fireServer("1Gu1nSound1s", {Workspace, selectedID, 1})
-            local globalSound = Instance.new("Sound", Workspace)
+            local globalSound = Instance.new("Sound")
+            globalSound.Parent = Workspace
             globalSound.SoundId = "rbxassetid://" .. selectedID
             globalSound.Looped = false
             globalSound:Play()
             task.wait(3)
             globalSound:Destroy()
         else
-            warn("ID da música não encontrado!")
+            warn("Nenhum som selecionado ou ID não encontrado!")
         end
     end,
 })
+----------------------------------------------------------------------------------------------------------------------------------------------
 
 ----------------------------------------------------------------------------------------------------------------------------------------------
                                                -- === Tab 4: Scripts === --
@@ -615,12 +662,24 @@ Tab4:Button({
                                                 -- === Tab 5: Players === --
 -----------------------------------------------------------------------------------------------------------------------------------------
 
-local function updateDropdown(dropdown)
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+
+-- Função para pegar os nomes dos jogadores
+local function getPlayerNames()
     local playerNames = {}
     for _, player in ipairs(Players:GetPlayers()) do
         table.insert(playerNames, player.Name)
     end
-    dropdown:Refresh(playerNames)
+    return playerNames
+end
+
+-- Função para atualizar o dropdown
+local function updateDropdown(dropdown)
+    dropdown:Refresh(getPlayerNames())
 end
 
 local function teleportToPlayer(playerName)
@@ -639,7 +698,7 @@ local DropdownTeleport = Tab5:Dropdown({
     Value = "",
     Multi = false,
     AllowNone = true,
-    Values = {},
+    Values = getPlayerNames(), -- Usando a função diretamente
     Callback = function(selectedPlayerName)
         print("Jogador selecionado para teletransporte: " .. selectedPlayerName)
     end,
@@ -682,7 +741,7 @@ local DropdownSpectate = Tab5:Dropdown({
     Value = "",
     Multi = false,
     AllowNone = true,
-    Values = {},
+    Values = getPlayerNames(), -- Usando a função diretamente
     Callback = function(selectedPlayerName)
         print("Jogador selecionado para espectar: " .. selectedPlayerName)
     end,
@@ -795,21 +854,13 @@ local function pickCar()
     fireServer("1Ca1r", {"PickingCar", "SchoolBus"})
 end
 
-local function updateDropdown(dropdown)
-    local playerNames = {}
-    for _, player in ipairs(Players:GetPlayers()) do
-        table.insert(playerNames, player.Name)
-    end
-    dropdown:Refresh(playerNames)
-end
-
 local DropdownCar = Tab5:Dropdown({
     Title = "Selecionar Jogador (Ônibus)",
     Desc = "Escolha um jogador para teleportar o ônibus",
     Value = "",
     Multi = false,
     AllowNone = true,
-    Values = {},
+    Values = getPlayerNames(), -- Usando a função diretamente
     Callback = function(tab)
         selectedPlayerName = tab
         print("Jogador selecionado para ônibus: " .. selectedPlayerName)
