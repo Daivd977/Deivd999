@@ -3,7 +3,7 @@
 -- === Configurações Iniciais === --
 local AllowedUsers = {
     "rtrt967",      -- Seu nome do Roblox
-    "fhantommm10",   -- Outro usuário permitido
+    "Lolytateste666",   -- Outro usuário permitido
     -- Adicione mais nomes aqui, por exemplo:
     -- "outro_usuario",
     -- "amigo123",
@@ -76,7 +76,7 @@ local Tab2 = Window:Tab({ Title = "Troll Musica", Icon = "music" })
 local Tab3 = Window:Tab({ Title = "Music All", Icon = "audio-lines" })
 local Tab4 = Window:Tab({ Title = "Scripts", Icon = "layers" })
 local Tab5 = Window:Tab({ Title = "Players", Icon = "user" })
-local Tab6 = Window:Tab({ Title = "Script Users", Icon = "users" }) -- Nova aba como última
+local Tab6 = Window:Tab({ Title = "Script Users", Icon = "users" }) -- Última aba
 
 -- === Funções Auxiliares === --
 local function fireServer(eventPath, args)
@@ -854,7 +854,7 @@ Tab5:Button({
 })
 
 ---------------------------------------------------------------------------------------------------------------------------------
-                                    -- === Tab 6: Script Users === --
+                                    -- === Tab 6: Script Users (Dropdown) === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
 -- Identificador único para usuários do Lolyta Hub
@@ -884,32 +884,56 @@ local function getScriptUsers()
     return users
 end
 
--- Função para atualizar a interface com a lista de usuários
-local function updateScriptUsersUI()
-    -- Limpa a aba antes de atualizar
-    for _, child in pairs(Tab6:GetChildren()) do
-        if child:IsA("GuiObject") then
-            child:Destroy()
-        end
-    end
-
-    -- Obtém a lista de usuários
+-- Função para atualizar o dropdown
+local function updateScriptUsersDropdown(dropdown)
     local scriptUsers = getScriptUsers()
-
-    -- Adiciona um parágrafo com a lista de usuários
-    if #scriptUsers > 0 then
-        local userList = table.concat(scriptUsers, ", ")
-        Tab6:Paragraph({
-            Title = "Usuários do Lolyta Hub",
-            Desc = "Jogadores usando o mesmo script: " .. userList
-        })
+    if #scriptUsers == 0 then
+        dropdown:Refresh({"Nenhum usuário detectado"})
     else
-        Tab6:Paragraph({
-            Title = "Usuários do Lolyta Hub",
-            Desc = "Nenhum outro usuário detectado usando o script."
-        })
+        dropdown:Refresh(scriptUsers)
     end
 end
+
+-- Dropdown para selecionar usuários do script
+local DropdownScriptUsers = Tab6:Dropdown({
+    Title = "Usuários do Script",
+    Desc = "Selecione um jogador que usa o mesmo script",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = {"Nenhum usuário detectado"}, -- Valor inicial
+    Callback = function(selectedPlayerName)
+        print("Jogador selecionado: " .. selectedPlayerName)
+    end,
+})
+
+-- Botão para espectar o jogador selecionado
+Tab6:Button({
+    Title = "Espectar o Player",
+    Desc = "Especta o jogador selecionado",
+    Callback = function()
+        local selectedPlayerName = DropdownScriptUsers.Value
+        if selectedPlayerName and selectedPlayerName ~= "Nenhum usuário detectado" then
+            spectatePlayer(selectedPlayerName)
+        else
+            print("Nenhum jogador válido selecionado para espectar.")
+        end
+    end,
+})
+
+-- Botão para teleportar para o jogador selecionado
+Tab6:Button({
+    Title = "Teleportar para o Player",
+    Desc = "Teleporta para o jogador selecionado",
+    Callback = function()
+        local selectedPlayerName = DropdownScriptUsers.Value
+        if selectedPlayerName and selectedPlayerName ~= "Nenhum usuário detectado" then
+            teleportToPlayer(selectedPlayerName)
+        else
+            print("Nenhum jogador válido selecionado para teleportar.")
+        end
+    end,
+})
 
 -- Marca o jogador local quando o personagem aparece
 LocalPlayer.CharacterAdded:Connect(function(character)
@@ -919,20 +943,20 @@ if LocalPlayer.Character then
     markLocalPlayer()
 end
 
--- Atualiza a lista periodicamente (a cada 5 segundos)
+-- Atualiza o dropdown periodicamente (a cada 5 segundos)
 spawn(function()
     while wait(5) do
-        updateScriptUsersUI()
+        updateScriptUsersDropdown(DropdownScriptUsers)
     end
 end)
 
 -- Atualiza quando jogadores entram ou saem
 Players.PlayerAdded:Connect(function()
-    updateScriptUsersUI()
+    updateScriptUsersDropdown(DropdownScriptUsers)
 end)
 Players.PlayerRemoving:Connect(function()
-    updateScriptUsersUI()
+    updateScriptUsersDropdown(DropdownScriptUsers)
 end)
 
--- Inicializa a interface da aba
-updateScriptUsersUI()
+-- Inicializa o dropdown
+updateScriptUsersDropdown(DropdownScriptUsers)
