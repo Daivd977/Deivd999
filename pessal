@@ -3,7 +3,7 @@
 -- === Configurações Iniciais === --
 local AllowedUsers = {
     "rtrt967",      -- Seu nome do Roblox
-    "BED1BAN_YT",   -- Outro usuário permitido
+    "fhantommm10",   -- Outro usuário permitido
     -- Adicione mais nomes aqui, por exemplo:
     -- "outro_usuario",
     -- "amigo123",
@@ -71,12 +71,12 @@ Window:EditOpenButton({
 })
 
 -- === Abas da Interface === --
-local Tab0 = Window:Tab({ Title = "Script Users", Icon = "users" }) -- Nova aba no topo
 local Tab1 = Window:Tab({ Title = "Main", Icon = "house" })
 local Tab2 = Window:Tab({ Title = "Troll Musica", Icon = "music" })
 local Tab3 = Window:Tab({ Title = "Music All", Icon = "audio-lines" })
 local Tab4 = Window:Tab({ Title = "Scripts", Icon = "layers" })
 local Tab5 = Window:Tab({ Title = "Players", Icon = "user" })
+local Tab6 = Window:Tab({ Title = "Script Users", Icon = "users" }) -- Nova aba como última
 
 -- === Funções Auxiliares === --
 local function fireServer(eventPath, args)
@@ -86,90 +86,6 @@ end
 local function invokeServer(eventPath, args)
     return ReplicatedStorage:WaitForChild("RE"):WaitForChild(eventPath):InvokeServer(unpack(args))
 end
-
----------------------------------------------------------------------------------------------------------------------------------
-                                    -- === Nova Tab 0: Script Users === --
----------------------------------------------------------------------------------------------------------------------------------
-
--- Identificador único para usuários do Lolyta Hub
-local SCRIPT_SIGNATURE = "LolytaHubUser_v2.3"
-
--- Função para marcar o jogador local como usuário do script
-local function markLocalPlayer()
-    if LocalPlayer.Character then
-        local signature = Instance.new("StringValue")
-        signature.Name = "ScriptSignature"
-        signature.Value = SCRIPT_SIGNATURE
-        signature.Parent = LocalPlayer.Character
-    end
-end
-
--- Função para verificar outros jogadores usando o script
-local function getScriptUsers()
-    local users = {}
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character then
-            local signature = player.Character:FindFirstChild("ScriptSignature")
-            if signature and signature.Value == SCRIPT_SIGNATURE then
-                table.insert(users, player.Name)
-            end
-        end
-    end
-    return users
-end
-
--- Função para atualizar a interface com a lista de usuários
-local function updateScriptUsersUI()
-    -- Limpa a aba antes de atualizar
-    for _, child in pairs(Tab0:GetChildren()) do
-        if child:IsA("GuiObject") then
-            child:Destroy()
-        end
-    end
-
-    -- Obtém a lista de usuários
-    local scriptUsers = getScriptUsers()
-
-    -- Adiciona um parágrafo com a lista de usuários
-    if #scriptUsers > 0 then
-        local userList = table.concat(scriptUsers, ", ")
-        Tab0:Paragraph({
-            Title = "Usuários do Lolyta Hub",
-            Desc = "Jogadores usando o mesmo script: " .. userList
-        })
-    else
-        Tab0:Paragraph({
-            Title = "Usuários do Lolyta Hub",
-            Desc = "Nenhum outro usuário detectado usando o script."
-        })
-    end
-end
-
--- Marca o jogador local quando o personagem aparece
-LocalPlayer.CharacterAdded:Connect(function(character)
-    markLocalPlayer()
-end)
-if LocalPlayer.Character then
-    markLocalPlayer()
-end
-
--- Atualiza a lista periodicamente (a cada 5 segundos)
-spawn(function()
-    while wait(5) do
-        updateScriptUsersUI()
-    end
-end)
-
--- Atualiza quando jogadores entram ou saem
-Players.PlayerAdded:Connect(function()
-    updateScriptUsersUI()
-end)
-Players.PlayerRemoving:Connect(function()
-    updateScriptUsersUI()
-end)
-
--- Inicializa a interface da aba
-updateScriptUsersUI()
 
 ---------------------------------------------------------------------------------------------------------------------------------
                                                    -- === Tab 1: Main === --
@@ -611,7 +527,6 @@ Tab3:Dropdown({
         end
     end,
 })
-----------------------------------------------------------------------------------------------------------------------------------------------
 
 ----------------------------------------------------------------------------------------------------------------------------------------------
                                                -- === Tab 4: Scripts === --
@@ -937,3 +852,87 @@ Tab5:Button({
         if selectedPlayerName ~= "" then teleportPlayerCar(selectedPlayerName) end
     end,
 })
+
+---------------------------------------------------------------------------------------------------------------------------------
+                                    -- === Tab 6: Script Users === --
+---------------------------------------------------------------------------------------------------------------------------------
+
+-- Identificador único para usuários do Lolyta Hub
+local SCRIPT_SIGNATURE = "LolytaHubUser_v2.3"
+
+-- Função para marcar o jogador local como usuário do script
+local function markLocalPlayer()
+    if LocalPlayer.Character then
+        local signature = Instance.new("StringValue")
+        signature.Name = "ScriptSignature"
+        signature.Value = SCRIPT_SIGNATURE
+        signature.Parent = LocalPlayer.Character
+    end
+end
+
+-- Função para verificar outros jogadores usando o script
+local function getScriptUsers()
+    local users = {}
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            local signature = player.Character:FindFirstChild("ScriptSignature")
+            if signature and signature.Value == SCRIPT_SIGNATURE then
+                table.insert(users, player.Name)
+            end
+        end
+    end
+    return users
+end
+
+-- Função para atualizar a interface com a lista de usuários
+local function updateScriptUsersUI()
+    -- Limpa a aba antes de atualizar
+    for _, child in pairs(Tab6:GetChildren()) do
+        if child:IsA("GuiObject") then
+            child:Destroy()
+        end
+    end
+
+    -- Obtém a lista de usuários
+    local scriptUsers = getScriptUsers()
+
+    -- Adiciona um parágrafo com a lista de usuários
+    if #scriptUsers > 0 then
+        local userList = table.concat(scriptUsers, ", ")
+        Tab6:Paragraph({
+            Title = "Usuários do Lolyta Hub",
+            Desc = "Jogadores usando o mesmo script: " .. userList
+        })
+    else
+        Tab6:Paragraph({
+            Title = "Usuários do Lolyta Hub",
+            Desc = "Nenhum outro usuário detectado usando o script."
+        })
+    end
+end
+
+-- Marca o jogador local quando o personagem aparece
+LocalPlayer.CharacterAdded:Connect(function(character)
+    markLocalPlayer()
+end)
+if LocalPlayer.Character then
+    markLocalPlayer()
+end
+
+-- Atualiza a lista periodicamente (a cada 5 segundos)
+spawn(function()
+    while wait(5) do
+        updateScriptUsersUI()
+    end
+end)
+
+-- Atualiza quando jogadores entram ou saem
+Players.PlayerAdded:Connect(function()
+    updateScriptUsersUI()
+end)
+Players.PlayerRemoving:Connect(function()
+    updateScriptUsersUI()
+end)
+
+-- Inicializa a interface da aba
+updateScriptUsersUI()
