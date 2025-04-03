@@ -71,6 +71,7 @@ Window:EditOpenButton({
 })
 
 -- === Abas da Interface === --
+local Tab0 = Window:Tab({ Title = "Script Users", Icon = "users" }) -- Nova aba no topo
 local Tab1 = Window:Tab({ Title = "Main", Icon = "house" })
 local Tab2 = Window:Tab({ Title = "Troll Musica", Icon = "music" })
 local Tab3 = Window:Tab({ Title = "Music All", Icon = "audio-lines" })
@@ -87,6 +88,90 @@ local function invokeServer(eventPath, args)
 end
 
 ---------------------------------------------------------------------------------------------------------------------------------
+                                    -- === Nova Tab 0: Script Users === --
+---------------------------------------------------------------------------------------------------------------------------------
+
+-- Identificador único para usuários do Lolyta Hub
+local SCRIPT_SIGNATURE = "LolytaHubUser_v2.3"
+
+-- Função para marcar o jogador local como usuário do script
+local function markLocalPlayer()
+    if LocalPlayer.Character then
+        local signature = Instance.new("StringValue")
+        signature.Name = "ScriptSignature"
+        signature.Value = SCRIPT_SIGNATURE
+        signature.Parent = LocalPlayer.Character
+    end
+end
+
+-- Função para verificar outros jogadores usando o script
+local function getScriptUsers()
+    local users = {}
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            local signature = player.Character:FindFirstChild("ScriptSignature")
+            if signature and signature.Value == SCRIPT_SIGNATURE then
+                table.insert(users, player.Name)
+            end
+        end
+    end
+    return users
+end
+
+-- Função para atualizar a interface com a lista de usuários
+local function updateScriptUsersUI()
+    -- Limpa a aba antes de atualizar
+    for _, child in pairs(Tab0:GetChildren()) do
+        if child:IsA("GuiObject") then
+            child:Destroy()
+        end
+    end
+
+    -- Obtém a lista de usuários
+    local scriptUsers = getScriptUsers()
+
+    -- Adiciona um parágrafo com a lista de usuários
+    if #scriptUsers > 0 then
+        local userList = table.concat(scriptUsers, ", ")
+        Tab0:Paragraph({
+            Title = "Usuários do Lolyta Hub",
+            Desc = "Jogadores usando o mesmo script: " .. userList
+        })
+    else
+        Tab0:Paragraph({
+            Title = "Usuários do Lolyta Hub",
+            Desc = "Nenhum outro usuário detectado usando o script."
+        })
+    end
+end
+
+-- Marca o jogador local quando o personagem aparece
+LocalPlayer.CharacterAdded:Connect(function(character)
+    markLocalPlayer()
+end)
+if LocalPlayer.Character then
+    markLocalPlayer()
+end
+
+-- Atualiza a lista periodicamente (a cada 5 segundos)
+spawn(function()
+    while wait(5) do
+        updateScriptUsersUI()
+    end
+end)
+
+-- Atualiza quando jogadores entram ou saem
+Players.PlayerAdded:Connect(function()
+    updateScriptUsersUI()
+end)
+Players.PlayerRemoving:Connect(function()
+    updateScriptUsersUI()
+end)
+
+-- Inicializa a interface da aba
+updateScriptUsersUI()
+
+---------------------------------------------------------------------------------------------------------------------------------
                                                    -- === Tab 1: Main === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
@@ -98,8 +183,6 @@ Tab1:Button({
     end,
 })
 
----------------------------------------------------------------------------------------------------------------------------------
-
 Tab1:Button({
     Title = "Voltar tamanho normal (size 1)",
     Desc = "Brookhaven",
@@ -107,8 +190,6 @@ Tab1:Button({
         fireServer("1Clothe1s", {"CharacterSizeUp", 1})
     end,
 })
-
----------------------------------------------------------------------------------------------------------------------------------
 
 Tab1:Button({
     Title = "Invisível (size 4)",
@@ -118,8 +199,6 @@ Tab1:Button({
     end,
 })
 
----------------------------------------------------------------------------------------------------------------------------------
-
 Tab1:Button({
     Title = "Pegar sofá",
     Desc = "Brookhaven",
@@ -127,8 +206,6 @@ Tab1:Button({
         invokeServer("1Too1l", {"PickingTools", "Couch"})
     end,
 })
-
----------------------------------------------------------------------------------------------------------------------------------
 
 Tab1:Button({
     Title = "TP ALL",
@@ -144,8 +221,6 @@ Tab1:Button({
         LocalPlayer.Character:SetPrimaryPartCFrame(startingPosition)
     end,
 })
-
----------------------------------------------------------------------------------------------------------------------------------
 
 Tab1:Toggle({
     Title = "ESP",
@@ -188,8 +263,6 @@ Tab1:Toggle({
     end,
 })
 
----------------------------------------------------------------------------------------------------------------------------------
-
 Tab1:Dropdown({
     Title = "Permissions",
     Desc = "Permission options",
@@ -205,8 +278,6 @@ Tab1:Dropdown({
 
 Tab1:Paragraph({ Title = "Jogador", Desc = "" })
 
----------------------------------------------------------------------------------------------------------------------------------
-
 Tab1:Slider({
     Title = "Super Velocidade",
     Step = 1,
@@ -217,8 +288,6 @@ Tab1:Slider({
         end
     end,
 })
-
----------------------------------------------------------------------------------------------------------------------------------
 
 Tab1:Slider({
     Title = "Super Pulo",
@@ -237,8 +306,6 @@ Tab1:Slider({
 
 Tab2:Paragraph({ Title = "Precisa da gamepass", Desc = "Gamepass música" })
 Tab2:Paragraph({ Title = "Só funciona em veículos do tipo over board", Desc = "" })
-
----------------------------------------------------------------------------------------------------------------------------------
 
 Tab2:Dropdown({
     Title = "Funk, Phonk, MTG",
@@ -263,8 +330,6 @@ Tab2:Dropdown({
     end,
 })
 
----------------------------------------------------------------------------------------------------------------------------------
-
 Tab2:Dropdown({
     Title = "Música Normal",
     Desc = "Over board",
@@ -277,8 +342,6 @@ Tab2:Dropdown({
         print("Argumentos enviados: " .. selectedValue)
     end,
 })
-
----------------------------------------------------------------------------------------------------------------------------------
 
 Tab2:Dropdown({
     Title = "Meme Música",
@@ -293,8 +356,6 @@ Tab2:Dropdown({
     end,
 })
 
----------------------------------------------------------------------------------------------------------------------------------
-
 Tab2:Dropdown({
     Title = "Terror Assustar",
     Desc = "Over board",
@@ -307,8 +368,6 @@ Tab2:Dropdown({
         print("Argumentos enviados: " .. selectedValue)
     end,
 })
-
----------------------------------------------------------------------------------------------------------------------------------
 
 Tab2:Dropdown({
     Title = "Miside, Mita",
@@ -323,8 +382,6 @@ Tab2:Dropdown({
     end,
 })
 
----------------------------------------------------------------------------------------------------------------------------------
-
 Tab2:Button({
     Title = "STOP",
     Desc = "Stop music",
@@ -332,8 +389,6 @@ Tab2:Button({
         fireServer("1NoMoto1rVehicle1s", {"PickingScooterMusicText", ""})
     end,
 })
-
----------------------------------------------------------------------------------------------------------------------------------
 
 Tab2:Button({
     Title = "Telefone FNAF",
@@ -343,8 +398,6 @@ Tab2:Button({
     end,
 })
 
----------------------------------------------------------------------------------------------------------------------------------
-
 Tab2:Button({
     Title = "HELOU HAY AHAHAHA",
     Desc = "FNAF",
@@ -352,8 +405,6 @@ Tab2:Button({
         fireServer("1NoMoto1rVehicle1s", {"PickingScooterMusicText", "5608077885"})
     end,
 })
-
----------------------------------------------------------------------------------------------------------------------------------
 
 Tab2:Button({
     Title = "Grito Ohor",
@@ -363,8 +414,6 @@ Tab2:Button({
     end,
 })
 
----------------------------------------------------------------------------------------------------------------------------------
-
 Tab2:Button({
     Title = "Risada Doida",
     Desc = "Load meme",
@@ -373,12 +422,8 @@ Tab2:Button({
     end,
 })
 
----------------------------------------------------------------------------------------------------------------------------------
-
 Tab2:Paragraph({ Title = "Carro Música", Desc = "Gamepass música" })
 Tab2:Paragraph({ Title = "Precisa da gamepass", Desc = "" })
-
----------------------------------------------------------------------------------------------------------------------------------
 
 Tab2:Dropdown({
     Title = "Selecionar Música",
@@ -403,8 +448,6 @@ Tab2:Dropdown({
     end,
 })
 
----------------------------------------------------------------------------------------------------------------------------------
-
 local Input = Tab2:Input({
     Title = "Música",
     Desc = "Colocar o nome da música",
@@ -418,8 +461,6 @@ local Input = Tab2:Input({
 
 Input:SetTitle("New Title!")
 Input:SetDesc("New Description!")
-
----------------------------------------------------------------------------------------------------------------------------------
 
 Tab2:Button({
     Title = "Stop",
@@ -494,7 +535,6 @@ Tab3:Toggle({
     end,
 })
 
----------------------------------------------------------------------------------------------------------------------------------------------
 local musicOptions = {
     -- Sons antigos
     {name = "pankapakan", id = 122547522269143},
@@ -716,8 +756,6 @@ Tab5:Button({
     end,
 })
 
----------------------------------------------------------------------------------------------------------------------------------------------
-
 local function spectatePlayer(playerName)
     local targetPlayer = Players:FindFirstChild(playerName)
     if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Humanoid") then
@@ -763,8 +801,6 @@ Tab5:Toggle({
         end
     end,
 })
-
-------------------------------------------------------------------------------------------------------------------------------------
 
 -- Sistema de Teletransporte de Ônibus com Backflips
 local selectedPlayerName = ""
