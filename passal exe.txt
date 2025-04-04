@@ -59,8 +59,8 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.4",
-    Icon = "door-open",
+    Title = "Lolyta Hub 2.4", -- Ajustei para 2.4 conforme a imagem
+    Icon = "door-open", -- Mantive o ícone padrão, já que o foco é o fundo
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
     Size = UDim2.fromOffset(580, 460),
@@ -71,43 +71,23 @@ local Window = WindUI:CreateWindow({
         SaveKey = true,
     },
     Transparent = false, -- Desativa a transparência para o fundo funcionar
-    Theme = "Dark",
+    Theme = "Dark", -- Mantém o tema escuro, mas o fundo será sobrescrito pela imagem
     SideBarWidth = 200,
     HasOutline = false,
 })
 
 -- Adiciona a imagem de fundo
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-local ScreenGui = PlayerGui:FindFirstChild("WindUI") or Instance.new("ScreenGui", PlayerGui)
-ScreenGui.Name = "LolytaHubGui"
-ScreenGui.ResetOnSpawn = false -- Evita que a GUI seja resetada ao morrer
-
--- Espera até que a janela principal do WindUI seja criada
-local MainFrame
-for _, child in pairs(ScreenGui:GetChildren()) do
-    if child:IsA("Frame") then
-        MainFrame = child
-        break
-    end
-end
-
--- Se não encontrar o frame, cria um novo
-if not MainFrame then
-    MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(1, 0, 1, 0)
-    MainFrame.Position = UDim2.new(0, 0, 0, 0)
-    MainFrame.BackgroundTransparency = 1
-    MainFrame.Parent = ScreenGui
-end
+local ScreenGui = LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("WindUI") or Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+ScreenGui.Name = "LolytaHubGui" -- Nome único para evitar conflitos
 
 -- Cria a ImageLabel como fundo
 local BackgroundImage = Instance.new("ImageLabel")
-BackgroundImage.Parent = MainFrame -- Coloca a imagem dentro do frame principal do WindUI
+BackgroundImage.Parent = ScreenGui
 BackgroundImage.Size = UDim2.new(1, 0, 1, 0) -- Tamanho para cobrir toda a janela
 BackgroundImage.Position = UDim2.new(0, 0, 0, 0) -- Posição no canto superior esquerdo
 BackgroundImage.Image = "rbxassetid://6675147490" -- ID da imagem que você forneceu
 BackgroundImage.BackgroundTransparency = 1 -- Remove o fundo da ImageLabel
-BackgroundImage.ZIndex = -1 -- Coloca a imagem atrás dos outros elementos do hub
+BackgroundImage.ZIndex = 0 -- Coloca a imagem atrás dos outros elementos do hub
 
 -- Garante que a janela seja arrastável
 Window:EditOpenButton({
@@ -118,6 +98,7 @@ Window:EditOpenButton({
     Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29"))
 })
 
+-- Força a janela a ser arrastável (se a biblioteca suportar)
 if Window.Draggable ~= nil then
     Window.Draggable = true
 end
