@@ -274,9 +274,97 @@ Tab1:Toggle({
                                           -- === Tab 2: RGB Color === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
----------------------------------------------------------------------------------------------------------------------------------
-                                          -- === Tab 2: RGB Color === --
----------------------------------------------------------------------------------------------------------------------------------
+-- Toggle Nome RGB
+local nameRGBActive = false
+Tab2:Toggle({
+    Title = "Nome RGB",
+    Desc = "Ativa cores RGB aleatórias no seu nome",
+    Value = false,
+    Callback = function(state)
+        print("Toggle 'Nome RGB' alterado para: " .. tostring(state)) -- Debug
+        nameRGBActive = state
+        if state then
+            spawn(function()
+                while nameRGBActive do
+                    -- Gera uma cor RGB aleatória
+                    local color = Color3.new(math.random(), math.random(), math.random())
+                    local args = {
+                        [1] = "PickingRPNameColor",
+                        [2] = color
+                    }
+                    local success, errorMessage = pcall(function()
+                        fireServer("1RPNam1eColo1r", args)
+                    end)
+                    if not success then
+                        warn("Erro ao mudar a cor do nome: " .. tostring(errorMessage))
+                    end
+                    wait(1) -- Delay de 1 segundo para evitar detecção
+                end
+            end)
+            print("Nome RGB ativado!")
+        else
+            -- Volta para a cor padrão (ex.: branco)
+            local args = {
+                [1] = "PickingRPNameColor",
+                [2] = Color3.new(1, 1, 1) -- Branco
+            }
+            local success, errorMessage = pcall(function()
+                fireServer("1RPNam1eColo1r", args)
+            end)
+            if success then
+                print("Nome RGB desativado! Cor voltou para branco.")
+            else
+                warn("Erro ao desativar Nome RGB: " .. tostring(errorMessage))
+            end
+        end
+    end,
+})
+
+-- Toggle Bio RGB
+local bioRGBActive = false
+Tab2:Toggle({
+    Title = "Bio RGB",
+    Desc = "Ativa cores RGB aleatórias na sua bio",
+    Value = false,
+    Callback = function(state)
+        print("Toggle 'Bio RGB' alterado para: " .. tostring(state)) -- Debug
+        bioRGBActive = state
+        if state then
+            spawn(function()
+                while bioRGBActive do
+                    -- Gera uma cor RGB aleatória
+                    local color = Color3.new(math.random(), math.random(), math.random())
+                    local args = {
+                        [1] = "PickingRPBioColor",
+                        [2] = color
+                    }
+                    local success, errorMessage = pcall(function()
+                        fireServer("1RPNam1eColo1r", args) -- Mesmo evento para bio
+                    end)
+                    if not success then
+                        warn("Erro ao mudar a cor da bio: " .. tostring(errorMessage))
+                    end
+                    wait(1) -- Delay de 1 segundo para evitar detecção
+                end
+            end)
+            print("Bio RGB ativada!")
+        else
+            -- Volta para a cor padrão (ex.: branco)
+            local args = {
+                [1] = "PickingRPBioColor",
+                [2] = Color3.new(1, 1, 1) -- Branco
+            }
+            local success, errorMessage = pcall(function()
+                fireServer("1RPNam1eColo1r", args)
+            end)
+            if success then
+                print("Bio RGB desativada! Cor voltou para branco.")
+            else
+                warn("Erro ao desativar Bio RGB: " .. tostring(errorMessage))
+            end
+        end
+    end,
+})
 
 -- Toggle RGB Premium (Carro)
 local carRGBActive = false
