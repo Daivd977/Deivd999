@@ -265,15 +265,15 @@ Tab1:Toggle({
 local nameRGBActive = false
 Tab2:Toggle({
     Title = "Nome RGB",
-    Desc = "Ativa cores RGB no seu nome",
+    Desc = "Ativa cores RGB aleatórias no seu nome",
     Value = false,
     Callback = function(state)
         nameRGBActive = state
         if state then
             spawn(function()
                 while nameRGBActive do
-                    local hue = tick() % 1 -- Ciclo de 0 a 1 baseado no tempo
-                    local color = Color3.fromHSV(hue, 1, 1) -- Converte HSV para RGB
+                    -- Gera uma cor RGB aleatória
+                    local color = Color3.new(math.random(), math.random(), math.random())
                     local args = {
                         [1] = "PickingRPNameColor",
                         [2] = color
@@ -299,15 +299,15 @@ Tab2:Toggle({
 local bioRGBActive = false
 Tab2:Toggle({
     Title = "Bio RGB",
-    Desc = "Ativa cores RGB na sua bio",
+    Desc = "Ativa cores RGB aleatórias na sua bio",
     Value = false,
     Callback = function(state)
         bioRGBActive = state
         if state then
             spawn(function()
                 while bioRGBActive do
-                    local hue = tick() % 1 -- Ciclo de 0 a 1 baseado no tempo
-                    local color = Color3.fromHSV(hue, 1, 1) -- Converte HSV para RGB
+                    -- Gera uma cor RGB aleatória
+                    local color = Color3.new(math.random(), math.random(), math.random())
                     local args = {
                         [1] = "PickingRPBioColor",
                         [2] = color
@@ -610,7 +610,9 @@ for _, music in ipairs(musicOptions) do
     table.insert(musicNames, music.name)
 end
 
-Tab4:Dropdown({
+local selectedSoundID = nil
+
+local MusicDropdown = Tab4:Dropdown({
     Title = "Selecione uma música",
     Desc = "Escolha o som para tocar no servidor",
     Value = "pankapakan", -- Primeiro som antigo como padrão
@@ -627,6 +629,7 @@ Tab4:Dropdown({
         end
 
         if selectedID then
+            selectedSoundID = selectedID
             fireServer("1Gu1nSound1s", {Workspace, selectedID, 1})
             local globalSound = Instance.new("Sound")
             globalSound.Parent = Workspace
@@ -637,6 +640,38 @@ Tab4:Dropdown({
             globalSound:Destroy()
         else
             warn("Nenhum som selecionado ou ID não encontrado!")
+            selectedSoundID = nil
+        end
+    end,
+})
+
+local dropdownLoopActive = false
+Tab4:Toggle({
+    Title = "Loop Dropdown",
+    Desc = "Ativa o loop do som selecionado no dropdown",
+    Value = false,
+    Callback = function(state)
+        dropdownLoopActive = state
+        if state then
+            spawn(function()
+                print("Loop do Dropdown ativado!")
+                while dropdownLoopActive do
+                    if selectedSoundID then
+                        fireServer("1Gu1nSound1s", {Workspace, selectedSoundID, 1})
+                        local globalSound = Instance.new("Sound", Workspace)
+                        globalSound.SoundId = "rbxassetid://" .. selectedSoundID
+                        globalSound.Looped = false
+                        globalSound:Play()
+                        task.wait(3)
+                        globalSound:Destroy()
+                    else
+                        warn("Nenhum som selecionado no dropdown!")
+                        task.wait(1)
+                    end
+                end
+            end)
+        else
+            print("Loop do Dropdown desativado!")
         end
     end,
 })
