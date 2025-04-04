@@ -41,14 +41,27 @@ local argsBio = {
     [1] = "RolePlayBio",
     [2] = "scripter"
 }
-game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1RPNam1eTex1t"):FireServer(unpack(argsBio))
+local successBio, errorBio = pcall(function()
+    game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1RPNam1eTex1t"):FireServer(unpack(argsBio))
+end)
+if successBio then
+    print("Bio definida como 'scripter' com sucesso!")
+else
+    warn("Erro ao definir a bio: " .. tostring(errorBio))
+end
 
 local argsName = {
     [1] = "RolePlayName",
     [2] = "Lolyta Hub "
 }
-game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1RPNam1eTex1t"):FireServer(unpack(argsName))
-
+local successName, errorName = pcall(function()
+    game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1RPNam1eTex1t"):FireServer(unpack(argsName))
+end)
+if successName then
+    print("Nome definido como 'Lolyta Hub ' com sucesso!")
+else
+    warn("Erro ao definir o nome: " .. tostring(errorName))
+end
 -----------------------------------------------------------------------------------------------------------------------------------
                                     -- === Inicialização da Interface === --
 -----------------------------------------------------------------------------------------------------------------------------------
@@ -58,7 +71,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.3",
+    Title = "Lolyta Hub 2.5",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
