@@ -70,7 +70,7 @@ local Window = WindUI:CreateWindow({
         URL = "https://github.com/Footagesus/WindUI",
         SaveKey = true,
     },
-    Transparent = true, -- Volta para o tema transparente original
+    Transparent = false, -- Desativa a transparência para o fundo funcionar
     Theme = "Dark",
     SideBarWidth = 200,
     HasOutline = false,
@@ -89,6 +89,51 @@ if Window.Draggable ~= nil then
     Window.Draggable = true
 end
 
+-- Adiciona a imagem de fundo de forma segura
+task.spawn(function()
+    local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+    local ScreenGui = PlayerGui:WaitForChild("WindUI", 5) -- Espera até 5 segundos pelo WindUI
+    if not ScreenGui then
+        ScreenGui = Instance.new("ScreenGui", PlayerGui)
+        ScreenGui.Name = "LolytaHubGui"
+    end
+    ScreenGui.ResetOnSpawn = false
+
+    -- Encontra o frame principal do WindUI
+    local MainFrame
+    for i = 1, 10 do -- Tenta 10 vezes com um pequeno delay
+        for _, child in pairs(ScreenGui:GetChildren()) do
+            if child:IsA("Frame") then
+                MainFrame = child
+                break
+            end
+        end
+        if MainFrame then break end
+        wait(0.5)
+    end
+
+    if MainFrame then
+        -- Cria a ImageLabel como fundo
+        local BackgroundImage = Instance.new("ImageLabel")
+        BackgroundImage.Parent = MainFrame
+        BackgroundImage.Size = UDim2.new(1, 0, 1, 0)
+        BackgroundImage.Position = UDim2.new(0, 0, 0, 0)
+        BackgroundImage.Image = "rbxassetid://6675147490"
+        BackgroundImage.BackgroundTransparency = 1
+        BackgroundImage.ZIndex = -1
+        print("Imagem de fundo adicionada com sucesso!")
+    else
+        warn("Não foi possível encontrar o frame principal do WindUI para adicionar a imagem de fundo.")
+    end
+end)
+
+-- === Abas da Interface === --
+local Tab1 = Window:Tab({ Title = "Main", Icon = "house" })
+local Tab2 = Window:Tab({ Title = "RGB Color", Icon = "palette" })
+local Tab3 = Window:Tab({ Title = "Troll Musica", Icon = "music" })
+local Tab4 = Window:Tab({ Title = "Music All", Icon = "audio-lines" })
+local Tab5 = Window:Tab({ Title = "Scripts", Icon = "layers" })
+local Tab6 = Window:Tab({ Title = "Players", Icon = "user" })
 ---------------------------------------------------------------------------------------------------------------------------------
                                                    -- === Tab 1: Main === --
 ---------------------------------------------------------------------------------------------------------------------------------
@@ -258,6 +303,10 @@ Tab1:Toggle({
         end
     end,
 })
+
+---------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 2: RGB Color === --
+---------------------------------------------------------------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------------------------------------------------------------
                                           -- === Tab 2: RGB Color === --
