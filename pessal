@@ -215,46 +215,111 @@ Tab1:Slider({
     end,
 })
 
--- Toggle Anti-Sit
+-- Toggle Anti-Sit (Atravessar Assentos)
 local antiSitConnection
 
-Tab1:Toggle({
-    Title = "Anti-Sit",
-    Desc = "Impede o jogador de sentar em qualquer assento",
+local AntiSitToggle = Tab1:Toggle({
+    Title = "Anti-Sit (Atravessar)",
+    Desc = "Permite atravessar assentos sem sentar",
     Value = false,
     Callback = function(state)
         if state then
-            -- Ativa o Anti-Sit
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                local humanoid = LocalPlayer.Character.Humanoid
-                humanoid.Sit = false -- Força o jogador a não estar sentado
-                antiSitConnection = humanoid.Seated:Connect(function(isSeated, seat)
-                    if isSeated then
-                        humanoid.Sit = false -- Levanta o jogador imediatamente
+            -- Ativa o Anti-Sit (Atravessar)
+            local function makeSeatsIntangible()
+                if LocalPlayer.Character then
+                    local character = LocalPlayer.Character
+                    -- Percorre todos os assentos no Workspace
+                    for _, seat in pairs(Workspace:GetDescendants()) do
+                        if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
+                            seat.CanCollide = false -- Desativa colisão do assento
+                            -- Define a colisão específica para o personagem local
+                            if not seat:FindFirstChild("AntiSitPart") then
+                                local antiSitPart = Instance.new("Part")
+                                antiSitPart.Name = "AntiSitPart"
+                                antiSitPart.Size = seat.Size
+                                antiSitPart.Position = seat.Position
+                                antiSitPart.Anchored = true
+                                antiSitPart.Transparency = 1
+                                antiSitPart.CanCollide = false
+                                antiSitPart.Parent = seat
+                                -- Usa PhysicsService para evitar colisão com o jogador
+                                game:GetService("PhysicsService"):SetPartCollisionGroup(antiSitPart, "AntiSitGroup")
+                                for _, part in pairs(character:GetDescendants()) do
+                                    if part:IsA("BasePart") then
+                                        game:GetService("PhysicsService"):SetPartCollisionGroup(part, "AntiSitGroup")
+                                    end
+                                end
+                            end
+                        end
                     end
-                end)
+                end
             end
+
+            -- Aplica a lógica inicialmente
+            makeSeatsIntangible()
+
             -- Conecta ao evento de personagem reaparecendo
-            LocalPlayer.CharacterAdded:Connect(function(character)
-                local humanoid = character:WaitForChild("Humanoid")
-                humanoid.Sit = false
-                antiSitConnection = humanoid.Seated:Connect(function(isSeated, seat)
-                    if isSeated then
-                        humanoid.Sit = false
+            antiSitConnection = LocalPlayer.CharacterAdded:Connect(function(character)
+                makeSeatsIntangible()
+                -- Reaplica o grupo de colisão para o novo personagem
+                for _, part in pairs(character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        game:GetService("PhysicsService"):SetPartCollisionGroup(part, "AntiSitGroup")
                     end
-                end)
+                end
             end)
-            print("Anti-Sit ativado!")
+
+            -- Atualiza novos assentos que aparecem no jogo
+            Workspace.DescendantAdded:Connect(function(descendant)
+                if state and (descendant:IsA("Seat") or descendant:IsA("VehicleSeat")) then
+                    descendant.CanCollide = false
+                    if not descendant:FindFirstChild("AntiSitPart") then
+                        local antiSitPart = Instance.new("Part")
+                        antiSitPart.Name = "AntiSitPart"
+                        antiSitPart.Size = descendant.Size
+                        antiSitPart.Position = descendant.Position
+                        antiSitPart.Anchored = true
+                        antiSitPart.Transparency = 1
+                        antiSitPart.CanCollide = false
+                        antiSitPart.Parent = descendant
+                        game:GetService("PhysicsService"):SetPartCollisionGroup(antiSitPart, "AntiSitGroup")
+                    end
+                end
+            end)
+
+            print("Anti-Sit (Atravessar) ativado!")
         else
-            -- Desativa o Anti-Sit
+            -- Desativa o Anti-Sit (Atravessar)
             if antiSitConnection then
                 antiSitConnection:Disconnect()
                 antiSitConnection = nil
             end
-            print("Anti-Sit desativado!")
+
+            -- Restaura a colisão dos assentos
+            for _, seat in pairs(Workspace:GetDescendants()) do
+                if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
+                    seat.CanCollide = true -- Restaura colisão padrão
+                    local antiSitPart = seat:FindFirstChild("AntiSitPart")
+                    if antiSitPart then
+                        antiSitPart:Destroy()
+                    end
+                end
+            end
+
+            -- Restaura o grupo de colisão do personagem
+            if LocalPlayer.Character then
+                for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        game:GetService("PhysicsService"):SetPartCollisionGroup(part, "Default")
+                    end
+                end
+            end
+
+            print("Anti-Sit (Atravessar) desativado!")
         end
     end,
 })
+
 
 ---------------------------------------------------------------------------------------------------------------------------------
                                           -- === Tab 2: Troll Musica === --
