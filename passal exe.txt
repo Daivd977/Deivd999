@@ -162,7 +162,7 @@ local Window = WindUI:CreateWindow({
     Title = "Lolyta Hub 2.3",
     Icon = "door-open",
     Author = "Lolycon666",
-    Folder = "Lolyta hub v.1.0",
+    Folder = "Lolyta hub v.2.3",
     Size = UDim2.fromOffset(580, 460),
     KeySystem = {
         Key = "666",
@@ -1210,3 +1210,60 @@ Tab6:Button({
         if selectedPlayerName ~= "" then teleportPlayerCar(selectedPlayerName) end
     end,
 })
+
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+
+
+
+
+
+
+
+
+
+
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
+-- scripe lolyta chaos hub sexo e muito mas hehehehe
