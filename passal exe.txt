@@ -1,9 +1,16 @@
 -- brookhaven script teste funcionando beta
+-- brookhaven script teste funcionando beta
+-- brookhaven script teste funcionando beta
+-- brookhaven script teste funcionando beta
+-- brookhaven script teste funcionando beta
+-- brookhaven script teste funcionando beta
+-- brookhaven script teste funcionando beta
+-- brookhaven script teste funcionando beta
 
 -- === Configurações Iniciais === --
 local AllowedUsers = {
     "rtrt967",      -- Seu nome do Roblox
-    "BED1BAN_YT",   -- Outro usuário permitido
+    "sasah_x7",   -- Outro usuário permitido
     -- Adicione mais nomes aqui, por exemplo:
     -- "outro_usuario",
     -- "amigo123",
@@ -286,6 +293,12 @@ Tab1:Toggle({
 ---------------------------------------------------------------------------------------------------------------------------------
                                           -- === Tab 2: RGB Color === --
 ---------------------------------------------------------------------------------------------------------------------------------
+
+-- brookhaven script teste funcionando beta
+-- brookhaven script teste funcionando beta
+-- brookhaven script teste funcionando beta
+-- brookhaven script teste funcionando beta 
+-- brookhaven script teste funcionando beta
 
 -- Toggle Nome RGB
 local nameRGBActive = false
