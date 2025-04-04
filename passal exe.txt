@@ -53,13 +53,12 @@ game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1RPNam1eTe
                                     -- === Inicialização da Interface === --
 -----------------------------------------------------------------------------------------------------------------------------------
 
--- === Inicialização da Interface === --
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
 local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.5",
+    Title = "Lolyta Hub 2.3",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -70,13 +69,12 @@ local Window = WindUI:CreateWindow({
         URL = "https://github.com/Footagesus/WindUI",
         SaveKey = true,
     },
-    Transparent = false, -- Desativa a transparência para o fundo funcionar
+    Transparent = true,
     Theme = "Dark",
     SideBarWidth = 200,
     HasOutline = false,
 })
 
--- Garante que a janela seja arrastável
 Window:EditOpenButton({
     Title = "Lolyta",
     Icon = "car",
@@ -85,55 +83,23 @@ Window:EditOpenButton({
     Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29"))
 })
 
-if Window.Draggable ~= nil then
-    Window.Draggable = true
-end
-
--- Adiciona a imagem de fundo de forma segura
-task.spawn(function()
-    local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-    local ScreenGui = PlayerGui:WaitForChild("WindUI", 5) -- Espera até 5 segundos pelo WindUI
-    if not ScreenGui then
-        ScreenGui = Instance.new("ScreenGui", PlayerGui)
-        ScreenGui.Name = "LolytaHubGui"
-    end
-    ScreenGui.ResetOnSpawn = false
-
-    -- Encontra o frame principal do WindUI
-    local MainFrame
-    for i = 1, 10 do -- Tenta 10 vezes com um pequeno delay
-        for _, child in pairs(ScreenGui:GetChildren()) do
-            if child:IsA("Frame") then
-                MainFrame = child
-                break
-            end
-        end
-        if MainFrame then break end
-        wait(0.5)
-    end
-
-    if MainFrame then
-        -- Cria a ImageLabel como fundo
-        local BackgroundImage = Instance.new("ImageLabel")
-        BackgroundImage.Parent = MainFrame
-        BackgroundImage.Size = UDim2.new(1, 0, 1, 0)
-        BackgroundImage.Position = UDim2.new(0, 0, 0, 0)
-        BackgroundImage.Image = "rbxassetid://6675147490"
-        BackgroundImage.BackgroundTransparency = 1
-        BackgroundImage.ZIndex = -1
-        print("Imagem de fundo adicionada com sucesso!")
-    else
-        warn("Não foi possível encontrar o frame principal do WindUI para adicionar a imagem de fundo.")
-    end
-end)
-
 -- === Abas da Interface === --
 local Tab1 = Window:Tab({ Title = "Main", Icon = "house" })
-local Tab2 = Window:Tab({ Title = "RGB Color", Icon = "palette" })
+local Tab2 = Window:Tab({ Title = "RGB Color", Icon = "palette" }) -- Nova aba RGB Color
 local Tab3 = Window:Tab({ Title = "Troll Musica", Icon = "music" })
 local Tab4 = Window:Tab({ Title = "Music All", Icon = "audio-lines" })
 local Tab5 = Window:Tab({ Title = "Scripts", Icon = "layers" })
 local Tab6 = Window:Tab({ Title = "Players", Icon = "user" })
+
+-- === Funções Auxiliares === --
+local function fireServer(eventPath, args)
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild(eventPath):FireServer(unpack(args))
+end
+
+local function invokeServer(eventPath, args)
+    return ReplicatedStorage:WaitForChild("RE"):WaitForChild(eventPath):InvokeServer(unpack(args))
+end
+
 ---------------------------------------------------------------------------------------------------------------------------------
                                                    -- === Tab 1: Main === --
 ---------------------------------------------------------------------------------------------------------------------------------
@@ -312,74 +278,6 @@ Tab1:Toggle({
                                           -- === Tab 2: RGB Color === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
--- Toggle Nome RGB
-local nameRGBActive = false
-Tab2:Toggle({
-    Title = "Nome RGB",
-    Desc = "Ativa cores RGB aleatórias no seu nome",
-    Value = false,
-    Callback = function(state)
-        nameRGBActive = state
-        if state then
-            spawn(function()
-                while nameRGBActive do
-                    -- Gera uma cor RGB aleatória
-                    local color = Color3.new(math.random(), math.random(), math.random())
-                    local args = {
-                        [1] = "PickingRPNameColor",
-                        [2] = color
-                    }
-                    fireServer("1RPNam1eColo1r", args)
-                    wait(1) -- Delay de 1 segundo para evitar detecção
-                end
-            end)
-            print("Nome RGB ativado!")
-        else
-            -- Volta para a cor padrão (ex.: branco)
-            local args = {
-                [1] = "PickingRPNameColor",
-                [2] = Color3.new(1, 1, 1) -- Branco
-            }
-            fireServer("1RPNam1eColo1r", args)
-            print("Nome RGB desativado!")
-        end
-    end,
-})
-
--- Toggle Bio RGB
-local bioRGBActive = false
-Tab2:Toggle({
-    Title = "Bio RGB",
-    Desc = "Ativa cores RGB aleatórias na sua bio",
-    Value = false,
-    Callback = function(state)
-        bioRGBActive = state
-        if state then
-            spawn(function()
-                while bioRGBActive do
-                    -- Gera uma cor RGB aleatória
-                    local color = Color3.new(math.random(), math.random(), math.random())
-                    local args = {
-                        [1] = "PickingRPBioColor",
-                        [2] = color
-                    }
-                    fireServer("1RPNam1eColo1r", args) -- Mesmo evento para bio
-                    wait(1) -- Delay de 1 segundo para evitar detecção
-                end
-            end)
-            print("Bio RGB ativada!")
-        else
-            -- Volta para a cor padrão (ex.: branco)
-            local args = {
-                [1] = "PickingRPBioColor",
-                [2] = Color3.new(1, 1, 1) -- Branco
-            }
-            fireServer("1RPNam1eColo1r", args)
-            print("Bio RGB desativada!")
-        end
-    end,
-})
-
 -- Toggle RGB Premium (Carro)
 local carRGBActive = false
 local vibrantColors = {
@@ -398,17 +296,32 @@ Tab2:Toggle({
     Desc = "Ativa cores RGB chamativas no seu carro",
     Value = false,
     Callback = function(state)
+        print("Toggle 'RGB Premium' alterado para: " .. tostring(state)) -- Debug
         carRGBActive = state
         if state then
+            -- Verifica se o jogador está em um carro
+            local character = LocalPlayer.Character
+            if not character then
+                warn("Personagem não encontrado para ativar RGB Premium!")
+                return
+            end
+
+            -- Inicia o loop de mudança de cor
             spawn(function()
                 while carRGBActive do
                     -- Escolhe uma cor aleatória da lista de cores chamativas
                     local color = vibrantColors[math.random(1, #vibrantColors)]
+                    print("Mudando cor do carro para: " .. tostring(color)) -- Debug
                     local args = {
                         [1] = "PickingCarColor",
                         [2] = color
                     }
-                    game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
+                    local success, errorMessage = pcall(function()
+                        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
+                    end)
+                    if not success then
+                        warn("Erro ao mudar a cor do carro: " .. tostring(errorMessage))
+                    end
                     wait(1) -- Delay de 1 segundo para evitar detecção
                 end
             end)
@@ -419,11 +332,18 @@ Tab2:Toggle({
                 [1] = "PickingCarColor",
                 [2] = Color3.new(1, 1, 1) -- Branco
             }
-            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
-            print("RGB Premium (Carro) desativado!")
+            local success, errorMessage = pcall(function()
+                game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
+            end)
+            if success then
+                print("RGB Premium (Carro) desativado! Cor voltou para branco.")
+            else
+                warn("Erro ao desativar RGB Premium: " .. tostring(errorMessage))
+            end
         end
     end,
 })
+
 ---------------------------------------------------------------------------------------------------------------------------------
                                           -- === Tab 3: Troll Musica === --
 ---------------------------------------------------------------------------------------------------------------------------------
