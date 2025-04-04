@@ -53,13 +53,14 @@ game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1RPNam1eTe
                                     -- === Inicialização da Interface === --
 -----------------------------------------------------------------------------------------------------------------------------------
 
+-- === Inicialização da Interface === --
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
 local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.4",
-    Icon = "door-open", -- Mantém o ícone padrão, caso o ID não funcione aqui
+    Title = "Lolyta Hub 2.4", -- Ajustei para 2.4 conforme a imagem
+    Icon = "door-open", -- Mantive o ícone padrão, já que o foco é o fundo
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
     Size = UDim2.fromOffset(580, 460),
@@ -69,21 +70,26 @@ local Window = WindUI:CreateWindow({
         URL = "https://github.com/Footagesus/WindUI",
         SaveKey = true,
     },
-    Transparent = true,
-    Theme = "Dark",
+    Transparent = false, -- Desativa a transparência para o fundo funcionar
+    Theme = "Dark", -- Mantém o tema escuro, mas o fundo será sobrescrito pela imagem
     SideBarWidth = 200,
     HasOutline = false,
 })
 
--- Adiciona a imagem como ImageLabel
+-- Adiciona a imagem de fundo
 local ScreenGui = LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("WindUI") or Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
-local Image = Instance.new("ImageLabel")
-Image.Parent = ScreenGui -- Coloca a imagem na ScreenGui do WindUI
-Image.Size = UDim2.new(0, 50, 0, 50) -- Tamanho da imagem (ajuste conforme necessário)
-Image.Position = UDim2.new(0, 10, 0, 10) -- Posição no canto superior esquerdo (ajuste se quiser em outro lugar)
-Image.Image = "rbxassetid://6675147490" -- Seu ID da imagem
-Image.BackgroundTransparency = 1 -- Remove o fundo para mostrar só a imagem
+ScreenGui.Name = "LolytaHubGui" -- Nome único para evitar conflitos
 
+-- Cria a ImageLabel como fundo
+local BackgroundImage = Instance.new("ImageLabel")
+BackgroundImage.Parent = ScreenGui
+BackgroundImage.Size = UDim2.new(1, 0, 1, 0) -- Tamanho para cobrir toda a janela
+BackgroundImage.Position = UDim2.new(0, 0, 0, 0) -- Posição no canto superior esquerdo
+BackgroundImage.Image = "rbxassetid://6675147490" -- ID da imagem que você forneceu
+BackgroundImage.BackgroundTransparency = 1 -- Remove o fundo da ImageLabel
+BackgroundImage.ZIndex = 0 -- Coloca a imagem atrás dos outros elementos do hub
+
+-- Garante que a janela seja arrastável
 Window:EditOpenButton({
     Title = "Lolyta",
     Icon = "car",
@@ -91,6 +97,11 @@ Window:EditOpenButton({
     StrokeThickness = 3,
     Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29"))
 })
+
+-- Força a janela a ser arrastável (se a biblioteca suportar)
+if Window.Draggable ~= nil then
+    Window.Draggable = true
+end
 
 -- === Abas da Interface === --
 local Tab1 = Window:Tab({ Title = "Main", Icon = "house" })
