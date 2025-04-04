@@ -36,6 +36,19 @@ if not isAllowed then
     return
 end
 
+-- Scripts a serem executados ao iniciar o hub
+local argsBio = {
+    [1] = "RolePlayBio",
+    [2] = "scripter"
+}
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1RPNam1eTex1t"):FireServer(unpack(argsBio))
+
+local argsName = {
+    [1] = "RolePlayName",
+    [2] = "Lolyta Hub "
+}
+game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1RPNam1eTex1t"):FireServer(unpack(argsName))
+
 -----------------------------------------------------------------------------------------------------------------------------------
                                     -- === Inicialização da Interface === --
 -----------------------------------------------------------------------------------------------------------------------------------
