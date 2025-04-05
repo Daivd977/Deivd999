@@ -2,9 +2,10 @@
 
 -- === Configurações Iniciais === --
 local AllowedUsers = {
-    "rtrt967",      -- Seu nome do Roblox
+    "rtrt967",      -- Seu nome do Roblox    Tataizin_021
     "sasah_7x",   -- Outro usuário permitido
-    "QUEROBOVO",    -- Adicione mais nomes aqui, por exemplo:
+    "QUEROBOVO",
+    "Tataizin_021",-- Adicione mais nomes aqui, por exemplo:
     -- "outro_usuario",
     -- "amigo123",
 }
@@ -71,7 +72,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.4",
+    Title = "Lolyta Hub 2.5",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -585,11 +586,14 @@ Tab2:Button({
 local carSpeed = 200 -- Valor padrão
 Tab3:Input({
     Title = "Definir Velocidade do Carro",
-    Desc = "Digite a velocidade desejada (ex.: 200)",
+    Desc = "Digite a velocidade desejada (sem limites)",
     Placeholder = "200",
     Numeric = true, -- Aceita apenas números
     Callback = function(value)
-        carSpeed = tonumber(value) or 200 -- Converte para número ou usa 200 como padrão
+        carSpeed = tonumber(value) -- Aceita qualquer número, sem limites
+        if carSpeed == nil then
+            carSpeed = 200 -- Valor padrão se o input for inválido
+        end
         print("Velocidade definida para: " .. carSpeed)
     end,
 })
@@ -628,11 +632,14 @@ Tab3:Button({
 local carTurbo = 3 -- Valor padrão
 Tab3:Input({
     Title = "Definir Turbo do Carro",
-    Desc = "Digite o nível do turbo (ex.: 3)",
+    Desc = "Digite o nível do turbo (sem limites)",
     Placeholder = "3",
     Numeric = true, -- Aceita apenas números
     Callback = function(value)
-        carTurbo = tonumber(value) or 3 -- Converte para número ou usa 3 como padrão
+        carTurbo = tonumber(value) -- Aceita qualquer número, sem limites
+        if carTurbo == nil then
+            carTurbo = 3 -- Valor padrão se o input for inválido
+        end
         print("Turbo definido para: " .. carTurbo)
     end,
 })
@@ -666,9 +673,6 @@ Tab3:Button({
         end
     end,
 })
-
-
-
 
 ---------------------------------------------------------------------------------------------------------------------------------
                                           -- === Tab 4: RGB Color === --
