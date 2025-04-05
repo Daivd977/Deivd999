@@ -71,7 +71,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.5",
+    Title = "Lolyta Hub 2.4",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -576,10 +576,96 @@ Tab2:Button({
     end,
 })
 
+
 ---------------------------------------------------------------------------------------------------------------------------------
-                                          -- === Tab 3: carro === --
+                                          -- === Tab 3: Carro === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
+-- Input para definir a velocidade do carro
+local carSpeed = 200 -- Valor padrão
+Tab3:Input({
+    Title = "Definir Velocidade do Carro",
+    Desc = "Digite a velocidade desejada (ex.: 200)",
+    Placeholder = "200",
+    Numeric = true, -- Aceita apenas números
+    Callback = function(value)
+        carSpeed = tonumber(value) or 200 -- Converte para número ou usa 200 como padrão
+        print("Velocidade definida para: " .. carSpeed)
+    end,
+})
+
+-- Botão para aplicar a velocidade
+Tab3:Button({
+    Title = "Aplicar Velocidade",
+    Desc = "Define a velocidade do carro com o valor inserido",
+    Callback = function()
+        local args = {
+            [1] = "200PlayerGiveSpeed",
+            [2] = tostring(carSpeed) -- Converte para string, já que o evento espera uma string
+        }
+        local success, errorMessage = pcall(function()
+            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
+        end)
+        if success then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Sucesso",
+                Text = "Velocidade do carro definida para " .. carSpeed .. "!",
+                Duration = 5
+            })
+            print("Velocidade do carro definida para " .. carSpeed)
+        else
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Falha ao definir a velocidade. Veja o console para detalhes.",
+                Duration = 5
+            })
+            warn("Erro ao definir a velocidade: " .. tostring(errorMessage))
+        end
+    end,
+})
+
+-- Input para definir o turbo do carro
+local carTurbo = 3 -- Valor padrão
+Tab3:Input({
+    Title = "Definir Turbo do Carro",
+    Desc = "Digite o nível do turbo (ex.: 3)",
+    Placeholder = "3",
+    Numeric = true, -- Aceita apenas números
+    Callback = function(value)
+        carTurbo = tonumber(value) or 3 -- Converte para número ou usa 3 como padrão
+        print("Turbo definido para: " .. carTurbo)
+    end,
+})
+
+-- Botão para aplicar o turbo
+Tab3:Button({
+    Title = "Aplicar Turbo",
+    Desc = "Define o turbo do carro com o valor inserido",
+    Callback = function()
+        local args = {
+            [1] = "TurboStage",
+            [2] = carTurbo -- O evento espera um número
+        }
+        local success, errorMessage = pcall(function()
+            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
+        end)
+        if success then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Sucesso",
+                Text = "Turbo do carro definido para nível " .. carTurbo .. "!",
+                Duration = 5
+            })
+            print("Turbo do carro definido para nível " .. carTurbo)
+        else
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Falha ao definir o turbo. Veja o console para detalhes.",
+                Duration = 5
+            })
+            warn("Erro ao definir o turbo: " .. tostring(errorMessage))
+        end
+    end,
+})
 
 
 
