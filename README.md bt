@@ -582,10 +582,42 @@ Tab2:Button({
                                           -- === Tab 3: Carro === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
+-- (Código anterior, como a Tab1 e Tab2)
+
+---------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 3: Carro === --
+---------------------------------------------------------------------------------------------------------------------------------
+
+-- Função para encontrar o carro do jogador
+local function findPlayerCar()
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+    if not character then return nil end
+
+    -- Procura o carro em Workspace.Vehicles ou Spawns!SKY_Dive
+    local possibleLocations = {Workspace:FindFirstChild("Vehicles"), Workspace:FindFirstChild("Spawns!SKY_Dive")}
+    for _, location in pairs(possibleLocations) do
+        if location then
+            for _, vehicle in pairs(location:GetChildren()) do
+                -- Verifica se o carro pertence ao jogador (pode ter o nome do jogador ou um assento ocupado pelo jogador)
+                local seat = vehicle:FindFirstChild("Seat") or vehicle:FindFirstChild("VehicleSeat")
+                if seat and seat:IsA("VehicleSeat") and seat.Occupant == character:FindFirstChild("Humanoid") then
+                    return vehicle
+                end
+                -- Alternativa: verifica se o nome do carro contém o nome do jogador
+                if vehicle.Name:lower():find(player.Name:lower()) then
+                    return vehicle
+                end
+            end
+        end
+    end
+    return nil
+end
+
 -- Input para definir a velocidade do carro
 local carSpeed = 200 -- Valor padrão
 Tab3:Input({
-    Title = "Definir Velocidade do Carro",
+    Title = "Definir Velocidade do 666 Carro",
     Desc = "Digite a velocidade desejada (sem limites)",
     Placeholder = "200",
     Numeric = true, -- Aceita apenas números
@@ -603,20 +635,52 @@ Tab3:Button({
     Title = "Aplicar Velocidade",
     Desc = "Define a velocidade do carro com o valor inserido",
     Callback = function()
-        local args = {
-            [1] = "200PlayerGiveSpeed",
-            [2] = tostring(carSpeed) -- Converte para string, já que o evento espera uma string
-        }
+        local car = findPlayerCar()
+        if not car then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Carro não encontrado! Certifique-se de estar dentro de um carro.",
+                Duration = 5
+            })
+            return
+        end
+
+        -- Tenta encontrar a propriedade de velocidade (pode variar dependendo do jogo)
         local success, errorMessage = pcall(function()
-            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
+            -- Procura por propriedades comuns como MaxSpeed, Speed, ou um script de configuração
+            local config = car:FindFirstChild("Config") or car:FindFirstChild("Configuration")
+            if config then
+                local maxSpeed = config:FindFirstChild("MaxSpeed") or config:FindFirstChild("Speed")
+                if maxSpeed and maxSpeed:IsA("NumberValue") then
+                    maxSpeed.Value = carSpeed
+                    print("Velocidade do carro definida para " .. carSpeed .. " via Config!")
+                else
+                    warn("Propriedade MaxSpeed/Speed não encontrada no Config do carro.")
+                end
+            end
+
+            -- Alternativa: procura diretamente no carro
+            local maxSpeed = car:FindFirstChild("MaxSpeed") or car:FindFirstChild("Speed")
+            if maxSpeed and maxSpeed:IsA("NumberValue") then
+                maxSpeed.Value = carSpeed
+                print("Velocidade do carro definida para " .. carSpeed .. " diretamente!")
+            end
+
+            -- Se o carro usa um BodyVelocity ou outro componente de física
+            local bodyVelocity = car:FindFirstChild("BodyVelocity", true)
+            if bodyVelocity then
+                bodyVelocity.MaxForce = Vector3.new(math.huge, 0, math.huge) -- Permite velocidade ilimitada
+                bodyVelocity.Velocity = Vector3.new(carSpeed, 0, 0) -- Ajusta a velocidade
+                print("Velocidade ajustada via BodyVelocity!")
+            end
         end)
+
         if success then
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Sucesso",
                 Text = "Velocidade do carro definida para " .. carSpeed .. "!",
                 Duration = 5
             })
-            print("Velocidade do carro definida para " .. carSpeed)
         else
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Erro",
@@ -629,50 +693,84 @@ Tab3:Button({
 })
 
 -- Input para definir o turbo do carro
-local carTurbo = 3 -- Valor padrão
+local carTurbo = 1.5 -- Valor padrão (multiplicador de velocidade)
 Tab3:Input({
     Title = "Definir Turbo do Carro",
-    Desc = "Digite o nível do turbo (sem limites)",
-    Placeholder = "3",
+    Desc = "Digite o multiplicador de turbo (ex.: 1.5 para 50% a mais de velocidade)",
+    Placeholder = "1.5",
     Numeric = true, -- Aceita apenas números
     Callback = function(value)
         carTurbo = tonumber(value) -- Aceita qualquer número, sem limites
         if carTurbo == nil then
-            carTurbo = 3 -- Valor padrão se o input for inválido
+            carTurbo = 1.5 -- Valor padrão se o input for inválido
         end
-        print("Turbo definido para: " .. carTurbo)
+        print("Turbo definido para: " .. carTurbo .. "x")
     end,
 })
 
 -- Botão para aplicar o turbo
 Tab3:Button({
     Title = "Aplicar Turbo",
-    Desc = "Define o turbo do carro com o valor inserido",
+    Desc = "Aplica o turbo ao carro (aumenta a velocidade)",
     Callback = function()
-        local args = {
-            [1] = "TurboStage",
-            [2] = carTurbo -- O evento espera um número
-        }
+        local car = findPlayerCar()
+        if not car then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Carro não encontrado! Certifique-se de estar dentro de um carro.",
+                Duration = 5
+            })
+            return
+        end
+
+        -- Tenta aplicar o turbo multiplicando a velocidade atual
         local success, errorMessage = pcall(function()
-            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
+            -- Procura por propriedades comuns como MaxSpeed, Speed, ou um script de configuração
+            local config = car:FindFirstChild("Config") or car:FindFirstChild("Configuration")
+            if config then
+                local maxSpeed = config:FindFirstChild("MaxSpeed") or config:FindFirstChild("Speed")
+                if maxSpeed and maxSpeed:IsA("NumberValue") then
+                    maxSpeed.Value = maxSpeed.Value * carTurbo
+                    print("Turbo aplicado! Nova velocidade: " .. maxSpeed.Value)
+                else
+                    warn("Propriedade MaxSpeed/Speed não encontrada no Config do carro.")
+                end
+            end
+
+            -- Alternativa: procura diretamente no carro
+            local maxSpeed = car:FindFirstChild("MaxSpeed") or car:FindFirstChild("Speed")
+            if maxSpeed and maxSpeed:IsA("NumberValue") then
+                maxSpeed.Value = maxSpeed.Value * carTurbo
+                print("Turbo aplicado! Nova velocidade: " .. maxSpeed.Value)
+            end
+
+            -- Se o carro usa um BodyVelocity ou outro componente de física
+            local bodyVelocity = car:FindFirstChild("BodyVelocity", true)
+            if bodyVelocity then
+                bodyVelocity.MaxForce = Vector3.new(math.huge, 0, math.huge) -- Permite velocidade ilimitada
+                bodyVelocity.Velocity = bodyVelocity.Velocity * carTurbo -- Aplica o turbo
+                print("Turbo ajustado via BodyVelocity!")
+            end
         end)
+
         if success then
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Sucesso",
-                Text = "Turbo do carro definido para nível " .. carTurbo .. "!",
+                Text = "Turbo aplicado! Multiplicador: " .. carTurbo .. "x",
                 Duration = 5
             })
-            print("Turbo do carro definido para nível " .. carTurbo)
         else
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Erro",
-                Text = "Falha ao definir o turbo. Veja o console para detalhes.",
+                Text = "Falha ao aplicar o turbo. Veja o console para detalhes.",
                 Duration = 5
             })
-            warn("Erro ao definir o turbo: " .. tostring(errorMessage))
+            warn("Erro ao aplicar o turbo: " .. tostring(errorMessage))
         end
     end,
 })
+
+-- (Código posterior, se houver)
 
 ---------------------------------------------------------------------------------------------------------------------------------
                                           -- === Tab 4: RGB Color === --
