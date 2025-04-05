@@ -324,26 +324,50 @@ Tab1:Toggle({
 Tab2:Paragraph({ Title = "funçoes para voce usar em voce", Desc = "" })
 
 
-Button = Tab2:Button({
-    Title = "Remover Ban",
-    Desc = "Remove o bloqueio de todas as casas",
-    Callback = function()
-        for _, object in pairs(game.Workspace:GetChildren()) do
-            if object:IsA("Model") and object.Name:match("House$") then
-                local bannedBlock = object:FindFirstChild("BannedBlock")
-                local propBlocker = object:FindFirstChild("PropBlocker")
+local Dropdown = Tab2:Dropdown({
+    Title = "Jogadores com Casas",
+    Desc = "Selecione o jogador para remover o ban",
+    Value = nil, -- Nenhum jogador selecionado inicialmente
+    Multi = false,
+    AllowNone = true,
+    Values = {}, -- Esta lista será preenchida automaticamente
+    Callback = function(selectedPlayer)
+        print("Jogador selecionado:", selectedPlayer)
+    end
+})
 
+-- Preenchendo o Dropdown com nomes dos jogadores que têm casas
+local lotsFolder = game.Workspace:FindFirstChild("001_Lots")
+
+if lotsFolder then
+    for _, object in pairs(lotsFolder:GetChildren()) do
+        if object:IsA("Model") and object.Name:match("House$") then
+            local playerName = object.Name:gsub("House", "") -- Remove "House" do final para obter o nome do jogador
+            table.insert(Dropdown.Values, playerName)
+        end
+    end
+end
+
+local Button = Tab2:Button({
+    Title = "Remover Ban",
+    Desc = "Remove o ban do jogador selecionado",
+    Callback = function()
+        local selectedPlayer = Dropdown.Value
+        if selectedPlayer then
+            local houseModel = lotsFolder:FindFirstChild(selectedPlayer .. "House")
+            if houseModel then
+                local bannedBlock = houseModel:FindFirstChild("BannedBlock")
                 if bannedBlock then
                     bannedBlock:Destroy()
                 end
-
-                if propBlocker then
-                    propBlocker:Destroy()
-                end
+                print("Ban removido para o jogador:", selectedPlayer)
+            else
+                print("A casa do jogador selecionado não foi encontrada.")
             end
+        else
+            print("Nenhum jogador foi selecionado.")
         end
-        print("Bloqueios removidos!")
-    end,
+    end
 })
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
