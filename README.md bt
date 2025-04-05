@@ -96,15 +96,17 @@ Window:EditOpenButton({
     Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29"))
 })
 
+
 -- === Abas da Interface === --
-local Tab1 = Window:Tab({ Title = "Main", Icon = "house" })
-local Tab2 = Window:Tab({ Title = "RGB Color", Icon = "palette" }) -- Nova aba RGB Color
-local Tab3 = Window:Tab({ Title = "Troll Musica", Icon = "music" })
-local Tab4 = Window:Tab({ Title = "Music All", Icon = "audio-lines" })
-local Tab5 = Window:Tab({ Title = "Scripts", Icon = "layers" })
-local Tab6 = Window:Tab({ Title = "Players", Icon = "user" })
-local Tab7 = Window:Tab({ Title = "Casa", Icon = "home" })
-local Tab8 = Window:Tab({ Title = "Carro", Icon = "car" })
+local Tab1 = Window:Tab({ Title = "Main", Icon = "" })
+local Tab2 = Window:Tab({ Title = "Casa", Icon = "house" })
+local Tab3 = Window:Tab({ Title = "Carro", Icon = "car" })
+local Tab4 = Window:Tab({ Title = "RGB Color", Icon = "palette" }) -- Nova aba RGB Color
+local Tab5 = Window:Tab({ Title = "Troll Musica", Icon = "music" })
+local Tab6 = Window:Tab({ Title = "Music All", Icon = "audio-lines" })
+local Tab7 = Window:Tab({ Title = "Scripts", Icon = "layers" })
+local Tab8 = Window:Tab({ Title = "Players", Icon = "user" })
+
 
 -- === Funções Auxiliares === --
 local function fireServer(eventPath, args)
@@ -127,6 +129,11 @@ Tab1:Button({
     end,
 })
 
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
 Tab1:Button({
     Title = "Voltar tamanho normal (size 1)",
     Desc = "Brookhaven",
@@ -134,6 +141,11 @@ Tab1:Button({
         fireServer("1Clothe1s", {"CharacterSizeUp", 1})
     end,
 })
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 
 Tab1:Button({
     Title = "Invisível (size 4)",
@@ -143,6 +155,11 @@ Tab1:Button({
     end,
 })
 
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
 Tab1:Button({
     Title = "Pegar sofá",
     Desc = "Brookhaven",
@@ -150,6 +167,10 @@ Tab1:Button({
         invokeServer("1Too1l", {"PickingTools", "Couch"})
     end,
 })
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 Tab1:Button({
     Title = "TP ALL",
@@ -165,6 +186,10 @@ Tab1:Button({
         LocalPlayer.Character:SetPrimaryPartCFrame(startingPosition)
     end,
 })
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 Tab1:Toggle({
     Title = "ESP",
@@ -207,6 +232,9 @@ Tab1:Toggle({
     end,
 })
 
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 Tab1:Dropdown({
     Title = "pegar permissão das casas",
     Desc = "",
@@ -219,7 +247,7 @@ Tab1:Dropdown({
         fireServer("1Playe1rTrigge1rEven1t", {"GivePermissionLoopToServer", LocalPlayer, permission})
     end,
 })
-
+-----------------------------------------------------------------------------------------------------------------------------------------------
 Tab1:Paragraph({ Title = "Jogador", Desc = "" })
 
 Tab1:Slider({
@@ -233,6 +261,8 @@ Tab1:Slider({
     end,
 })
 
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
 Tab1:Slider({
     Title = "definir o tamanho do salto do jogador",
     Step = 1,
@@ -243,6 +273,8 @@ Tab1:Slider({
         end
     end,
 })
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
 
 -- Toggle Anti-Sit
 local antiSitConnection
@@ -286,12 +318,196 @@ Tab1:Toggle({
 })
 
 ---------------------------------------------------------------------------------------------------------------------------------
-                                          -- === Tab 2: RGB Color === --
+                                          -- === Tab 2: casa === --
+---------------------------------------------------------------------------------------------------------------------------------
+
+Tab2:Dropdown({
+    Title = "pegar permissão das casas",
+    Desc = "",
+    Value = "Option 1",
+    Multi = false,
+    AllowNone = true,
+    Values = {"Option 1", "Option 2", "Option 3", "Option 4", "Option 5", "Option 6", "Option 7", "Option 8", "Option 9", "Option 10", "Option 11", "Option 12", "Option 13", "Option 14", "Option 15", "Option 16", "Option 17", "Option 18", "Option 19", "Option 20", "Option 21", "Option 22", "Option 23", "Option 24", "Option 25", "Option 26", "Option 27", "Option 28", "Option 29", "Option 30", "Option 31", "Option 32", "Option 33", "Option 34", "Option 35"},
+    Callback = function(tab)
+        local permission = tonumber(tab:match("%d+")) or 1
+        fireServer("1Playe1rTrigge1rEven1t", {"GivePermissionLoopToServer", LocalPlayer, permission})
+    end,
+})
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+-- Função para pegar os nomes dos jogadores
+local function getPlayerNames()
+    local playerNames = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        table.insert(playerNames, player.Name)
+    end
+    return playerNames
+end
+
+-- Dropdown para selecionar o jogador
+local selectedPlayerName = ""
+local DropdownPlayers = Tab2:Dropdown({
+    Title = "Selecionar Jogador",
+    Desc = "Escolha um jogador para dar permissão",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = getPlayerNames(),
+    Callback = function(playerName)
+        selectedPlayerName = playerName
+        print("Jogador selecionado: " .. selectedPlayerName)
+    end,
+})
+
+-- Atualiza o dropdown quando jogadores entram ou saem
+Players.PlayerAdded:Connect(function() DropdownPlayers:Refresh(getPlayerNames()) end)
+Players.PlayerRemoving:Connect(function() DropdownPlayers:Refresh(getPlayerNames()) end)
+
+-- Dropdown para selecionar o número da casa
+local selectedHouseNumber = 1
+local houseOptions = {}
+for i = 1, 37 do
+    table.insert(houseOptions, tostring(i))
+end
+
+local DropdownHouses = Tab2:Dropdown({
+    Title = "Selecionar Casa",
+    Desc = "Escolha o número da casa (1 a 37)",
+    Value = "1",
+    Multi = false,
+    AllowNone = false,
+    Values = houseOptions,
+    Callback = function(houseNumber)
+        selectedHouseNumber = tonumber(houseNumber)
+        print("Casa selecionada: " .. selectedHouseNumber)
+    end,
+})
+
+-- Botão para dar permissão
+Tab2:Button({
+    Title = "Dar Permissão",
+    Desc = "Dá permissão ao jogador selecionado para a casa escolhida",
+    Callback = function()
+        if selectedPlayerName == "" then
+            warn("Nenhum jogador selecionado!")
+            return
+        end
+        local targetPlayer = Players:FindFirstChild(selectedPlayerName)
+        if not targetPlayer then
+            warn("Jogador não encontrado: " .. selectedPlayerName)
+            return
+        end
+        local args = {
+            [1] = "GivePermissionLoopToServer",
+            [2] = targetPlayer,
+            [3] = selectedHouseNumber
+        }
+        local success, errorMessage = pcall(function()
+            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        end)
+        if success then
+            print("Permissão dada para " .. selectedPlayerName .. " na casa " .. selectedHouseNumber)
+        else
+            warn("Erro ao dar permissão: " .. tostring(errorMessage))
+        end
+    end,
+})
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+-- Função para pegar os nomes dos jogadores
+local function getPlayerNames()
+    local playerNames = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        table.insert(playerNames, player.Name)
+    end
+    return playerNames
+end
+
+-- Dropdown para selecionar o jogador
+local selectedPlayerNameRemove = ""
+local DropdownPlayersRemove = Tab2:Dropdown({
+    Title = "Selecionar Jogador (Remover)",
+    Desc = "Escolha um jogador para remover permissão",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = getPlayerNames(),
+    Callback = function(playerName)
+        selectedPlayerNameRemove = playerName
+        print("Jogador selecionado para remover permissão: " .. selectedPlayerNameRemove)
+    end,
+})
+
+-- Atualiza o dropdown quando jogadores entram ou saem
+Players.PlayerAdded:Connect(function() DropdownPlayersRemove:Refresh(getPlayerNames()) end)
+Players.PlayerRemoving:Connect(function() DropdownPlayersRemove:Refresh(getPlayerNames()) end)
+
+-- Dropdown para selecionar o número da casa
+local selectedHouseNumberRemove = 1
+local houseOptionsRemove = {}
+for i = 1, 37 do
+    table.insert(houseOptionsRemove, tostring(i))
+end
+
+local DropdownHousesRemove = Tab2:Dropdown({
+    Title = "Selecionar Casa (Remover)",
+    Desc = "Escolha o número da casa (1 a 37)",
+    Value = "1",
+    Multi = false,
+    AllowNone = false,
+    Values = houseOptionsRemove,
+    Callback = function(houseNumber)
+        selectedHouseNumberRemove = tonumber(houseNumber)
+        print("Casa selecionada para remover permissão: " .. selectedHouseNumberRemove)
+    end,
+})
+
+-- Botão para remover permissão
+Tab2:Button({
+    Title = "Remover Permissão",
+    Desc = "Remove a permissão do jogador selecionado para a casa escolhida",
+    Callback = function()
+        if selectedPlayerNameRemove == "" then
+            warn("Nenhum jogador selecionado para remover permissão!")
+            return
+        end
+        local targetPlayer = Players:FindFirstChild(selectedPlayerNameRemove)
+        if not targetPlayer then
+            warn("Jogador não encontrado: " .. selectedPlayerNameRemove)
+            return
+        end
+        local args = {
+            [1] = "RemovePermissionLoopToServer",
+            [2] = targetPlayer,
+            [3] = selectedHouseNumberRemove
+        }
+        local success, errorMessage = pcall(function()
+            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        end)
+        if success then
+            print("Permissão removida de " .. selectedPlayerNameRemove .. " na casa " .. selectedHouseNumberRemove)
+        else
+            warn("Erro ao remover permissão: " .. tostring(errorMessage))
+        end
+    end,
+})
+
+---------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 3: carro === --
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 4: RGB Color === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
 -- Toggle Nome RGB
 local nameRGBActive = false
-Tab2:Toggle({
+Tab4:Toggle({
     Title = "Nome RGB",
     Desc = "Ativa cores RGB",
     Value = false,
@@ -335,9 +551,14 @@ Tab2:Toggle({
     end,
 })
 
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
 -- Toggle Bio RGB
 local bioRGBActive = false
-Tab2:Toggle({
+Tab4:Toggle({
     Title = "Bio RGB",
     Desc = "Ativa cores RGB aleatórias na sua bio",
     Value = false,
@@ -381,6 +602,12 @@ Tab2:Toggle({
     end,
 })
 
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
 -- Toggle RGB Premium (Carro)
 local carRGBActive = false
 local vibrantColors = {
@@ -394,7 +621,7 @@ local vibrantColors = {
     Color3.new(0.5, 0, 1)      -- Roxo
 }
 
-Tab2:Toggle({
+Tab4:Toggle({
     Title = "car RGB",
     Desc = "precisa do premium (atençao pode dar kick)",
     Value = false,
@@ -448,13 +675,18 @@ Tab2:Toggle({
 })
 
 ---------------------------------------------------------------------------------------------------------------------------------
-                                          -- === Tab 3: Troll Musica === --
+                                          -- === Tab 5: Troll Musica === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
-Tab3:Paragraph({ Title = "Precisa de gamepass", Desc = "Gamepass música" })
-Tab3:Paragraph({ Title = "Só funciona em veículos do tipo over board", Desc = "" })
+Tab5:Paragraph({ Title = "Precisa de gamepass", Desc = "Gamepass música" })
+Tab5:Paragraph({ Title = "Só funciona em veículos do tipo over board", Desc = "" })
 
-Tab3:Dropdown({
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+Tab5:Dropdown({
     Title = "Funk, Phonk, MTG",
     Desc = "Over board",
     Value = "Option 1",
@@ -477,7 +709,12 @@ Tab3:Dropdown({
     end,
 })
 
-Tab3:Dropdown({
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+Tab5:Dropdown({
     Title = "Música Normal",
     Desc = "Over board",
     Value = "Option 1",
@@ -490,7 +727,7 @@ Tab3:Dropdown({
     end,
 })
 
-Tab3:Dropdown({
+Tab5:Dropdown({
     Title = "Meme Música",
     Desc = "Over board",
     Value = "Option 1",
@@ -503,7 +740,12 @@ Tab3:Dropdown({
     end,
 })
 
-Tab3:Dropdown({
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+Tab5:Dropdown({
     Title = "Terror Assustar",
     Desc = "Over board",
     Value = "Option 1",
@@ -516,7 +758,12 @@ Tab3:Dropdown({
     end,
 })
 
-Tab3:Dropdown({
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+Tab5:Dropdown({
     Title = "Miside, Mita",
     Desc = "Over board",
     Value = "Option 1",
@@ -529,7 +776,12 @@ Tab3:Dropdown({
     end,
 })
 
-Tab3:Button({
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+Tab5:Button({
     Title = "STOP",
     Desc = "Stop music",
     Callback = function()
@@ -537,7 +789,12 @@ Tab3:Button({
     end,
 })
 
-Tab3:Button({
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+Tab5:Button({
     Title = "Telefone FNAF",
     Desc = "FNAF",
     Callback = function()
@@ -545,7 +802,12 @@ Tab3:Button({
     end,
 })
 
-Tab3:Button({
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+Tab5:Button({
     Title = "HELOU HAY AHAHAHA",
     Desc = "FNAF",
     Callback = function()
@@ -553,7 +815,12 @@ Tab3:Button({
     end,
 })
 
-Tab3:Button({
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+Tab5:Button({
     Title = "Grito Ohor",
     Desc = "FNAF",
     Callback = function()
@@ -561,7 +828,12 @@ Tab3:Button({
     end,
 })
 
-Tab3:Button({
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+Tab5:Button({
     Title = "Risada Doida",
     Desc = "Load meme",
     Callback = function()
@@ -569,10 +841,20 @@ Tab3:Button({
     end,
 })
 
-Tab3:Paragraph({ Title = "Carro Música", Desc = "Gamepass música" })
-Tab3:Paragraph({ Title = "Precisa da gamepass", Desc = "" })
 
-Tab3:Dropdown({
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+Tab5:Paragraph({ Title = "Carro Música", Desc = "Gamepass música" })
+Tab5:Paragraph({ Title = "Precisa da gamepass", Desc = "" })
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+Tab5:Dropdown({
     Title = "Selecionar Música",
     Desc = "Música",
     Value = "Option 1",
@@ -595,7 +877,12 @@ Tab3:Dropdown({
     end,
 })
 
-local Input = Tab3:Input({
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+local Input = Tab5:Input({
     Title = "Música",
     Desc = "Colocar o id da música",
     Value = "",
@@ -609,7 +896,12 @@ local Input = Tab3:Input({
 Input:SetTitle("New Title!")
 Input:SetDesc("New Description!")
 
-Tab3:Button({
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+Tab5:Button({
     Title = "Stop",
     Desc = "Car music",
     Callback = function()
@@ -618,13 +910,13 @@ Tab3:Button({
 })
 
 ---------------------------------------------------------------------------------------------------------------------------------
-                                                -- === Tab 4: Music All === --
+                                                -- === Tab 6: Music All === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
 local loopAtivo = false
 local InputID = ""
 
-Tab4:Input({
+Tab6:Input({
     Title = "Insira o ID Audio All",
     Desc = "Digite o ID do som que deseja tocar",
     Value = "",
@@ -636,7 +928,7 @@ Tab4:Input({
     end,
 })
 
-Tab4:Button({
+Tab6:Button({
     Title = "Tocar Som",
     Desc = "Clique para tocar a música inserida",
     Callback = function()
@@ -654,7 +946,7 @@ Tab4:Button({
     end,
 })
 
-Tab4:Toggle({
+Tab6:Toggle({
     Title = "Loop",
     Desc = "Ative para colocar o som em loop",
     Icon = "check",
@@ -681,6 +973,11 @@ Tab4:Toggle({
         end
     end,
 })
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 
 local musicOptions = {
     -- Sons antigos
@@ -730,7 +1027,7 @@ end
 
 local selectedSoundID = nil
 
-local MusicDropdown = Tab4:Dropdown({
+local MusicDropdown = Tab6:Dropdown({
     Title = "Selecione uma música",
     Desc = "Escolha o som para tocar no servidor",
     Value = "pankapakan", -- Primeiro som antigo como padrão
@@ -764,7 +1061,7 @@ local MusicDropdown = Tab4:Dropdown({
 })
 
 local dropdownLoopActive = false
-Tab4:Toggle({
+Tab6:Toggle({
     Title = "Loop",
     Desc = "Ativa o loop do som selecionado acima",
     Value = false,
@@ -795,10 +1092,10 @@ Tab4:Toggle({
 })
 
 ----------------------------------------------------------------------------------------------------------------------------------------------
-                                               -- === Tab 5: Scripts === --
+                                               -- === Tab 7: Scripts === --
 ----------------------------------------------------------------------------------------------------------------------------------------------
 
-Tab5:Button({
+Tab7:Button({
     Title = "Invisible",
     Desc = "universal",
     Callback = function()
@@ -806,7 +1103,7 @@ Tab5:Button({
     end,
 })
 
-Tab5:Button({
+Tab7:Button({
     Title = "FE Jerk Off Hub Matrix",
     Desc = "Universal",
     Callback = function()
@@ -814,7 +1111,7 @@ Tab5:Button({
     end,
 })
 
-Tab5:Button({
+Tab7:Button({
     Title = "FE HUGG",
     Desc = "Universal",
     Callback = function()
@@ -822,7 +1119,7 @@ Tab5:Button({
     end,
 })
 
-Tab5:Button({
+Tab7:Button({
     Title = "Auto Piano Panda Hub",
     Desc = "Universal",
     Callback = function()
@@ -831,7 +1128,7 @@ Tab5:Button({
     end,
 })
 
-Tab5:Button({
+Tab7:Button({
     Title = "Buraco Negro",
     Desc = "Universal",
     Callback = function()
@@ -839,7 +1136,7 @@ Tab5:Button({
     end,
 })
 
-Tab5:Button({
+Tab7:Button({
     Title = "System Broochk",
     Desc = "Universal",
     Callback = function()
@@ -847,7 +1144,7 @@ Tab5:Button({
     end,
 })
 
-Tab5:Button({
+Tab7:Button({
     Title = "Roships",
     Desc = "Universal",
     Callback = function()
@@ -855,7 +1152,7 @@ Tab5:Button({
     end,
 })
 
-Tab5:Button({
+Tab7:Button({
     Title = "Sander X",
     Desc = "Somente para Brookhaven",
     Callback = function()
@@ -863,7 +1160,7 @@ Tab5:Button({
     end,
 })
 
-Tab5:Button({
+Tab7:Button({
     Title = "Reverso",
     Desc = "Universal",
     Callback = function()
@@ -871,7 +1168,7 @@ Tab5:Button({
     end,
 })
 
-Tab5:Button({
+Tab7:Button({
     Title = "RD4",
     Desc = "Somente para Brookhaven",
     Callback = function()
@@ -880,7 +1177,7 @@ Tab5:Button({
 })
 
 -----------------------------------------------------------------------------------------------------------------------------------------
-                                                -- === Tab 6: Players === --
+                                                -- === Tab 8: Players === --
 -----------------------------------------------------------------------------------------------------------------------------------------
 
 local Players = game:GetService("Players")
@@ -913,7 +1210,7 @@ local function teleportToPlayer(playerName)
     end
 end
 
-local DropdownTeleport = Tab6:Dropdown({
+local DropdownTeleport = Tab8:Dropdown({
     Title = "Selecionar Jogador (Teleport)",
     Desc = "Selecione o jogador para teletransportar",
     Value = "",
@@ -929,7 +1226,12 @@ updateDropdown(DropdownTeleport)
 Players.PlayerAdded:Connect(function() updateDropdown(DropdownTeleport) end)
 Players.PlayerRemoving:Connect(function() updateDropdown(DropdownTeleport) end)
 
-Tab6:Button({
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+Tab8:Button({
     Title = "Teleportar para Jogador",
     Desc = "Clique para teletransportar para o jogador selecionado",
     Callback = function()
@@ -970,7 +1272,12 @@ updateDropdown(DropdownSpectate)
 Players.PlayerAdded:Connect(function() updateDropdown(DropdownSpectate) end)
 Players.PlayerRemoving:Connect(function() updateDropdown(DropdownSpectate) end)
 
-Tab6:Toggle({
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+Tab8:Toggle({
     Title = "Espectar Jogador",
     Desc = "Ativar/Desativar espectar o jogador selecionado",
     Value = false,
@@ -1071,6 +1378,11 @@ local function pickCar()
     fireServer("1Ca1r", {"PickingCar", "SchoolBus"})
 end
 
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
 local DropdownCar = Tab6:Dropdown({
     Title = "Selecionar Jogador (Ônibus)",
     Desc = "Escolha um jogador para teleportar o ônibus",
@@ -1088,7 +1400,7 @@ updateDropdown(DropdownCar)
 Players.PlayerAdded:Connect(function() updateDropdown(DropdownCar) end)
 Players.PlayerRemoving:Connect(function() updateDropdown(DropdownCar) end)
 
-Tab6:Button({
+Tab8:Button({
     Title = "Ativar Ônibus",
     Desc = "Clique para spawnar o ônibus e iniciar o teletransporte",
     Callback = function()
@@ -1116,143 +1428,5 @@ Tab6:Button({
         end
         wait(0.5)
         if selectedPlayerName ~= "" then teleportPlayerCar(selectedPlayerName) end
-    end,
-})
-
------------------------------------------------------------------------------------------------------------------------------------------
-                                               -- === Tab 7: Casa === --
------------------------------------------------------------------------------------------------------------------------------------------
-
-Tab7:Paragraph({ Title = "Controle de Casas", Desc = "Funcionalidades relacionadas a casas em Brookhaven" })
-
-Tab7:Button({
-    Title = "Resetar Casa",
-    Desc = "Reseta a decoração da sua casa",
-    Callback = function()
-        fireServer("1Playe1rTrigge1rEven1t", {"ResetHouseDecor", LocalPlayer})
-        print("Casa resetada com sucesso!")
-    end,
-})
-
-Tab7:Button({
-    Title = "Trancar Casa",
-    Desc = "Tranca sua casa para outros jogadores",
-    Callback = function()
-        fireServer("1Playe1rTrigge1rEven1t", {"LockHouse", LocalPlayer})
-        print("Casa trancada!")
-    end,
-})
-
-Tab7:Button({
-    Title = "Destrancar Casa",
-    Desc = "Destranca sua casa para outros jogadores",
-    Callback = function()
-        fireServer("1Playe1rTrigge1rEven1t", {"UnlockHouse", LocalPlayer})
-        print("Casa destrancada!")
-    end,
-})
-
-Tab7:Dropdown({
-    Title = "Decorar Casa",
-    Desc = "Selecione um estilo de decoração",
-    Value = "Default",
-    Multi = false,
-    AllowNone = true,
-    Values = {"Default", "Modern", "Rustic", "Luxury", "Cozy"},
-    Callback = function(style)
-        fireServer("1Playe1rTrigge1rEven1t", {"SetHouseDecor", LocalPlayer, style})
-        print("Decoração da casa definida para: " .. style)
-    end,
-})
-
-Tab7:Toggle({
-    Title = "Modo Invisível Casa",
-    Desc = "Torna sua casa invisível para outros",
-    Value = false,
-    Callback = function(state)
-        if state then
-            fireServer("1Playe1rTrigge1rEven1t", {"SetHouseVisible", LocalPlayer, false})
-            print("Casa invisível ativada!")
-        else
-            fireServer("1Playe1rTrigge1rEven1t", {"SetHouseVisible", LocalPlayer, true})
-            print("Casa invisível desativada!")
-        end
-    end,
-})
-
------------------------------------------------------------------------------------------------------------------------------------------
-                                               -- === Tab 8: Carro === --
------------------------------------------------------------------------------------------------------------------------------------------
-
-Tab8:Paragraph({ Title = "Controle de Carros", Desc = "Funcionalidades relacionadas a carros em Brookhaven" })
-
-Tab8:Button({
-    Title = "Spawnar Carro",
-    Desc = "Spawna um carro básico",
-    Callback = function()
-        fireServer("1Ca1r", {"PickingCar", "Sedan"})
-        print("Carro spawnado: Sedan")
-    end,
-})
-
-Tab8:Dropdown({
-    Title = "Selecionar Carro",
-    Desc = "Escolha um tipo de carro",
-    Value = "Sedan",
-    Multi = false,
-    AllowNone = true,
-    Values = {"Sedan", "SportsCar", "Truck", "SchoolBus", "PoliceCar"},
-    Callback = function(carType)
-        fireServer("1Ca1r", {"PickingCar", carType})
-        print("Carro selecionado: " .. carType)
-    end,
-})
-
-Tab8:Button({
-    Title = "Teleportar Carro",
-    Desc = "Teleporta seu carro para sua posição",
-    Callback = function()
-        local car = getPlayerCar(LocalPlayer)
-        if car and car.PrimaryPart then
-            car:SetPrimaryPartCFrame(LocalPlayer.Character:GetPrimaryPartCFrame())
-            print("Carro teleportado para sua posição!")
-        else
-            warn("Nenhum carro encontrado!")
-        end
-    end,
-})
-
-Tab8:Toggle({
-    Title = "Carro Invencível",
-    Desc = "Torna seu carro indestrutível",
-    Value = false,
-    Callback = function(state)
-        local car = getPlayerCar(LocalPlayer)
-        if car and car.PrimaryPart then
-            if state then
-                car.PrimaryPart.Anchored = true
-                print("Carro invencível ativado!")
-            else
-                car.PrimaryPart.Anchored = false
-                print("Carro invencível desativado!")
-            end
-        else
-            warn("Nenhum carro encontrado!")
-        end
-    end,
-})
-
-Tab8:Slider({
-    Title = "Velocidade do Carro",
-    Step = 10,
-    Value = { Min = 50, Max = 500, Default = 100 },
-    Callback = function(value)
-        local car = getPlayerCar(LocalPlayer)
-        if car and car:FindFirstChild("Drive") then
-            car.Drive.MaxSpeed = value
-            print("Velocidade do carro definida para: " .. value)
-        else
-            warn("Nenhum carro encontrado ou sem controle de velocidade!")
-        end
     end,
 })
