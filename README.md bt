@@ -71,7 +71,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.4",
+    Title = "Lolyta Hub 2.5",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -324,51 +324,76 @@ Tab1:Toggle({
 Tab2:Paragraph({ Title = "funçoes para voce usar em voce", Desc = "" })
 
 
-local Dropdown = Tab2:Dropdown({
-    Title = "Jogadores com Casas",
-    Desc = "Selecione o jogador para remover o ban",
-    Value = nil, -- Nenhum jogador selecionado inicialmente
-    Multi = false,
-    AllowNone = true,
-    Values = {}, -- Esta lista será preenchida automaticamente
-    Callback = function(selectedPlayer)
-        print("Jogador selecionado:", selectedPlayer)
-    end
-})
-
--- Preenchendo o Dropdown com nomes dos jogadores que têm casas
-local lotsFolder = game.Workspace:FindFirstChild("001_Lots")
-
-if lotsFolder then
-    for _, object in pairs(lotsFolder:GetChildren()) do
-        if object:IsA("Model") and object.Name:match("House$") then
-            local playerName = object.Name:gsub("House", "") -- Remove "House" do final para obter o nome do jogador
-            table.insert(Dropdown.Values, playerName)
-        end
-    end
-end
-
-local Button = Tab2:Button({
-    Title = "Remover Ban",
-    Desc = "Remove o ban do jogador selecionado",
+-- Botão para remover ban de todas as casas (versão ajustada)
+Tab2:Button({
+    Title = "Remover Ban de Todas as Casas",
+    Desc = "Tenta remover o ban de todas as casas (1 a 37)",
     Callback = function()
-        local selectedPlayer = Dropdown.Value
-        if selectedPlayer then
-            local houseModel = lotsFolder:FindFirstChild(selectedPlayer .. "House")
-            if houseModel then
-                local bannedBlock = houseModel:FindFirstChild("BannedBlock")
-                if bannedBlock then
+        local successCount = 0
+        local failCount = 0
+        -- Verifica se há algum BannedBlock no Workspace
+        print("Procurando por BannedBlocks no Workspace...")
+        for i = 1, 37 do
+            local bannedBlockName = "BannedBlock" .. i
+            local bannedBlock = Workspace:FindFirstChild(bannedBlockName, true) -- Busca recursiva no Workspace
+            if bannedBlock then
+                local success, errorMessage = pcall(function()
                     bannedBlock:Destroy()
+                end)
+                if success then
+                    successCount = successCount + 1
+                    print("Ban removido da casa " .. i .. " com sucesso!")
+                else
+                    failCount = failCount + 1
+                    warn("Erro ao remover ban da casa " .. i .. ": " .. tostring(errorMessage))
                 end
-                print("Ban removido para o jogador:", selectedPlayer)
             else
-                print("A casa do jogador selecionado não foi encontrada.")
+                print("Nenhum ban encontrado para a casa " .. i .. " (BannedBlock" .. i .. " não existe).")
             end
-        else
-            print("Nenhum jogador foi selecionado.")
         end
-    end
+        -- Tenta procurar em outros lugares (por exemplo, dentro das casas)
+        print("Procurando por BannedBlocks dentro das casas...")
+        for _, house in pairs(Workspace:GetDescendants()) do
+            if house.Name:match("BannedBlock") then
+                local success, errorMessage = pcall(function()
+                    house:Destroy()
+                end)
+                if success then
+                    successCount = successCount + 1
+                    print("Ban removido: " .. house.Name .. " em " .. house:GetFullName())
+                else
+                    failCount = failCount + 1
+                    warn("Erro ao remover ban " .. house.Name .. ": " .. tostring(errorMessage))
+                end
+            end
+        end
+        -- Resumo do resultado
+        print("Resumo: " .. successCount .. " bans removidos com sucesso, " .. failCount .. " falhas.")
+        if successCount > 0 then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Sucesso",
+                Text = "Bans removidos de " .. successCount .. " casas!",
+                Duration = 5
+            })
+        end
+        if failCount > 0 then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Aviso",
+                Text = "Falha ao remover bans de " .. failCount .. " casas. Veja o console para detalhes.",
+                Duration = 5
+            })
+        end
+        if successCount == 0 and failCount == 0 then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Aviso",
+                Text = "Nenhum ban encontrado para remover.",
+                Duration = 5
+            })
+        end
+    end,
 })
+
+
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
