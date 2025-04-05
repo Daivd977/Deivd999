@@ -72,7 +72,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.5",
+    Title = "Lolyta Hub 2.4",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -588,23 +588,45 @@ Tab2:Button({
 local function findPlayerCar()
     local player = game.Players.LocalPlayer
     local character = player.Character
-    if not character then return nil end
+    if not character then
+        print("Personagem do jogador não encontrado.")
+        return nil
+    end
 
     -- Procura o carro em Workspace.Vehicles
     local vehicles = Workspace:FindFirstChild("Vehicles")
     if vehicles then
+        print("Procurando carro em Workspace.Vehicles...")
         for _, vehicle in pairs(vehicles:GetChildren()) do
             -- Verifica se o carro pertence ao jogador (pode ter o nome do jogador ou um assento ocupado pelo jogador)
             local seat = vehicle:FindFirstChild("VehicleSeat")
             if seat and seat:IsA("VehicleSeat") and seat.Occupant == character:FindFirstChild("Humanoid") then
+                print("Carro encontrado: " .. vehicle.Name .. " (via VehicleSeat)")
                 return vehicle
             end
             -- Alternativa: verifica se o nome do carro contém o nome do jogador
             if vehicle.Name:lower():find(player.Name:lower()) then
+                print("Carro encontrado: " .. vehicle.Name .. " (via nome do jogador)")
+                return vehicle
+            end
+        end
+    else
+        print("Workspace.Vehicles não encontrado.")
+    end
+
+    -- Procura em todo o Workspace (caso o carro não esteja em Vehicles)
+    print("Procurando carro em todo o Workspace...")
+    for _, vehicle in pairs(Workspace:GetDescendants()) do
+        if vehicle:IsA("Model") and vehicle:FindFirstChild("VehicleSeat") then
+            local seat = vehicle:FindFirstChild("VehicleSeat")
+            if seat and seat:IsA("VehicleSeat") and seat.Occupant == character:FindFirstChild("Humanoid") then
+                print("Carro encontrado: " .. vehicle.Name .. " (via busca no Workspace)")
                 return vehicle
             end
         end
     end
+
+    print("Nenhum carro encontrado.")
     return nil
 end
 
@@ -647,6 +669,20 @@ Tab3:Button({
                 print("Velocidade do carro definida para " .. carSpeed .. " via TopSpeed!")
             else
                 error("Propriedade TopSpeed não encontrada no carro.")
+            end
+
+            -- Tenta manipular a física do carro para forçar a velocidade (caso o servidor reverta o TopSpeed)
+            local chassis = car:FindFirstChild("Chassis")
+            if chassis then
+                local bodyVelocity = chassis:FindFirstChild("BodyVelocity")
+                if not bodyVelocity then
+                    bodyVelocity = Instance.new("BodyVelocity")
+                    bodyVelocity.Name = "BodyVelocity"
+                    bodyVelocity.MaxForce = Vector3.new(math.huge, 0, math.huge)
+                    bodyVelocity.Parent = chassis
+                end
+                bodyVelocity.Velocity = Vector3.new(carSpeed, 0, 0)
+                print("Velocidade forçada via BodyVelocity!")
             end
         end)
 
@@ -705,7 +741,29 @@ Tab3:Button({
                 turbo.Value = carTurbo
                 print("Turbo do carro definido para " .. carTurbo .. " via Turbo!")
             else
-                error("Propriedade Turbo não encontrada no carro.")
+                warn("Propriedade Turbo não encontrada no carro. Simulando turbo via TopSpeed...")
+                -- Simula o turbo aumentando o TopSpeed
+                local topSpeed = car:FindFirstChild("TopSpeed")
+                if topSpeed and topSpeed:IsA("NumberValue") then
+                    topSpeed.Value = topSpeed.Value * carTurbo
+                    print("Turbo simulado! Nova velocidade: " .. topSpeed.Value)
+                else
+                    error("Propriedade TopSpeed não encontrada para simular o turbo.")
+                end
+            end
+
+            -- Tenta manipular a física do carro para forçar o turbo
+            local chassis = car:FindFirstChild("Chassis")
+            if chassis then
+                local bodyVelocity = chassis:FindFirstChild("BodyVelocity")
+                if not bodyVelocity then
+                    bodyVelocity = Instance.new("BodyVelocity")
+                    bodyVelocity.Name = "BodyVelocity"
+                    bodyVelocity.MaxForce = Vector3.new(math.huge, 0, math.huge)
+                    bodyVelocity.Parent = chassis
+                end
+                bodyVelocity.Velocity = bodyVelocity.Velocity * carTurbo
+                print("Turbo forçado via BodyVelocity!")
             end
         end)
 
@@ -725,9 +783,6 @@ Tab3:Button({
         end
     end,
 })
-
--- (Código posterior, se houver)
-
 ---------------------------------------------------------------------------------------------------------------------------------
                                           -- === Tab 4: RGB Color === --
 ---------------------------------------------------------------------------------------------------------------------------------
