@@ -3,7 +3,7 @@
 -- === Configurações Iniciais === --
 local AllowedUsers = {
     "rtrt967",      -- Seu nome do Roblox
-    "BED1BAN_YT",   -- Outro usuário permitido
+    "sasah_7x",   -- Outro usuário permitido
     "QUEROBOVO",    -- Adicione mais nomes aqui, por exemplo:
     -- "outro_usuario",
     -- "amigo123",
@@ -324,49 +324,29 @@ Tab1:Toggle({
 Tab2:Paragraph({ Title = "funçoes para voce usar em voce", Desc = "" })
 
 
-Tab2:Button({
-    Title = "Remover Ban de Todas as Casas",
-    Desc = "Tenta remover o ban de todas as casas (1 a 37)",
+Button = Tab2:Button({
+    Title = "Remover Ban",
+    Desc = "Remove o bloqueio de todas as casas",
     Callback = function()
-        local successCount = 0
-        local failCount = 0
-        -- Loop para tentar remover os BannedBlocks de 1 a 37
-        for i = 1, 37 do
-            local bannedBlockName = "BannedBlock" .. i
-            local bannedBlock = Workspace:FindFirstChild(bannedBlockName)
-            if bannedBlock then
-                local success, errorMessage = pcall(function()
+        for _, object in pairs(game.Workspace:GetChildren()) do
+            if object:IsA("Model") and object.Name:match("House$") then
+                local bannedBlock = object:FindFirstChild("BannedBlock")
+                local propBlocker = object:FindFirstChild("PropBlocker")
+
+                if bannedBlock then
                     bannedBlock:Destroy()
-                end)
-                if success then
-                    successCount = successCount + 1
-                    print("Ban removido da casa " .. i .. " com sucesso!")
-                else
-                    failCount = failCount + 1
-                    warn("Erro ao remover ban da casa " .. i .. ": " .. tostring(errorMessage))
                 end
-            else
-                print("Nenhum ban encontrado para a casa " .. i .. " (BannedBlock" .. i .. " não existe).")
+
+                if propBlocker then
+                    propBlocker:Destroy()
+                end
             end
         end
-        -- Resumo do resultado
-        print("Resumo: " .. successCount .. " bans removidos com sucesso, " .. failCount .. " falhas.")
-        if successCount > 0 then
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Sucesso",
-                Text = "Bans removidos de " .. successCount .. " casas!",
-                Duration = 5
-            })
-        end
-        if failCount > 0 then
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Aviso",
-                Text = "Falha ao remover bans de " .. failCount .. " casas. Veja o console para detalhes.",
-                Duration = 5
-            })
-        end
+        print("Bloqueios removidos!")
     end,
 })
+
+------------------------------------------------------------------------------------------------------------------------------------------------
 
 Tab2:Dropdown({
     Title = "pegar permissão das casas",
@@ -374,7 +354,7 @@ Tab2:Dropdown({
     Value = "Option 1",
     Multi = false,
     AllowNone = true,
-    Values = {"Option 1", "Option 2", "Option 3", "Option 4", "Option 5", "Option 6", "Option 7", "Option 8", "Option 9", "Option 10", "Option 11", "Option 12", "Option 13", "Option 14", "Option 15", "Option 16", "Option 17", "Option 18", "Option 19", "Option 20", "Option 21", "Option 22", "Option 23", "Option 24", "Option 25", "Option 26", "Option 27", "Option 28", "Option 29", "Option 30", "Option 31", "Option 32", "Option 33", "Option 34", "Option 35"},
+    Values = {"Option 1", "Option 2", "Option 3", "Option 4", "Option 5", "Option 6", "Option 7", "Option 8", "Option 9", "Option 10", "Option 11", "Option 12", "Option 13", "Option 14", "Option 15", "Option 16", "Option 17", "Option 18", "Option 19", "Option 20", "Option 21", "Option 22", "Option 23", "Option 24", "Option 25", "Option 26", "Option 27", "Option 28", "Option 29", "Option 30", "Option 31", "Option 32", "Option 33", "Option 34", "Option 35", "Option 36", "Option 37"},
     Callback = function(tab)
         local permission = tonumber(tab:match("%d+")) or 1
         fireServer("1Playe1rTrigge1rEven1t", {"GivePermissionLoopToServer", LocalPlayer, permission})
