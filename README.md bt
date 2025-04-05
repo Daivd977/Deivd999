@@ -72,7 +72,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.4",
+    Title = "Lolyta Hub 2.5",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -584,6 +584,10 @@ Tab2:Button({
                                           -- === Tab 3: Carro === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
+---------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 3: Carro === --
+---------------------------------------------------------------------------------------------------------------------------------
+
 -- Função para encontrar o carro do jogador
 local function findPlayerCar()
     local player = game.Players.LocalPlayer
@@ -630,6 +634,32 @@ local function findPlayerCar()
     return nil
 end
 
+-- Função para encontrar a propriedade de velocidade no carro
+local function findSpeedProperty(car)
+    -- Procura por TopSpeed, Speed ou MaxSpeed no carro
+    local speedProperties = {"TopSpeed", "Speed", "MaxSpeed"}
+    for _, propName in pairs(speedProperties) do
+        local prop = car:FindFirstChild(propName)
+        if prop and prop:IsA("NumberValue") then
+            print("Propriedade de velocidade encontrada: " .. propName)
+            return prop
+        end
+    end
+
+    -- Procura recursivamente em todos os descendentes do carro
+    for _, child in pairs(car:GetDescendants()) do
+        for _, propName in pairs(speedProperties) do
+            if child.Name == propName and child:IsA("NumberValue") then
+                print("Propriedade de velocidade encontrada: " .. propName .. " em " .. child:GetFullName())
+                return child
+            end
+        end
+    end
+
+    print("Nenhuma propriedade de velocidade (TopSpeed, Speed, MaxSpeed) encontrada no carro.")
+    return nil
+end
+
 -- Input para definir a velocidade do carro
 local carSpeed = 200 -- Valor padrão
 Tab3:Input({
@@ -661,17 +691,17 @@ Tab3:Button({
             return
         end
 
-        -- Tenta encontrar e modificar a propriedade TopSpeed
+        -- Tenta encontrar e modificar a propriedade de velocidade
         local success, errorMessage = pcall(function()
-            local topSpeed = car:FindFirstChild("TopSpeed")
-            if topSpeed and topSpeed:IsA("NumberValue") then
-                topSpeed.Value = carSpeed
-                print("Velocidade do carro definida para " .. carSpeed .. " via TopSpeed!")
+            local speedProp = findSpeedProperty(car)
+            if speedProp then
+                speedProp.Value = carSpeed
+                print("Velocidade do carro definida para " .. carSpeed .. " via " .. speedProp.Name .. "!")
             else
-                error("Propriedade TopSpeed não encontrada no carro.")
+                warn("Nenhuma propriedade de velocidade encontrada. Forçando velocidade via física...")
             end
 
-            -- Tenta manipular a física do carro para forçar a velocidade (caso o servidor reverta o TopSpeed)
+            -- Força a velocidade usando BodyVelocity no Chassis
             local chassis = car:FindFirstChild("Chassis")
             if chassis then
                 local bodyVelocity = chassis:FindFirstChild("BodyVelocity")
@@ -683,6 +713,8 @@ Tab3:Button({
                 end
                 bodyVelocity.Velocity = Vector3.new(carSpeed, 0, 0)
                 print("Velocidade forçada via BodyVelocity!")
+            else
+                error("Chassis não encontrado no carro.")
             end
         end)
 
@@ -741,18 +773,10 @@ Tab3:Button({
                 turbo.Value = carTurbo
                 print("Turbo do carro definido para " .. carTurbo .. " via Turbo!")
             else
-                warn("Propriedade Turbo não encontrada no carro. Simulando turbo via TopSpeed...")
-                -- Simula o turbo aumentando o TopSpeed
-                local topSpeed = car:FindFirstChild("TopSpeed")
-                if topSpeed and topSpeed:IsA("NumberValue") then
-                    topSpeed.Value = topSpeed.Value * carTurbo
-                    print("Turbo simulado! Nova velocidade: " .. topSpeed.Value)
-                else
-                    error("Propriedade TopSpeed não encontrada para simular o turbo.")
-                end
+                warn("Propriedade Turbo não encontrada no carro. Simulando turbo via física...")
             end
 
-            -- Tenta manipular a física do carro para forçar o turbo
+            -- Força o turbo usando BodyVelocity no Chassis
             local chassis = car:FindFirstChild("Chassis")
             if chassis then
                 local bodyVelocity = chassis:FindFirstChild("BodyVelocity")
@@ -764,6 +788,8 @@ Tab3:Button({
                 end
                 bodyVelocity.Velocity = bodyVelocity.Velocity * carTurbo
                 print("Turbo forçado via BodyVelocity!")
+            else
+                error("Chassis não encontrado no carro.")
             end
         end)
 
