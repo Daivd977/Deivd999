@@ -72,7 +72,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.5",
+    Title = "Lolyta Hub 2.3",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -630,8 +630,80 @@ local function findPlayerCar()
     return nil
 end
 
--- Input para definir a velocidade do carro
+-- Variáveis para controlar a velocidade e o turbo
 local carSpeed = 200 -- Valor padrão
+local carTurbo = 3 -- Valor padrão
+local speedConnection -- Para armazenar a conexão do loop de velocidade
+local turboConnection -- Para armazenar a conexão do loop de turbo
+
+-- Função para forçar a velocidade continuamente
+local function forceSpeed(car, speed)
+    -- Desconecta qualquer loop anterior
+    if speedConnection then
+        speedConnection:Disconnect()
+    end
+
+    local chassis = car:FindFirstChild("Chassis")
+    if not chassis then
+        print("Chassis não encontrado no carro.")
+        return
+    end
+
+    local bodyVelocity = chassis:FindFirstChild("BodyVelocity")
+    if not bodyVelocity then
+        bodyVelocity = Instance.new("BodyVelocity")
+        bodyVelocity.Name = "BodyVelocity"
+        bodyVelocity.MaxForce = Vector3.new(math.huge, 0, math.huge)
+        bodyVelocity.Parent = chassis
+    end
+
+    -- Loop para reaplicar a velocidade continuamente
+    speedConnection = game:GetService("RunService").Heartbeat:Connect(function()
+        if chassis.Parent and bodyVelocity.Parent then
+            bodyVelocity.Velocity = Vector3.new(speed, 0, 0)
+        else
+            speedConnection:Disconnect()
+        end
+    end)
+    print("Forçando velocidade via BodyVelocity: " .. speed)
+end
+
+-- Função para forçar o turbo continuamente
+local function forceTurbo(car, turboLevel)
+    -- Desconecta qualquer loop anterior
+    if turboConnection then
+        turboConnection:Disconnect()
+    end
+
+    local chassis = car:FindFirstChild("Chassis")
+    if not chassis then
+        print("Chassis não encontrado no carro.")
+        return
+    end
+
+    local bodyVelocity = chassis:FindFirstChild("BodyVelocity")
+    if not bodyVelocity then
+        bodyVelocity = Instance.new("BodyVelocity")
+        bodyVelocity.Name = "BodyVelocity"
+        bodyVelocity.MaxForce = Vector3.new(math.huge, 0, math.huge)
+        bodyVelocity.Parent = chassis
+    end
+
+    -- Loop para reaplicar o turbo continuamente
+    turboConnection = game:GetService("RunService").Heartbeat:Connect(function()
+        if chassis.Parent and bodyVelocity.Parent then
+            -- Aplica o turbo como um aumento adicional à velocidade atual
+            local currentSpeed = bodyVelocity.Velocity.X
+            local newSpeed = currentSpeed + (turboLevel * 100) -- Aumenta a velocidade com base no nível do turbo
+            bodyVelocity.Velocity = Vector3.new(newSpeed, 0, 0)
+        else
+            turboConnection:Disconnect()
+        end
+    end)
+    print("Forçando turbo via BodyVelocity: nível " .. turboLevel)
+end
+
+-- Input para definir a velocidade do carro
 Tab3:Input({
     Title = "Definir Velocidade do Carro",
     Desc = "Digite a velocidade desejada (sem limites)",
@@ -686,22 +758,9 @@ Tab3:Button({
             warn("Erro ao disparar o evento 200PlayerGiveSpeed: " .. tostring(errorMessage))
         end
 
-        -- Força a velocidade no lado do cliente usando BodyVelocity (para ultrapassar o limite de 200)
+        -- Força a velocidade no lado do cliente usando BodyVelocity
         local forceSuccess, forceError = pcall(function()
-            local chassis = car:FindFirstChild("Chassis")
-            if chassis then
-                local bodyVelocity = chassis:FindFirstChild("BodyVelocity")
-                if not bodyVelocity then
-                    bodyVelocity = Instance.new("BodyVelocity")
-                    bodyVelocity.Name = "BodyVelocity"
-                    bodyVelocity.MaxForce = Vector3.new(math.huge, 0, math.huge)
-                    bodyVelocity.Parent = chassis
-                end
-                bodyVelocity.Velocity = Vector3.new(carSpeed, 0, 0)
-                print("Velocidade forçada via BodyVelocity: " .. carSpeed)
-            else
-                error("Chassis não encontrado no carro.")
-            end
+            forceSpeed(car, carSpeed)
         end)
 
         if forceSuccess then
@@ -722,7 +781,6 @@ Tab3:Button({
 })
 
 -- Input para definir o turbo do carro
-local carTurbo = 3 -- Valor padrão (como no evento TurboStage original)
 Tab3:Input({
     Title = "Definir Turbo do Carro",
     Desc = "Digite o nível do turbo (ex.: 3)",
@@ -777,23 +835,9 @@ Tab3:Button({
             warn("Erro ao disparar o evento TurboStage: " .. tostring(errorMessage))
         end
 
-        -- Força o turbo no lado do cliente usando BodyVelocity (para garantir que a velocidade aumente)
+        -- Força o turbo no lado do cliente usando BodyVelocity
         local forceSuccess, forceError = pcall(function()
-            local chassis = car:FindFirstChild("Chassis")
-            if chassis then
-                local bodyVelocity = chassis:FindFirstChild("BodyVelocity")
-                if not bodyVelocity then
-                    bodyVelocity = Instance.new("BodyVelocity")
-                    bodyVelocity.Name = "BodyVelocity"
-                    bodyVelocity.MaxForce = Vector3.new(math.huge, 0, math.huge)
-                    bodyVelocity.Parent = chassis
-                end
-                -- Aplica o turbo como um multiplicador da velocidade atual
-                bodyVelocity.Velocity = bodyVelocity.Velocity + Vector3.new(carTurbo * 100, 0, 0) -- Aumenta a velocidade com base no nível do turbo
-                print("Turbo forçado via BodyVelocity: aumento baseado no nível " .. carTurbo)
-            else
-                error("Chassis não encontrado no carro.")
-            end
+            forceTurbo(car, carTurbo)
         end)
 
         if forceSuccess then
