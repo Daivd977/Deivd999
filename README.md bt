@@ -72,7 +72,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.5",
+    Title = "Lolyta Hub 2.2",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -649,71 +649,71 @@ local function disableAntiCheat(car)
     end
 end
 
--- Função para forçar a velocidade continuamente
+-- Função para forçar a velocidade continuamente (aplicada no VehicleSeat)
 local function forceSpeed(car, speed)
     -- Desconecta qualquer loop anterior
     if speedConnection then
         speedConnection:Disconnect()
     end
 
-    local chassis = car:FindFirstChild("Chassis")
-    if not chassis then
-        print("Chassis não encontrado no carro.")
+    local seat = car:FindFirstChild("VehicleSeat")
+    if not seat then
+        print("VehicleSeat não encontrado no carro.")
         return
     end
 
-    local bodyVelocity = chassis:FindFirstChild("BodyVelocity")
+    local bodyVelocity = seat:FindFirstChild("BodyVelocity")
     if not bodyVelocity then
         bodyVelocity = Instance.new("BodyVelocity")
         bodyVelocity.Name = "BodyVelocity"
         bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge) -- Aumenta a força para todas as direções
-        bodyVelocity.Parent = chassis
+        bodyVelocity.Parent = seat
     end
 
     -- Loop para reaplicar a velocidade continuamente
     speedConnection = game:GetService("RunService").Heartbeat:Connect(function()
-        if chassis.Parent and bodyVelocity.Parent then
+        if seat.Parent and bodyVelocity.Parent then
             bodyVelocity.Velocity = Vector3.new(speed, 0, speed) -- Aplica a velocidade em X e Z para melhor controle
         else
             speedConnection:Disconnect()
         end
     end)
-    print("Forçando velocidade via BodyVelocity: " .. speed)
+    print("Forçando velocidade via BodyVelocity no VehicleSeat: " .. speed)
 end
 
--- Função para forçar o turbo continuamente
+-- Função para forçar o turbo continuamente (aplicada no VehicleSeat)
 local function forceTurbo(car, turboLevel)
     -- Desconecta qualquer loop anterior
     if turboConnection then
         turboConnection:Disconnect()
     end
 
-    local chassis = car:FindFirstChild("Chassis")
-    if not chassis then
-        print("Chassis não encontrado no carro.")
+    local seat = car:FindFirstChild("VehicleSeat")
+    if not seat then
+        print("VehicleSeat não encontrado no carro.")
         return
     end
 
-    local bodyVelocity = chassis:FindFirstChild("BodyVelocity")
+    local bodyVelocity = seat:FindFirstChild("BodyVelocity")
     if not bodyVelocity then
         bodyVelocity = Instance.new("BodyVelocity")
         bodyVelocity.Name = "BodyVelocity"
         bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge) -- Aumenta a força para todas as direções
-        bodyVelocity.Parent = chassis
+        bodyVelocity.Parent = seat
     end
 
     -- Loop para reaplicar o turbo continuamente
     turboConnection = game:GetService("RunService").Heartbeat:Connect(function()
-        if chassis.Parent and bodyVelocity.Parent then
+        if seat.Parent and bodyVelocity.Parent then
             -- Aplica o turbo como um aumento adicional à velocidade atual
             local currentSpeed = bodyVelocity.Velocity.Magnitude
-            local newSpeed = currentSpeed + (turboLevel * 150) -- Aumenta a velocidade com base no nível do turbo (mais agressivo)
+            local newSpeed = currentSpeed + (turboLevel * 200) -- Aumenta a velocidade com base no nível do turbo (mais agressivo)
             bodyVelocity.Velocity = Vector3.new(newSpeed, 0, newSpeed) -- Aplica em X e Z para melhor controle
         else
             turboConnection:Disconnect()
         end
     end)
-    print("Forçando turbo via BodyVelocity: nível " .. turboLevel)
+    print("Forçando turbo via BodyVelocity no VehicleSeat: nível " .. turboLevel)
 end
 
 -- Input para definir a velocidade do carro
@@ -749,20 +749,20 @@ Tab3:Button({
         -- Tenta desativar possíveis scripts anti-cheat
         disableAntiCheat(car)
 
-        -- Tenta definir a velocidade usando o evento 200PlayerGiveSpeed (com o valor máximo permitido)
+        -- Tenta definir a velocidade usando o evento 200PlayerGiveSpeed (com um valor seguro para evitar rejeição)
         local success, errorMessage = pcall(function()
             local args = {
                 [1] = "200PlayerGiveSpeed",
-                [2] = tostring(math.min(carSpeed, 200)) -- Usa o valor máximo permitido (200)
+                [2] = tostring(math.min(carSpeed, 100)) -- Usa um valor seguro (100) para quem não tem a gamepass
             }
             game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
-            print("Evento 200PlayerGiveSpeed disparado com velocidade: " .. math.min(carSpeed, 200))
+            print("Evento 200PlayerGiveSpeed disparado com velocidade: " .. math.min(carSpeed, 100))
         end)
 
         if success then
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Sucesso",
-                Text = "Tentativa de definir a velocidade para " .. math.min(carSpeed, 200) .. " via evento!",
+                Text = "Tentativa de definir a velocidade para " .. math.min(carSpeed, 100) .. " via evento!",
                 Duration = 5
             })
         else
@@ -829,20 +829,20 @@ Tab3:Button({
         -- Tenta desativar possíveis scripts anti-cheat
         disableAntiCheat(car)
 
-        -- Tenta definir o turbo usando o evento TurboStage (com o valor máximo permitido)
+        -- Tenta definir o turbo usando o evento TurboStage (com um valor seguro para evitar rejeição)
         local success, errorMessage = pcall(function()
             local args = {
                 [1] = "TurboStage",
-                [2] = math.min(carTurbo, 3) -- Usa o valor máximo permitido (3)
+                [2] = 0 -- Usa 0 para quem não tem a gamepass de turbo
             }
             game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
-            print("Evento TurboStage disparado com nível: " .. math.min(carTurbo, 3))
+            print("Evento TurboStage disparado com nível: 0 (sem gamepass de turbo)")
         end)
 
         if success then
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Sucesso",
-                Text = "Tentativa de definir o turbo para nível " .. math.min(carTurbo, 3) .. " via evento!",
+                Text = "Tentativa de definir o turbo para nível 0 via evento (sem gamepass de turbo)!",
                 Duration = 5
             })
         else
