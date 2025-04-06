@@ -72,7 +72,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.3",
+    Title = "Lolyta Hub 2.5",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -636,6 +636,19 @@ local carTurbo = 3 -- Valor padrão
 local speedConnection -- Para armazenar a conexão do loop de velocidade
 local turboConnection -- Para armazenar a conexão do loop de turbo
 
+-- Função para tentar desativar scripts anti-cheat no lado do cliente
+local function disableAntiCheat(car)
+    -- Procura por scripts no carro que possam ser anti-cheat
+    for _, child in pairs(car:GetDescendants()) do
+        if child:IsA("Script") or child:IsA("LocalScript") then
+            if child.Name:lower():find("anti") or child.Name:lower():find("cheat") or child.Name:lower():find("speed") then
+                child.Disabled = true
+                print("Desativado script possível de anti-cheat: " .. child.Name)
+            end
+        end
+    end
+end
+
 -- Função para forçar a velocidade continuamente
 local function forceSpeed(car, speed)
     -- Desconecta qualquer loop anterior
@@ -653,14 +666,14 @@ local function forceSpeed(car, speed)
     if not bodyVelocity then
         bodyVelocity = Instance.new("BodyVelocity")
         bodyVelocity.Name = "BodyVelocity"
-        bodyVelocity.MaxForce = Vector3.new(math.huge, 0, math.huge)
+        bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge) -- Aumenta a força para todas as direções
         bodyVelocity.Parent = chassis
     end
 
     -- Loop para reaplicar a velocidade continuamente
     speedConnection = game:GetService("RunService").Heartbeat:Connect(function()
         if chassis.Parent and bodyVelocity.Parent then
-            bodyVelocity.Velocity = Vector3.new(speed, 0, 0)
+            bodyVelocity.Velocity = Vector3.new(speed, 0, speed) -- Aplica a velocidade em X e Z para melhor controle
         else
             speedConnection:Disconnect()
         end
@@ -685,7 +698,7 @@ local function forceTurbo(car, turboLevel)
     if not bodyVelocity then
         bodyVelocity = Instance.new("BodyVelocity")
         bodyVelocity.Name = "BodyVelocity"
-        bodyVelocity.MaxForce = Vector3.new(math.huge, 0, math.huge)
+        bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge) -- Aumenta a força para todas as direções
         bodyVelocity.Parent = chassis
     end
 
@@ -693,9 +706,9 @@ local function forceTurbo(car, turboLevel)
     turboConnection = game:GetService("RunService").Heartbeat:Connect(function()
         if chassis.Parent and bodyVelocity.Parent then
             -- Aplica o turbo como um aumento adicional à velocidade atual
-            local currentSpeed = bodyVelocity.Velocity.X
-            local newSpeed = currentSpeed + (turboLevel * 100) -- Aumenta a velocidade com base no nível do turbo
-            bodyVelocity.Velocity = Vector3.new(newSpeed, 0, 0)
+            local currentSpeed = bodyVelocity.Velocity.Magnitude
+            local newSpeed = currentSpeed + (turboLevel * 150) -- Aumenta a velocidade com base no nível do turbo (mais agressivo)
+            bodyVelocity.Velocity = Vector3.new(newSpeed, 0, newSpeed) -- Aplica em X e Z para melhor controle
         else
             turboConnection:Disconnect()
         end
@@ -733,20 +746,23 @@ Tab3:Button({
             return
         end
 
-        -- Tenta definir a velocidade usando o evento 200PlayerGiveSpeed
+        -- Tenta desativar possíveis scripts anti-cheat
+        disableAntiCheat(car)
+
+        -- Tenta definir a velocidade usando o evento 200PlayerGiveSpeed (com o valor máximo permitido)
         local success, errorMessage = pcall(function()
             local args = {
                 [1] = "200PlayerGiveSpeed",
-                [2] = tostring(carSpeed) -- Converte para string, como no evento original
+                [2] = tostring(math.min(carSpeed, 200)) -- Usa o valor máximo permitido (200)
             }
             game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
-            print("Evento 200PlayerGiveSpeed disparado com velocidade: " .. carSpeed)
+            print("Evento 200PlayerGiveSpeed disparado com velocidade: " .. math.min(carSpeed, 200))
         end)
 
         if success then
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Sucesso",
-                Text = "Tentativa de definir a velocidade para " .. carSpeed .. " via evento!",
+                Text = "Tentativa de definir a velocidade para " .. math.min(carSpeed, 200) .. " via evento!",
                 Duration = 5
             })
         else
@@ -810,20 +826,23 @@ Tab3:Button({
             return
         end
 
-        -- Tenta definir o turbo usando o evento TurboStage
+        -- Tenta desativar possíveis scripts anti-cheat
+        disableAntiCheat(car)
+
+        -- Tenta definir o turbo usando o evento TurboStage (com o valor máximo permitido)
         local success, errorMessage = pcall(function()
             local args = {
                 [1] = "TurboStage",
-                [2] = carTurbo -- O evento espera um número
+                [2] = math.min(carTurbo, 3) -- Usa o valor máximo permitido (3)
             }
             game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
-            print("Evento TurboStage disparado com nível: " .. carTurbo)
+            print("Evento TurboStage disparado com nível: " .. math.min(carTurbo, 3))
         end)
 
         if success then
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Sucesso",
-                Text = "Tentativa de definir o turbo para nível " .. carTurbo .. " via evento!",
+                Text = "Tentativa de definir o turbo para nível " .. math.min(carTurbo, 3) .. " via evento!",
                 Duration = 5
             })
         else
