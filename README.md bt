@@ -73,7 +73,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.5",
+    Title = "Lolyta Hub 2.3",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -590,134 +590,156 @@ local function findPlayerCar()
     local player = game.Players.LocalPlayer
     local character = player.Character
     if not character then
-        print("Personagem do jogador não encontrado.")
         return nil
     end
 
     -- Procura o carro em Workspace.Vehicles
     local vehicles = Workspace:FindFirstChild("Vehicles")
     if vehicles then
-        print("Procurando carro em Workspace.Vehicles...")
         for _, vehicle in pairs(vehicles:GetChildren()) do
-            -- Verifica se o carro pertence ao jogador (pode ter o nome do jogador ou um assento ocupado pelo jogador)
             local seat = vehicle:FindFirstChild("VehicleSeat")
             if seat and seat:IsA("VehicleSeat") and seat.Occupant == character:FindFirstChild("Humanoid") then
-                print("Carro encontrado: " .. vehicle.Name .. " (via VehicleSeat)")
                 return vehicle
             end
-            -- Alternativa: verifica se o nome do carro contém o nome do jogador
             if vehicle.Name:lower():find(player.Name:lower()) then
-                print("Carro encontrado: " .. vehicle.Name .. " (via nome do jogador)")
                 return vehicle
             end
         end
-    else
-        print("Workspace.Vehicles não encontrado.")
     end
 
-    -- Procura em todo o Workspace (caso o carro não esteja em Vehicles)
-    print("Procurando carro em todo o Workspace...")
+    -- Procura em todo o Workspace
     for _, vehicle in pairs(Workspace:GetDescendants()) do
         if vehicle:IsA("Model") and vehicle:FindFirstChild("VehicleSeat") then
             local seat = vehicle:FindFirstChild("VehicleSeat")
             if seat and seat:IsA("VehicleSeat") and seat.Occupant == character:FindFirstChild("Humanoid") then
-                print("Carro encontrado: " .. vehicle.Name .. " (via busca no Workspace)")
                 return vehicle
             end
         end
     end
 
-    print("Nenhum carro encontrado.")
     return nil
 end
 
 -- Variáveis para controlar a velocidade e o turbo
 local carSpeed = 55 -- Valor padrão (máximo permitido sem gamepass)
 local carTurbo = 3 -- Valor padrão
-local speedConnection -- Para armazenar a conexão do loop de velocidade
-local turboConnection -- Para armazenar a conexão do loop de turbo
+local speedConnections = {} -- Para armazenar as conexões das rodas (velocidade)
+local turboConnections = {} -- Para armazenar as conexões das rodas (turbo)
 
--- Função para tentar desativar scripts anti-cheat no lado do cliente
-local function disableAntiCheat(car)
-    -- Procura por scripts no carro que possam ser anti-cheat
-    for _, child in pairs(car:GetDescendants()) do
-        if child:IsA("Script") or child:IsA("LocalScript") then
-            if child.Name:lower():find("anti") or child.Name:lower():find("cheat") or child.Name:lower():find("speed") then
-                child.Disabled = true
-                print("Desativado script possível de anti-cheat: " .. child.Name)
-            end
+-- Função para ajustar a velocidade das rodas
+local function adjustWheelSpeed(car, speed)
+    -- Limpa conexões anteriores
+    for _, connection in pairs(speedConnections) do
+        connection:Disconnect()
+    end
+    speedConnections = {}
+
+    -- Procura as rodas no modelo do carro
+    local wheels = {}
+    for _, part in pairs(car:GetDescendants()) do
+        if part:IsA("BasePart") and (part.Name:lower():find("wheel") or part.Name:lower():find("roda")) then
+            table.insert(wheels, part)
         end
     end
-end
 
--- Função para forçar a velocidade usando BodyThrust
-local function forceSpeed(car, speed)
-    -- Desconecta qualquer loop anterior
-    if speedConnection then
-        speedConnection:Disconnect()
-    end
-
-    local seat = car:FindFirstChild("VehicleSeat")
-    if not seat then
-        print("VehicleSeat não encontrado no carro.")
+    if #wheels == 0 then
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Erro",
+            Text = "Nenhuma roda encontrada no carro!",
+            Duration = 5
+        })
         return false
     end
 
-    local bodyThrust = seat:FindFirstChild("BodyThrust")
-    if not bodyThrust then
-        bodyThrust = Instance.new("BodyThrust")
-        bodyThrust.Name = "BodyThrust"
-        bodyThrust.Location = Vector3.new(0, 0, 0) -- Aplica a força no centro do VehicleSeat
-        bodyThrust.Parent = seat
+    -- Aplica AngularVelocity às rodas para aumentar a velocidade
+    for _, wheel in pairs(wheels) do
+        local angularVelocity = wheel:FindFirstChild("AngularVelocity")
+        if not angularVelocity then
+            angularVelocity = Instance.new("AngularVelocity")
+            angularVelocity.Name = "AngularVelocity"
+            angularVelocity.MaxTorque = math.huge
+            angularVelocity.Parent = wheel
+
+            -- Cria uma constraint para alinhar a rotação
+            local attachment = Instance.new("Attachment")
+            attachment.Parent = wheel
+            angularVelocity.Attachment0 = attachment
+        end
+
+        -- Define a velocidade angular proporcional à velocidade desejada
+        local angularSpeed = speed * 10 -- Ajusta a rotação com base na velocidade
+        angularVelocity.AngularVelocity = Vector3.new(0, angularSpeed, 0) -- Rotação no eixo Y (pode variar dependendo do carro)
+
+        -- Mantém a rotação ativa
+        local connection = game:GetService("RunService").Heartbeat:Connect(function()
+            if wheel.Parent and angularVelocity.Parent then
+                angularVelocity.AngularVelocity = Vector3.new(0, angularSpeed, 0)
+            else
+                connection:Disconnect()
+            end
+        end)
+        table.insert(speedConnections, connection)
     end
 
-    -- Loop para reaplicar a força continuamente
-    speedConnection = game:GetService("RunService").Heartbeat:Connect(function()
-        if seat.Parent and bodyThrust.Parent then
-            -- Aplica uma força proporcional à velocidade desejada
-            local force = speed * 1000 -- Ajusta a força com base na velocidade
-            bodyThrust.Force = Vector3.new(force, 0, force) -- Aplica a força em X e Z para melhor controle
-        else
-            speedConnection:Disconnect()
-        end
-    end)
-    print("Forçando velocidade via BodyThrust: " .. speed)
     return true
 end
 
--- Função para simular o turbo usando BodyThrust
-local function applyTurbo(car, turboLevel)
-    -- Desconecta qualquer loop anterior
-    if turboConnection then
-        turboConnection:Disconnect()
+-- Função para simular o turbo ajustando a velocidade das rodas
+local function applyWheelTurbo(car, turboLevel)
+    -- Limpa conexões anteriores
+    for _, connection in pairs(turboConnections) do
+        connection:Disconnect()
+    end
+    turboConnections = {}
+
+    -- Procura as rodas no modelo do carro
+    local wheels = {}
+    for _, part in pairs(car:GetDescendants()) do
+        if part:IsA("BasePart") and (part.Name:lower():find("wheel") or part.Name:lower():find("roda")) then
+            table.insert(wheels, part)
+        end
     end
 
-    local seat = car:FindFirstChild("VehicleSeat")
-    if not seat then
-        print("VehicleSeat não encontrado no carro.")
+    if #wheels == 0 then
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Erro",
+            Text = "Nenhuma roda encontrada no carro!",
+            Duration = 5
+        })
         return false
     end
 
-    local bodyThrust = seat:FindFirstChild("BodyThrust")
-    if not bodyThrust then
-        bodyThrust = Instance.new("BodyThrust")
-        bodyThrust.Name = "BodyThrust"
-        bodyThrust.Location = Vector3.new(0, 0, 0) -- Aplica a força no centro do VehicleSeat
-        bodyThrust.Parent = seat
+    -- Aplica um aumento na velocidade angular das rodas para simular o turbo
+    for _, wheel in pairs(wheels) do
+        local angularVelocity = wheel:FindFirstChild("AngularVelocity")
+        if not angularVelocity then
+            angularVelocity = Instance.new("AngularVelocity")
+            angularVelocity.Name = "AngularVelocity"
+            angularVelocity.MaxTorque = math.huge
+            angularVelocity.Parent = wheel
+
+            -- Cria uma constraint para alinhar a rotação
+            local attachment = Instance.new("Attachment")
+            attachment.Parent = wheel
+            angularVelocity.Attachment0 = attachment
+        end
+
+        -- Aumenta a velocidade angular com base no nível do turbo
+        local currentSpeed = angularVelocity.AngularVelocity.Y
+        local turboSpeed = currentSpeed + (turboLevel * 50) -- Aumenta a rotação com base no nível do turbo
+        angularVelocity.AngularVelocity = Vector3.new(0, turboSpeed, 0)
+
+        -- Mantém a rotação ativa
+        local connection = game:GetService("RunService").Heartbeat:Connect(function()
+            if wheel.Parent and angularVelocity.Parent then
+                angularVelocity.AngularVelocity = Vector3.new(0, turboSpeed, 0)
+            else
+                connection:Disconnect()
+            end
+        end)
+        table.insert(turboConnections, connection)
     end
 
-    -- Loop para reaplicar a força do turbo continuamente
-    turboConnection = game:GetService("RunService").Heartbeat:Connect(function()
-        if seat.Parent and bodyThrust.Parent then
-            -- Aplica uma força adicional para simular o turbo
-            local currentForce = bodyThrust.Force.Magnitude
-            local turboForce = currentForce + (turboLevel * 5000) -- Aumenta a força com base no nível do turbo
-            bodyThrust.Force = Vector3.new(turboForce, 0, turboForce) -- Aplica a força em X e Z
-        else
-            turboConnection:Disconnect()
-        end
-    end)
-    print("Turbo aplicado via BodyThrust: nível " .. turboLevel)
     return true
 end
 
@@ -732,7 +754,6 @@ Tab3:Input({
         if carSpeed == nil then
             carSpeed = 55 -- Valor padrão se o input for inválido
         end
-        print("Velocidade definida para: " .. carSpeed)
     end,
 })
 
@@ -751,9 +772,6 @@ Tab3:Button({
             return
         end
 
-        -- Tenta desativar possíveis scripts anti-cheat
-        disableAntiCheat(car)
-
         -- Tenta definir a velocidade usando o evento 200PlayerGiveSpeed (com o valor máximo permitido sem gamepass)
         local success, errorMessage = pcall(function()
             local args = {
@@ -761,42 +779,33 @@ Tab3:Button({
                 [2] = tostring(math.min(carSpeed, 55)) -- Usa o valor máximo permitido (55) sem gamepass
             }
             game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
-            print("Evento 200PlayerGiveSpeed disparado com velocidade: " .. math.min(carSpeed, 55))
         end)
 
-        if success then
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Sucesso",
-                Text = "Tentativa de definir a velocidade para " .. math.min(carSpeed, 55) .. " via evento!",
-                Duration = 5
-            })
-        else
+        if not success then
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Erro",
-                Text = "Falha ao disparar o evento de velocidade. Veja o console para detalhes.",
+                Text = "Falha ao disparar o evento de velocidade.",
                 Duration = 5
             })
-            warn("Erro ao disparar o evento 200PlayerGiveSpeed: " .. tostring(errorMessage))
         end
 
-        -- Força a velocidade usando BodyThrust
-        local forceSuccess, forceError = pcall(function()
-            return forceSpeed(car, carSpeed)
+        -- Ajusta a velocidade das rodas
+        local adjustSuccess, adjustError = pcall(function()
+            return adjustWheelSpeed(car, carSpeed)
         end)
 
-        if forceSuccess then
+        if adjustSuccess then
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Sucesso",
-                Text = "Velocidade forçada para " .. carSpeed .. " no lado do cliente!",
+                Text = "Velocidade ajustada para " .. carSpeed .. "!",
                 Duration = 5
             })
         else
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Erro",
-                Text = "Falha ao forçar a velocidade. Veja o console para detalhes.",
+                Text = "Falha ao ajustar a velocidade das rodas.",
                 Duration = 5
             })
-            warn("Erro ao forçar a velocidade: " .. tostring(forceError))
         end
     end,
 })
@@ -812,7 +821,6 @@ Tab3:Input({
         if carTurbo == nil then
             carTurbo = 3 -- Valor padrão se o input for inválido
         end
-        print("Turbo definido para: " .. carTurbo)
     end,
 })
 
@@ -831,31 +839,28 @@ Tab3:Button({
             return
         end
 
-        -- Tenta desativar possíveis scripts anti-cheat
-        disableAntiCheat(car)
-
-        -- Aplica o turbo usando BodyThrust
+        -- Aplica o turbo ajustando a velocidade das rodas
         local turboSuccess, turboError = pcall(function()
-            return applyTurbo(car, carTurbo)
+            return applyWheelTurbo(car, carTurbo)
         end)
 
         if turboSuccess then
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Sucesso",
-                Text = "Turbo aplicado com nível " .. carTurbo .. " no lado do cliente!",
+                Text = "Turbo aplicado com nível " .. carTurbo .. "!",
                 Duration = 5
             })
         else
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Erro",
-                Text = "Falha ao aplicar o turbo. Veja o console para detalhes.",
+                Text = "Falha ao aplicar o turbo nas rodas.",
                 Duration = 5
             })
-            warn("Erro ao aplicar o turbo: " .. tostring(turboError))
         end
     end,
 })
----------------------------------------------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------------
                                           -- === Tab 4: RGB Color === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
