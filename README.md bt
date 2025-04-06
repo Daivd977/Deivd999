@@ -72,7 +72,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.3",
+    Title = "Lolyta Hub 2.5",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -686,7 +686,7 @@ Tab3:Button({
             warn("Erro ao disparar o evento 200PlayerGiveSpeed: " .. tostring(errorMessage))
         end
 
-        -- Força a velocidade no lado do cliente usando BodyVelocity (caso o servidor rejeite o valor)
+        -- Força a velocidade no lado do cliente usando BodyVelocity (para ultrapassar o limite de 200)
         local forceSuccess, forceError = pcall(function()
             local chassis = car:FindFirstChild("Chassis")
             if chassis then
@@ -722,16 +722,16 @@ Tab3:Button({
 })
 
 -- Input para definir o turbo do carro
-local carTurbo = 1.5 -- Valor padrão
+local carTurbo = 3 -- Valor padrão (como no evento TurboStage original)
 Tab3:Input({
     Title = "Definir Turbo do Carro",
-    Desc = "Digite o nível do turbo (ex.: 1.5)",
-    Placeholder = "1.5",
+    Desc = "Digite o nível do turbo (ex.: 3)",
+    Placeholder = "3",
     Numeric = true, -- Aceita apenas números
     Callback = function(value)
         carTurbo = tonumber(value) -- Aceita qualquer número, sem limites
         if carTurbo == nil then
-            carTurbo = 1.5 -- Valor padrão se o input for inválido
+            carTurbo = 3 -- Valor padrão se o input for inválido
         end
         print("Turbo definido para: " .. carTurbo)
     end,
@@ -752,8 +752,33 @@ Tab3:Button({
             return
         end
 
-        -- Simula o turbo forçando a velocidade no lado do cliente usando BodyVelocity
+        -- Tenta definir o turbo usando o evento TurboStage
         local success, errorMessage = pcall(function()
+            local args = {
+                [1] = "TurboStage",
+                [2] = carTurbo -- O evento espera um número
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
+            print("Evento TurboStage disparado com nível: " .. carTurbo)
+        end)
+
+        if success then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Sucesso",
+                Text = "Tentativa de definir o turbo para nível " .. carTurbo .. " via evento!",
+                Duration = 5
+            })
+        else
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Falha ao disparar o evento de turbo. Veja o console para detalhes.",
+                Duration = 5
+            })
+            warn("Erro ao disparar o evento TurboStage: " .. tostring(errorMessage))
+        end
+
+        -- Força o turbo no lado do cliente usando BodyVelocity (para garantir que a velocidade aumente)
+        local forceSuccess, forceError = pcall(function()
             local chassis = car:FindFirstChild("Chassis")
             if chassis then
                 local bodyVelocity = chassis:FindFirstChild("BodyVelocity")
@@ -763,26 +788,27 @@ Tab3:Button({
                     bodyVelocity.MaxForce = Vector3.new(math.huge, 0, math.huge)
                     bodyVelocity.Parent = chassis
                 end
-                bodyVelocity.Velocity = bodyVelocity.Velocity * carTurbo
-                print("Turbo forçado via BodyVelocity: multiplicador " .. carTurbo .. "x")
+                -- Aplica o turbo como um multiplicador da velocidade atual
+                bodyVelocity.Velocity = bodyVelocity.Velocity + Vector3.new(carTurbo * 100, 0, 0) -- Aumenta a velocidade com base no nível do turbo
+                print("Turbo forçado via BodyVelocity: aumento baseado no nível " .. carTurbo)
             else
                 error("Chassis não encontrado no carro.")
             end
         end)
 
-        if success then
+        if forceSuccess then
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Sucesso",
-                Text = "Turbo do carro aplicado com multiplicador " .. carTurbo .. "x!",
+                Text = "Turbo forçado no lado do cliente com nível " .. carTurbo .. "!",
                 Duration = 5
             })
         else
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Erro",
-                Text = "Falha ao aplicar o turbo. Veja o console para detalhes.",
+                Text = "Falha ao forçar o turbo no lado do cliente. Veja o console para detalhes.",
                 Duration = 5
             })
-            warn("Erro ao aplicar o turbo via BodyVelocity: " .. tostring(errorMessage))
+            warn("Erro ao forçar o turbo via BodyVelocity: " .. tostring(forceError))
         end
     end,
 })
