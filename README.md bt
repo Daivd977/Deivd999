@@ -73,7 +73,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.3",
+    Title = "Lolyta Hub 2.5",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -634,6 +634,8 @@ end
 -- Variáveis para controlar a velocidade e o turbo
 local carSpeed = 55 -- Valor padrão (máximo permitido sem gamepass)
 local carTurbo = 3 -- Valor padrão
+local speedConnection -- Para armazenar a conexão do loop de velocidade
+local turboConnection -- Para armazenar a conexão do loop de turbo
 
 -- Função para tentar desativar scripts anti-cheat no lado do cliente
 local function disableAntiCheat(car)
@@ -648,49 +650,75 @@ local function disableAntiCheat(car)
     end
 end
 
--- Função para ajustar a velocidade do carro manipulando propriedades do VehicleSeat
-local function adjustSpeed(car, speed)
+-- Função para forçar a velocidade usando BodyThrust
+local function forceSpeed(car, speed)
+    -- Desconecta qualquer loop anterior
+    if speedConnection then
+        speedConnection:Disconnect()
+    end
+
     local seat = car:FindFirstChild("VehicleSeat")
     if not seat then
         print("VehicleSeat não encontrado no carro.")
         return false
     end
 
-    -- Ajusta as propriedades do VehicleSeat para aumentar a velocidade
-    if seat:IsA("VehicleSeat") then
-        seat.MaxSpeed = speed -- Define a velocidade máxima
-        seat.Torque = speed * 20 -- Aumenta o torque para suportar a nova velocidade
-        seat.P = speed * 50 -- Aumenta a proporcionalidade da força (aceleração mais rápida)
-        seat.D = speed * 5 -- Ajusta a derivada para estabilidade
-        seat.TurnSpeed = speed / 10 -- Ajusta a velocidade de giro para melhor controle
-        print("Propriedades do VehicleSeat ajustadas para velocidade: " .. speed)
-        return true
-    else
-        print("VehicleSeat não é um assento válido.")
-        return false
+    local bodyThrust = seat:FindFirstChild("BodyThrust")
+    if not bodyThrust then
+        bodyThrust = Instance.new("BodyThrust")
+        bodyThrust.Name = "BodyThrust"
+        bodyThrust.Location = Vector3.new(0, 0, 0) -- Aplica a força no centro do VehicleSeat
+        bodyThrust.Parent = seat
     end
+
+    -- Loop para reaplicar a força continuamente
+    speedConnection = game:GetService("RunService").Heartbeat:Connect(function()
+        if seat.Parent and bodyThrust.Parent then
+            -- Aplica uma força proporcional à velocidade desejada
+            local force = speed * 1000 -- Ajusta a força com base na velocidade
+            bodyThrust.Force = Vector3.new(force, 0, force) -- Aplica a força em X e Z para melhor controle
+        else
+            speedConnection:Disconnect()
+        end
+    end)
+    print("Forçando velocidade via BodyThrust: " .. speed)
+    return true
 end
 
--- Função para simular o turbo ajustando propriedades do VehicleSeat
+-- Função para simular o turbo usando BodyThrust
 local function applyTurbo(car, turboLevel)
+    -- Desconecta qualquer loop anterior
+    if turboConnection then
+        turboConnection:Disconnect()
+    end
+
     local seat = car:FindFirstChild("VehicleSeat")
     if not seat then
         print("VehicleSeat não encontrado no carro.")
         return false
     end
 
-    -- Ajusta as propriedades do VehicleSeat para simular o turbo
-    if seat:IsA("VehicleSeat") then
-        local speedIncrease = turboLevel * 100 -- Aumento de velocidade baseado no nível do turbo
-        seat.MaxSpeed = seat.MaxSpeed + speedIncrease -- Aumenta a velocidade máxima
-        seat.Torque = seat.Torque + (turboLevel * 500) -- Aumenta o torque para aceleração extra
-        seat.P = seat.P + (turboLevel * 200) -- Aumenta a proporcionalidade para aceleração mais rápida
-        print("Turbo aplicado: nível " .. turboLevel .. ", aumento de velocidade: " .. speedIncrease)
-        return true
-    else
-        print("VehicleSeat não é um assento válido.")
-        return false
+    local bodyThrust = seat:FindFirstChild("BodyThrust")
+    if not bodyThrust then
+        bodyThrust = Instance.new("BodyThrust")
+        bodyThrust.Name = "BodyThrust"
+        bodyThrust.Location = Vector3.new(0, 0, 0) -- Aplica a força no centro do VehicleSeat
+        bodyThrust.Parent = seat
     end
+
+    -- Loop para reaplicar a força do turbo continuamente
+    turboConnection = game:GetService("RunService").Heartbeat:Connect(function()
+        if seat.Parent and bodyThrust.Parent then
+            -- Aplica uma força adicional para simular o turbo
+            local currentForce = bodyThrust.Force.Magnitude
+            local turboForce = currentForce + (turboLevel * 5000) -- Aumenta a força com base no nível do turbo
+            bodyThrust.Force = Vector3.new(turboForce, 0, turboForce) -- Aplica a força em X e Z
+        else
+            turboConnection:Disconnect()
+        end
+    end)
+    print("Turbo aplicado via BodyThrust: nível " .. turboLevel)
+    return true
 end
 
 -- Input para definir a velocidade do carro
@@ -751,24 +779,24 @@ Tab3:Button({
             warn("Erro ao disparar o evento 200PlayerGiveSpeed: " .. tostring(errorMessage))
         end
 
-        -- Ajusta a velocidade manipulando as propriedades do VehicleSeat
-        local adjustSuccess, adjustError = pcall(function()
-            return adjustSpeed(car, carSpeed)
+        -- Força a velocidade usando BodyThrust
+        local forceSuccess, forceError = pcall(function()
+            return forceSpeed(car, carSpeed)
         end)
 
-        if adjustSuccess then
+        if forceSuccess then
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Sucesso",
-                Text = "Velocidade ajustada para " .. carSpeed .. " no lado do cliente!",
+                Text = "Velocidade forçada para " .. carSpeed .. " no lado do cliente!",
                 Duration = 5
             })
         else
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Erro",
-                Text = "Falha ao ajustar a velocidade. Veja o console para detalhes.",
+                Text = "Falha ao forçar a velocidade. Veja o console para detalhes.",
                 Duration = 5
             })
-            warn("Erro ao ajustar a velocidade: " .. tostring(adjustError))
+            warn("Erro ao forçar a velocidade: " .. tostring(forceError))
         end
     end,
 })
@@ -806,7 +834,7 @@ Tab3:Button({
         -- Tenta desativar possíveis scripts anti-cheat
         disableAntiCheat(car)
 
-        -- Aplica o turbo manipulando as propriedades do VehicleSeat
+        -- Aplica o turbo usando BodyThrust
         local turboSuccess, turboError = pcall(function()
             return applyTurbo(car, carTurbo)
         end)
