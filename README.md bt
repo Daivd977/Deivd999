@@ -744,7 +744,7 @@ local function getPlayerCars()
     return playerCars
 end
 
--- Cria o dropdown (inspirado em um dropdown de jogadores)
+-- Cria o dropdown (simplificado, sem atualização automática)
 local carNames = {"Nenhum carro encontrado"}
 local playerCars = getPlayerCars()
 if #playerCars > 0 then
@@ -770,28 +770,29 @@ local carDropdown = Tab3:Dropdown({
     end,
 })
 
--- Função para atualizar o dropdown
-local function updateCarDropdown()
-    local playerCars = getPlayerCars()
-    local newCarNames = {}
-    for _, car in pairs(playerCars) do
-        table.insert(newCarNames, car.name)
-    end
+-- Botão para atualizar a lista de carros
+Tab3:Button({
+    Title = "Atualizar Lista de Carros",
+    Desc = "Atualiza a lista de carros disponíveis",
+    Callback = function()
+        local playerCars = getPlayerCars()
+        local newCarNames = {}
+        for _, car in pairs(playerCars) do
+            table.insert(newCarNames, car.name)
+        end
 
-    if #newCarNames == 0 then
-        newCarNames = {"Nenhum carro encontrado"}
-    end
+        if #newCarNames == 0 then
+            newCarNames = {"Nenhum carro encontrado"}
+        end
 
-    carDropdown.Options = newCarNames
-end
-
--- Atualiza o dropdown inicialmente e a cada 5 segundos
-updateCarDropdown()
-game:GetService("RunService").Heartbeat:Connect(function()
-    if tick() % 5 < 0.1 then
-        updateCarDropdown()
-    end
-end)
+        carDropdown.Options = newCarNames
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Sucesso",
+            Text = "Lista de carros atualizada!",
+            Duration = 5
+        })
+    end,
+})
 
 -- Toggle para visualizar o carro selecionado
 Tab3:Toggle({
@@ -978,105 +979,6 @@ Tab3:Button({
         })
     end,
 })
-
--- Toggle para teleportar todos os carros para o void em loop
-local voidLoopEnabled = false
-local voidLoopConnection = nil
-
-Tab3:Toggle({
-    Title = "Loop: Teleportar Todos os Carros para o Void",
-    Desc = "Teleporta todos os carros para o void em loop até desativar",
-    Default = false,
-    Callback = function(value)
-        voidLoopEnabled = value
-
-        if voidLoopEnabled then
-            voidLoopConnection = game:GetService("RunService").Heartbeat:Connect(function()
-                if not voidLoopEnabled then
-                    return
-                end
-
-                local player = game.Players.LocalPlayer
-                local character = player.Character
-                if not character or not character:FindFirstChild("HumanoidRootPart") then
-                    return
-                end
-
-                local playerCars = getPlayerCars()
-                if #playerCars == 0 then
-                    game.StarterGui:SetCore("SendNotification", {
-                        Title = "Aviso",
-                        Text = "Nenhum carro encontrado para teleportar!",
-                        Duration = 5
-                    })
-                    voidLoopEnabled = false
-                    return
-                end
-
-                for _, carData in pairs(playerCars) do
-                    if not voidLoopEnabled then
-                        break
-                    end
-
-                    local car = carData.vehicle
-                    local seat = car:FindFirstChild("VehicleSeat")
-                    if not seat then
-                        continue
-                    end
-
-                    if seat.Occupant then
-                        continue
-                    end
-
-                    local originalPos = character.HumanoidRootPart.Position
-                    character.HumanoidRootPart.CFrame = seat.CFrame + Vector3.new(0, 2, 0)
-                    wait(0.5)
-                    character.Humanoid.Sit = true
-
-                    local voidPos = Vector3.new(0, -500, 0)
-                    local success, errorMessage = pcall(function()
-                        car:MoveTo(voidPos + Vector3.new(0, 10, 0))
-                    end)
-
-                    if success then
-                        wait(0.5)
-                        character.Humanoid.Jump = true
-                        wait(0.5)
-                        character.HumanoidRootPart.CFrame = CFrame.new(originalPos)
-
-                        game.StarterGui:SetCore("SendNotification", {
-                            Title = "Sucesso",
-                            Text = "Carro " .. carData.name .. " teleportado para o void!",
-                            Duration = 3
-                        })
-                    end
-
-                    wait(1)
-                end
-
-                if #playerCars == 0 or not voidLoopEnabled then
-                    voidLoopEnabled = false
-                    game.StarterGui:SetCore("SendNotification", {
-                        Title = "Loop Finalizado",
-                        Text = "Todos os carros foram teleportados ou o loop foi desativado!",
-                        Duration = 5
-                    })
-                end
-            end)
-        else
-            if voidLoopConnection then
-                voidLoopConnection:Disconnect()
-                voidLoopConnection = nil
-            end
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Loop",
-                Text = "Loop desativado!",
-                Duration = 5
-            })
-        end
-    end,
-})
-
 
 -----------------------------------------------------------------------------------------------------
                                           -- === Tab 4: RGB Color === --
