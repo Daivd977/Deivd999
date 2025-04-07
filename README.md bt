@@ -73,7 +73,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.3",
+    Title = "Lolyta Hub 2.5",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -683,6 +683,11 @@ Tab2:Button({
 -- Variável global para armazenar o carro selecionado
 _G.selectedCar = nil
 
+-- Variável para controlar o estado da câmera
+local camera = Workspace.CurrentCamera
+local originalCameraSubject = nil
+local isViewingCar = false
+
 -- Função para obter os nomes dos jogadores com carros
 local function getCarOwners()
     local carOwners = {}
@@ -721,13 +726,6 @@ local function getCarOwners()
     if #carOwners == 0 then
         carOwners = {"Nenhum carro encontrado"}
     end
-
-    -- Notificação temporária para depuração
-    game.StarterGui:SetCore("SendNotification", {
-        Title = "Depuração: CarOwners",
-        Text = "Jogadores com carros: " .. table.concat(carOwners, ", "),
-        Duration = 5
-    })
 
     return carOwners
 end
@@ -770,84 +768,253 @@ local function getPlayerCars()
     return playerCars
 end
 
--- Variável para armazenar o dropdown atual
-local currentDropdown = nil
+-- Variável para armazenar a UI
+local carUI = nil
 
--- Função para criar ou recriar o dropdown
-local function createCarDropdown()
-    -- Remove o dropdown anterior, se existir
-    if currentDropdown then
-        -- Lolyta Hub pode não ter um método para remover o dropdown, então vamos apenas recriá-lo
-        currentDropdown = nil
+-- Função para criar a UI personalizada
+local function createCarUI()
+    -- Se a UI já existe, não cria outra
+    if carUI then
+        carUI.Enabled = true
+        return
     end
 
-    -- Obtém a lista de jogadores com carros
-    local carOwners = getCarOwners()
+    -- Cria a ScreenGui
+    carUI = Instance.new("ScreenGui")
+    carUI.Name = "CarUI"
+    carUI.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    carUI.ResetOnSpawn = false
 
-    -- Cria o novo dropdown
-    currentDropdown = Tab3:Dropdown({
-        Title = "Selecionar Carro",
-        Desc = "Selecione o carro de um jogador para interagir",
-        Value = "",
-        Multi = false,
-        AllowNone = true,
-        Values = carOwners, -- Preenche com os nomes dos jogadores
-        Callback = function(selectedPlayerName)
-            if selectedPlayerName == "Nenhum carro encontrado" then
+    -- Cria o Frame principal
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 300, 0, 400)
+    frame.Position = UDim2.new(0.5, -150, 0.5, -200)
+    frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    frame.BorderSizePixel = 0
+    frame.Parent = carUI
+
+    -- Adiciona um canto arredondado ao Frame
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 10)
+    corner.Parent = frame
+
+    -- Adiciona a imagem
+    local imageLabel = Instance.new("ImageLabel")
+    imageLabel.Size = UDim2.new(0, 100, 0, 100)
+    imageLabel.Position = UDim2.new(0.5, -50, 0, 10)
+    imageLabel.BackgroundTransparency = 1
+    imageLabel.Image = "rbxassetid://4870505191"
+    imageLabel.Parent = frame
+
+    -- Cria o dropdown
+    local dropdownFrame = Instance.new("Frame")
+    dropdownFrame.Size = UDim2.new(0, 260, 0, 30)
+    dropdownFrame.Position = UDim2.new(0, 20, 0, 120)
+    dropdownFrame.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    dropdownFrame.Parent = frame
+
+    local dropdownCorner = Instance.new("UICorner")
+    dropdownCorner.CornerRadius = UDim.new(0, 5)
+    dropdownCorner.Parent = dropdownFrame
+
+    local dropdownText = Instance.new("TextLabel")
+    dropdownText.Size = UDim2.new(1, -40, 1, 0)
+    dropdownText.Position = UDim2.new(0, 10, 0, 0)
+    dropdownText.BackgroundTransparency = 1
+    dropdownText.Text = "Selecionar Carro"
+    dropdownText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    dropdownText.TextScaled = true
+    dropdownText.Parent = dropdownFrame
+
+    local dropdownButton = Instance.new("TextButton")
+    dropdownButton.Size = UDim2.new(0, 30, 0, 30)
+    dropdownButton.Position = UDim2.new(1, -30, 0, 0)
+    dropdownButton.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+    dropdownButton.Text = "▼"
+    dropdownButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    dropdownButton.Parent = dropdownFrame
+
+    local dropdownList = Instance.new("ScrollingFrame")
+    dropdownList.Size = UDim2.new(0, 260, 0, 100)
+    dropdownList.Position = UDim2.new(0, 20, 0, 150)
+    dropdownList.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    dropdownList.Visible = false
+    dropdownList.CanvasSize = UDim2.new(0, 0, 0, 0)
+    dropdownList.ScrollBarThickness = 5
+    dropdownList.Parent = frame
+
+    local dropdownListLayout = Instance.new("UIListLayout")
+    dropdownListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    dropdownListLayout.Parent = dropdownList
+
+    -- Função para atualizar o dropdown
+    local function updateDropdownList()
+        -- Limpa a lista atual
+        for _, child in pairs(dropdownList:GetChildren()) do
+            if child:IsA("TextButton") then
+                child:Destroy()
+            end
+        end
+
+        -- Obtém a lista de jogadores com carros
+        local carOwners = getCarOwners()
+        dropdownText.Text = "Selecionar Carro"
+
+        -- Preenche a lista
+        for i, owner in ipairs(carOwners) do
+            local optionButton = Instance.new("TextButton")
+            optionButton.Size = UDim2.new(1, 0, 0, 30)
+            optionButton.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+            optionButton.Text = owner
+            optionButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            optionButton.TextScaled = true
+            optionButton.LayoutOrder = i
+            optionButton.Parent = dropdownList
+
+            optionButton.MouseButton1Click:Connect(function()
+                dropdownText.Text = owner
+                dropdownList.Visible = false
+
+                if owner == "Nenhum carro encontrado" then
+                    _G.selectedCar = nil
+                    return
+                end
+
+                local playerCars = getPlayerCars()
+                for _, car in pairs(playerCars) do
+                    if car.name == owner then
+                        _G.selectedCar = car.vehicle
+                        game.StarterGui:SetCore("SendNotification", {
+                            Title = "Carro Selecionado",
+                            Text = "Carro de " .. car.name .. " selecionado!",
+                            Duration = 5
+                        })
+                        return
+                    end
+                end
                 _G.selectedCar = nil
+            end)
+        end
+
+        dropdownList.CanvasSize = UDim2.new(0, 0, 0, #carOwners * 30)
+    end
+
+    -- Atualiza o dropdown inicialmente
+    updateDropdownList()
+
+    -- Atualiza o dropdown quando um carro é adicionado ou removido
+    local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
+    if vehiclesFolder then
+        vehiclesFolder.ChildAdded:Connect(function()
+            updateDropdownList()
+        end)
+        vehiclesFolder.ChildRemoved:Connect(function()
+            updateDropdownList()
+        end)
+    end
+
+    -- Torna o dropdown clicável
+    dropdownButton.MouseButton1Click:Connect(function()
+        dropdownList.Visible = not dropdownList.Visible
+    end)
+
+    -- Cria o botão "Visualizar Carro"
+    local viewButton = Instance.new("TextButton")
+    viewButton.Size = UDim2.new(0, 260, 0, 40)
+    viewButton.Position = UDim2.new(0, 20, 0, 260)
+    viewButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    viewButton.Text = "Visualizar Carro"
+    viewButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    viewButton.TextScaled = true
+    viewButton.Parent = frame
+
+    local viewButtonCorner = Instance.new("UICorner")
+    viewButtonCorner.CornerRadius = UDim.new(0, 5)
+    viewButtonCorner.Parent = viewButton
+
+    viewButton.MouseButton1Click:Connect(function()
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+        if not character or not character:FindFirstChild("Humanoid") then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Personagem não encontrado!",
+                Duration = 5
+            })
+            return
+        end
+
+        if not _G.selectedCar then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Nenhum carro selecionado!",
+                Duration = 5
+            })
+            return
+        end
+
+        if not isViewingCar then
+            local chassis = _G.selectedCar:FindFirstChild("Chassis") or _G.selectedCar:FindFirstChild("VehicleSeat") or _G.selectedCar:FindFirstChild("Seat") or _G.selectedCar:FindFirstChild("DriverSeat")
+            if not chassis then
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = "Erro",
+                    Text = "Chassis ou assento não encontrado no carro!",
+                    Duration = 5
+                })
                 return
             end
 
-            local playerCars = getPlayerCars()
-            for _, car in pairs(playerCars) do
-                if car.name == selectedPlayerName then
-                    _G.selectedCar = car.vehicle
-                    game.StarterGui:SetCore("SendNotification", {
-                        Title = "Carro Selecionado",
-                        Text = "Carro de " .. car.name .. " selecionado!",
-                        Duration = 5
-                    })
-                    return
-                end
+            -- Salva o estado atual da câmera
+            originalCameraSubject = camera.CameraSubject
+
+            -- Muda a câmera para seguir o carro
+            camera.CameraSubject = chassis
+            camera.CameraType = Enum.CameraType.Follow
+
+            -- Ajusta a posição inicial da câmera para evitar que fique muito próxima
+            local carPos = chassis.Position
+            camera.CFrame = CFrame.new(carPos + Vector3.new(10, 5, 10), carPos)
+
+            isViewingCar = true
+            viewButton.Text = "Parar de Visualizar"
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Visualizar",
+                Text = "Câmera agora está seguindo o carro!",
+                Duration = 5
+            })
+        else
+            -- Restaura a câmera para o jogador
+            if originalCameraSubject then
+                camera.CameraSubject = originalCameraSubject
+                camera.CameraType = Enum.CameraType.Custom
+                originalCameraSubject = nil
             end
-            _G.selectedCar = nil
-        end,
-    })
-end
 
--- Cria o dropdown inicialmente
-createCarDropdown()
-
--- Botão para atualizar a lista de carros manualmente
-Tab3:Button({
-    Title = "Atualizar Lista de Carros",
-    Desc = "Atualiza a lista de carros disponíveis",
-    Callback = function()
-        createCarDropdown()
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Sucesso",
-            Text = "Lista de carros atualizada!",
-            Duration = 5
-        })
-    end,
-})
-
--- Atualiza o dropdown quando um carro é adicionado ou removido
-local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
-if vehiclesFolder then
-    vehiclesFolder.ChildAdded:Connect(function()
-        createCarDropdown()
+            isViewingCar = false
+            viewButton.Text = "Visualizar Carro"
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Visualizar",
+                Text = "Câmera voltou para o jogador!",
+                Duration = 5
+            })
+        end
     end)
-    vehiclesFolder.ChildRemoved:Connect(function()
-        createCarDropdown()
-    end)
-end
 
--- Botão para teleportar o carro selecionado para o void
-Tab3:Button({
-    Title = "Teleportar Carro para o Void",
-    Desc = "Teleporta você para o carro e depois o carro para o void",
-    Callback = function()
+    -- Cria o botão "Teleportar Carro para o Void"
+    local voidButton = Instance.new("TextButton")
+    voidButton.Size = UDim2.new(0, 260, 0, 40)
+    voidButton.Position = UDim2.new(0, 20, 0, 310)
+    voidButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    voidButton.Text = "Teleportar Carro para o Void"
+    voidButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    voidButton.TextScaled = true
+    voidButton.Parent = frame
+
+    local voidButtonCorner = Instance.new("UICorner")
+    voidButtonCorner.CornerRadius = UDim.new(0, 5)
+    voidButtonCorner.Parent = voidButton
+
+    voidButton.MouseButton1Click:Connect(function()
         local player = game.Players.LocalPlayer
         local character = player.Character
         if not character or not character:FindFirstChild("HumanoidRootPart") then
@@ -916,6 +1083,73 @@ Tab3:Button({
             Text = "Carro teleportado para o void e você voltou à sua posição!",
             Duration = 5
         })
+    end)
+
+    -- Cria o botão "Minimizar"
+    local minimizeButton = Instance.new("TextButton")
+    minimizeButton.Size = UDim2.new(0, 100, 0, 30)
+    minimizeButton.Position = UDim2.new(0, 20, 0, 360)
+    minimizeButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    minimizeButton.Text = "Minimizar"
+    minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    minimizeButton.TextScaled = true
+    minimizeButton.Parent = frame
+
+    local minimizeButtonCorner = Instance.new("UICorner")
+    minimizeButtonCorner.CornerRadius = UDim.new(0, 5)
+    minimizeButtonCorner.Parent = minimizeButton
+
+    minimizeButton.MouseButton1Click:Connect(function()
+        carUI.Enabled = false
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "UI Minimizada",
+            Text = "Clique em 'Abrir UI de Carros' para reabrir!",
+            Duration = 5
+        })
+    end)
+
+    -- Cria o botão "Fechar"
+    local closeButton = Instance.new("TextButton")
+    closeButton.Size = UDim2.new(0, 100, 0, 30)
+    closeButton.Position = UDim2.new(0, 180, 0, 360)
+    closeButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    closeButton.Text = "Fechar"
+    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeButton.TextScaled = true
+    closeButton.Parent = frame
+
+    local closeButtonCorner = Instance.new("UICorner")
+    closeButtonCorner.CornerRadius = UDim.new(0, 5)
+    closeButtonCorner.Parent = closeButton
+
+    closeButton.MouseButton1Click:Connect(function()
+        if carUI then
+            carUI:Destroy()
+            carUI = nil
+            if isViewingCar then
+                -- Restaura a câmera para o jogador
+                if originalCameraSubject then
+                    camera.CameraSubject = originalCameraSubject
+                    camera.CameraType = Enum.CameraType.Custom
+                    originalCameraSubject = nil
+                end
+                isViewingCar = false
+            end
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "UI Fechada",
+                Text = "UI de carros fechada!",
+                Duration = 5
+            })
+        end
+    end)
+end
+
+-- Botão para abrir a UI
+Tab3:Button({
+    Title = "Abrir UI de Carros",
+    Desc = "Abre a interface para interagir com carros",
+    Callback = function()
+        createCarUI()
     end,
 })
 -----------------------------------------------------------------------------------------------------
