@@ -73,7 +73,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.5",
+    Title = "Lolyta Hub 2.3",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -245,7 +245,7 @@ local noclipEnabled = false
 local noclipConnections = {}
 
 -- Função para ativar/desativar o noclip
-local function toggleNoclip()
+local function setNoclip(state)
     local player = game.Players.LocalPlayer
     local character = player.Character
     if not character then
@@ -257,7 +257,7 @@ local function toggleNoclip()
         return
     end
 
-    noclipEnabled = not noclipEnabled -- Alterna o estado do noclip
+    noclipEnabled = state -- Define o estado do noclip com base no toggle
 
     if noclipEnabled then
         -- Desativa as colisões do personagem
@@ -307,18 +307,21 @@ local function toggleNoclip()
     end
 end
 
+-- Garante que o noclip comece desativado ao carregar o hub
+setNoclip(false)
+
 -- Toggle para ativar/desativar o noclip
-Tab1:Toggle({
+Tab3:Toggle({
     Title = "Noclip",
     Desc = "Ativa/desativa o noclip para atravessar paredes",
     Default = false,
     Callback = function(value)
-        toggleNoclip()
+        setNoclip(value)
     end,
 })
 
 -- Botão para executar o script de fly
-Tab1:Button({
+Tab3:Button({
     Title = "Ativar Fly GUI",
     Desc = "Carrega um GUI de fly universal",
     Callback = function()
