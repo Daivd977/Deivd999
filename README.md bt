@@ -73,7 +73,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.2",
+    Title = "Lolyta Hub 2.5",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -490,7 +490,7 @@ Tab2:Button({
     end,
 })
 
--- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta
+
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -593,8 +593,6 @@ Tab2:Button({
 
 ----------------------------------------------------------------------------------------------------------------------------------------------
 
--- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta
-
 Tab2:Paragraph({ Title = "esta funçao e para remover a permisao de qualquer casa e de qualque player", Desc = "" })
 
 -- Função para pegar os nomes dos jogadores
@@ -681,15 +679,100 @@ Tab2:Button({
 
 -----------------------------------------------------------------------------------------------------------------------------------------------
 
-local TestDropdown = Tab3:Dropdown({
-    Title = "Teste Dropdown",
-    Desc = "Verificar se carrega corretamente",
+local selectedCar = nil
+local originalPosition = nil
+
+-- Função para obter a lista de carros disponíveis
+local function getPlayerCars()
+    local carNames = {}
+    local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
+    if vehiclesFolder then
+        for _, vehicle in pairs(vehiclesFolder:GetChildren()) do
+            if vehicle:IsA("Model") and vehicle:FindFirstChild("Owner") then
+                table.insert(carNames, vehicle.Name)
+            end
+        end
+    end
+    return carNames
+end
+
+-- Função para encontrar um carro pelo nome
+local function getCarByName(name)
+    local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
+    if vehiclesFolder then
+        for _, vehicle in pairs(vehiclesFolder:GetChildren()) do
+            if vehicle.Name == name then
+                return vehicle
+            end
+        end
+    end
+    return nil
+end
+
+-- Teletransporta o carro até você caso o assento do motorista esteja vazio
+local function teleportCarToPlayer(car)
+    if car then
+        local driverSeat = car:FindFirstChild("Body") and car.Body:FindFirstChild("VehicleSeat")
+        if driverSeat and not driverSeat.Occupant then
+            car:SetPrimaryPartCFrame(LocalPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(0, 5, 0))
+        end
+    end
+end
+
+-- Teletransporta o jogador para o assento do motorista e depois para o void
+local function teleportPlayerToDriverSeatAndVoid(car)
+    if car then
+        local driverSeat = car:FindFirstChild("Body") and car.Body:FindFirstChild("VehicleSeat")
+        if driverSeat and not driverSeat.Occupant then
+            originalPosition = LocalPlayer.Character.HumanoidRootPart.CFrame
+            LocalPlayer.Character.HumanoidRootPart.CFrame = driverSeat.CFrame
+            wait(0.5)
+            LocalPlayer.Character.Humanoid:Sit(false)
+            driverSeat:Sit(LocalPlayer.Character.Humanoid)
+
+            wait(0.5)
+            local voidPosition = Vector3.new(car.PrimaryPart.Position.X, -1000, car.PrimaryPart.Position.Z)
+            car:SetPrimaryPartCFrame(CFrame.new(voidPosition))
+            wait(0.2)
+            LocalPlayer.Character.HumanoidRootPart.CFrame = originalPosition
+        end
+    end
+end
+
+-- Criação do dropdown para selecionar um carro
+local DropdownCar = Tab3:Dropdown({
+    Title = "Selecionar Carro",
+    Desc = "Escolha um carro para interagir",
     Value = "",
     Multi = false,
     AllowNone = true,
-    Values = {"Opção 1", "Opção 2", "Opção 3"},
+    Values = getPlayerCars(),
     Callback = function(tab)
-        print("Selecionado: " .. tab)
+        selectedCar = getCarByName(tab)
+        print("Carro selecionado: " .. tab)
+    end,
+})
+
+-- Atualiza a lista de carros dinamicamente
+updateDropdown(DropdownCar)
+Players.PlayerAdded:Connect(function() updateDropdown(DropdownCar) end)
+Players.PlayerRemoving:Connect(function() updateDropdown(DropdownCar) end)
+
+-- Botão para teleportar o carro até você
+Tab3:Button({
+    Title = "Teletransportar Carro",
+    Desc = "Verifica se não há ninguém no veículo e teleporta até você",
+    Callback = function()
+        teleportCarToPlayer(selectedCar)
+    end,
+})
+
+-- Botão para teleportar o jogador ao assento do motorista e depois ao void
+Tab3:Button({
+    Title = "Teletransportar ao Assento do Motorista e Void",
+    Desc = "Verifica se o assento está vazio, te teleporta e depois manda o carro pro void",
+    Callback = function()
+        teleportPlayerToDriverSeatAndVoid(selectedCar)
     end,
 })
 -----------------------------------------------------------------------------------------------------
