@@ -755,43 +755,48 @@ local function getPlayerCars()
     return playerCars
 end
 
--- Função para atualizar o dropdown
-local function updateCarDropdown(dropdown)
-    local carNames = getCarNames()
-    -- Garante que o dropdown seja atualizado corretamente
-    if dropdown.SetValues then
-        dropdown:SetValues(carNames) -- Tenta usar um método SetValues, se disponível
-    else
-        dropdown.Values = carNames -- Caso contrário, usa a propriedade Values
+-- Variável para armazenar o dropdown atual
+local currentDropdown = nil
+
+-- Função para criar ou recriar o dropdown
+local function createCarDropdown()
+    -- Remove o dropdown anterior, se existir
+    if currentDropdown then
+        -- Lolyta Hub pode não ter um método para remover o dropdown, então vamos apenas recriá-lo
+        currentDropdown = nil
     end
+
+    -- Cria o novo dropdown
+    local carNames = getCarNames()
+    currentDropdown = Tab3:Dropdown({
+        Title = "Selecionar Carro",
+        Desc = "Escolha um carro para interagir",
+        Value = "",
+        Multi = false,
+        AllowNone = true,
+        Values = carNames, -- Preenche com a lista de carros
+        Callback = function(value)
+            local playerCars = getPlayerCars()
+            for _, car in pairs(playerCars) do
+                if car.name == value then
+                    _G.selectedCar = car.vehicle
+                    return
+                end
+            end
+            _G.selectedCar = nil
+        end,
+    })
 end
 
--- Cria o dropdown
-local DropdownCar = Tab3:Dropdown({
-    Title = "Selecionar Carro",
-    Desc = "Escolha um carro para interagir",
-    Value = "",
-    Multi = false,
-    AllowNone = true,
-    Values = getCarNames(), -- Preenche inicialmente com a lista de carros
-    Callback = function(value)
-        local playerCars = getPlayerCars()
-        for _, car in pairs(playerCars) do
-            if car.name == value then
-                _G.selectedCar = car.vehicle
-                return
-            end
-        end
-        _G.selectedCar = nil
-    end,
-})
+-- Cria o dropdown inicialmente
+createCarDropdown()
 
--- Botão para atualizar a lista de carros
+-- Botão para atualizar a lista de carros (recria o dropdown)
 Tab3:Button({
     Title = "Atualizar Lista de Carros",
     Desc = "Atualiza a lista de carros disponíveis",
     Callback = function()
-        updateCarDropdown(DropdownCar)
+        createCarDropdown()
         game.StarterGui:SetCore("SendNotification", {
             Title = "Sucesso",
             Text = "Lista de carros atualizada!",
@@ -799,13 +804,6 @@ Tab3:Button({
         })
     end,
 })
-
--- Atualiza o dropdown quando um carro é adicionado ou removido
-local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
-if vehiclesFolder then
-    vehiclesFolder.ChildAdded:Connect(function() updateCarDropdown(DropdownCar) end)
-    vehiclesFolder.ChildRemoved:Connect(function() updateCarDropdown(DropdownCar) end)
-end
 
 -- Toggle para visualizar o carro (ajustado para mudar a câmera)
 local camera = Workspace.CurrentCamera
