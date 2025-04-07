@@ -73,7 +73,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.5",
+    Title = "Lolyta Hub 2.4",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -680,6 +680,10 @@ Tab2:Button({
                                           -- === Tab 3: Carro === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
+---------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 3: Carro === --
+---------------------------------------------------------------------------------------------------------------------------------
+
 -- Variável global para armazenar o carro selecionado
 _G.selectedCar = nil
 
@@ -739,6 +743,21 @@ local function getPlayerCars()
         end
     end
 
+    -- Notificação para depuração
+    if #playerCars > 0 then
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Depuração",
+            Text = "Encontrados " .. #playerCars .. " carros!",
+            Duration = 5
+        })
+    else
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Depuração",
+            Text = "Nenhum carro encontrado!",
+            Duration = 5
+        })
+    end
+
     return playerCars
 end
 
@@ -752,9 +771,19 @@ local carDropdown = Tab3:Dropdown({
         for _, car in pairs(playerCars) do
             if car.name == value then
                 _G.selectedCar = car.vehicle
-                break
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = "Sucesso",
+                    Text = "Carro selecionado: " .. car.name,
+                    Duration = 5
+                })
+                return
             end
         end
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Erro",
+            Text = "Carro não encontrado na lista!",
+            Duration = 5
+        })
     end,
 })
 
@@ -771,9 +800,6 @@ local function updateCarDropdown()
     end
 
     carDropdown.Options = carNames
-    if carDropdown.Refresh then
-        carDropdown:Refresh()
-    end
 end
 
 -- Atualiza o dropdown inicialmente e a cada 5 segundos
@@ -784,6 +810,7 @@ game:GetService("RunService").Heartbeat:Connect(function()
     end
 end)
 
+-- Toggle para visualizar o carro selecionado
 Tab3:Toggle({
     Title = "Visualizar Carro",
     Desc = "Teleporta você temporariamente para visualizar o carro selecionado",
@@ -837,6 +864,7 @@ Tab3:Toggle({
     end,
 })
 
+-- Botão para teleportar o carro selecionado para o jogador
 Tab3:Button({
     Title = "Teleportar Carro para Mim",
     Desc = "Teleporta o carro selecionado para sua posição",
@@ -892,6 +920,7 @@ Tab3:Button({
     end,
 })
 
+-- Botão para teleportar o carro selecionado para o void
 Tab3:Button({
     Title = "Teleportar Carro para o Void",
     Desc = "Teleporta você para o carro e depois o carro para o void",
@@ -967,64 +996,7 @@ Tab3:Button({
     end,
 })
 
--- Função para encontrar os carros dos jogadores (repetida para este script independente)
-local function getPlayerCars()
-    local playerCars = {}
-    local player = game.Players.LocalPlayer
-
-    local vehicles = Workspace:FindFirstChild("Vehicles")
-    if vehicles then
-        for _, vehicle in pairs(vehicles:GetChildren()) do
-            local seat = vehicle:FindFirstChild("VehicleSeat")
-            local ownerName = "Desconhecido"
-            
-            for _, p in pairs(game.Players:GetPlayers()) do
-                if vehicle.Name:lower():find(p.Name:lower()) then
-                    ownerName = p.Name
-                    break
-                end
-            end
-
-            if seat and seat:IsA("VehicleSeat") and seat.Occupant then
-                local humanoid = seat.Occupant
-                local seatedPlayer = game.Players:GetPlayerFromCharacter(humanoid.Parent)
-                if seatedPlayer then
-                    ownerName = seatedPlayer.Name
-                end
-            end
-
-            table.insert(playerCars, {name = vehicle.Name .. " (" .. ownerName .. ")", vehicle = vehicle})
-        end
-    end
-
-    for _, vehicle in pairs(Workspace:GetDescendants()) do
-        if vehicle:IsA("Model") and vehicle:FindFirstChild("VehicleSeat") and (not vehicles or not vehicles:FindFirstChild(vehicle.Name)) then
-            local seat = vehicle:FindFirstChild("VehicleSeat")
-            local ownerName = "Desconhecido"
-
-            for _, p in pairs(game.Players:GetPlayers()) do
-                if vehicle.Name:lower():find(p.Name:lower()) then
-                    ownerName = p.Name
-                    break
-                end
-            end
-
-            if seat and seat:IsA("VehicleSeat") and seat.Occupant then
-                local humanoid = seat.Occupant
-                local seatedPlayer = game.Players:GetPlayerFromCharacter(humanoid.Parent)
-                if seatedPlayer then
-                    ownerName = seatedPlayer.Name
-                end
-            end
-
-            table.insert(playerCars, {name = vehicle.Name .. " (" .. ownerName .. ")", vehicle = vehicle})
-        end
-    end
-
-    return playerCars
-end
-
--- Toggle para o loop
+-- Toggle para teleportar todos os carros para o void em loop
 local voidLoopEnabled = false
 local voidLoopConnection = nil
 
@@ -1121,7 +1093,6 @@ Tab3:Toggle({
         end
     end,
 })
-
 
 
 -----------------------------------------------------------------------------------------------------
