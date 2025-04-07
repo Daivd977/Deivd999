@@ -73,7 +73,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.4",
+    Title = "Lolyta Hub 2.5",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -680,10 +680,6 @@ Tab2:Button({
                                           -- === Tab 3: Carro === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
----------------------------------------------------------------------------------------------------------------------------------
-                                          -- === Tab 3: Carro === --
----------------------------------------------------------------------------------------------------------------------------------
-
 -- Variável global para armazenar o carro selecionado
 _G.selectedCar = nil
 
@@ -697,8 +693,9 @@ local function getPlayerCars()
     if vehicles then
         for _, vehicle in pairs(vehicles:GetChildren()) do
             local seat = vehicle:FindFirstChild("VehicleSeat")
+            if not seat then continue end -- Pula se não houver VehicleSeat
+
             local ownerName = "Desconhecido"
-            
             for _, p in pairs(game.Players:GetPlayers()) do
                 if vehicle.Name:lower():find(p.Name:lower()) then
                     ownerName = p.Name
@@ -706,7 +703,7 @@ local function getPlayerCars()
                 end
             end
 
-            if seat and seat:IsA("VehicleSeat") and seat.Occupant then
+            if seat:IsA("VehicleSeat") and seat.Occupant then
                 local humanoid = seat.Occupant
                 local seatedPlayer = game.Players:GetPlayerFromCharacter(humanoid.Parent)
                 if seatedPlayer then
@@ -722,8 +719,9 @@ local function getPlayerCars()
     for _, vehicle in pairs(Workspace:GetDescendants()) do
         if vehicle:IsA("Model") and vehicle:FindFirstChild("VehicleSeat") and (not vehicles or not vehicles:FindFirstChild(vehicle.Name)) then
             local seat = vehicle:FindFirstChild("VehicleSeat")
-            local ownerName = "Desconhecido"
+            if not seat then continue end -- Pula se não houver VehicleSeat
 
+            local ownerName = "Desconhecido"
             for _, p in pairs(game.Players:GetPlayers()) do
                 if vehicle.Name:lower():find(p.Name:lower()) then
                     ownerName = p.Name
@@ -731,7 +729,7 @@ local function getPlayerCars()
                 end
             end
 
-            if seat and seat:IsA("VehicleSeat") and seat.Occupant then
+            if seat:IsA("VehicleSeat") and seat.Occupant then
                 local humanoid = seat.Occupant
                 local seatedPlayer = game.Players:GetPlayerFromCharacter(humanoid.Parent)
                 if seatedPlayer then
@@ -743,63 +741,48 @@ local function getPlayerCars()
         end
     end
 
-    -- Notificação para depuração
-    if #playerCars > 0 then
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Depuração",
-            Text = "Encontrados " .. #playerCars .. " carros!",
-            Duration = 5
-        })
-    else
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Depuração",
-            Text = "Nenhum carro encontrado!",
-            Duration = 5
-        })
-    end
-
     return playerCars
 end
 
--- Cria o dropdown
+-- Cria o dropdown (inspirado em um dropdown de jogadores)
+local carNames = {"Nenhum carro encontrado"}
+local playerCars = getPlayerCars()
+if #playerCars > 0 then
+    carNames = {}
+    for _, car in pairs(playerCars) do
+        table.insert(carNames, car.name)
+    end
+end
+
 local carDropdown = Tab3:Dropdown({
     Title = "Selecionar Carro",
     Desc = "Escolha um carro para interagir",
-    Options = {"Nenhum carro encontrado"},
+    Options = carNames,
     Callback = function(value)
         local playerCars = getPlayerCars()
         for _, car in pairs(playerCars) do
             if car.name == value then
                 _G.selectedCar = car.vehicle
-                game.StarterGui:SetCore("SendNotification", {
-                    Title = "Sucesso",
-                    Text = "Carro selecionado: " .. car.name,
-                    Duration = 5
-                })
                 return
             end
         end
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Erro",
-            Text = "Carro não encontrado na lista!",
-            Duration = 5
-        })
+        _G.selectedCar = nil
     end,
 })
 
 -- Função para atualizar o dropdown
 local function updateCarDropdown()
     local playerCars = getPlayerCars()
-    local carNames = {}
+    local newCarNames = {}
     for _, car in pairs(playerCars) do
-        table.insert(carNames, car.name)
+        table.insert(newCarNames, car.name)
     end
 
-    if #carNames == 0 then
-        carNames = {"Nenhum carro encontrado"}
+    if #newCarNames == 0 then
+        newCarNames = {"Nenhum carro encontrado"}
     end
 
-    carDropdown.Options = carNames
+    carDropdown.Options = newCarNames
 end
 
 -- Atualiza o dropdown inicialmente e a cada 5 segundos
