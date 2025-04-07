@@ -64,8 +64,6 @@ if successName then
 else
     warn("Erro ao definir o nome: " .. tostring(errorName))
 end
-
--- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta
 -----------------------------------------------------------------------------------------------------------------------------------
                                     -- === Inicialização da Interface === --
 -----------------------------------------------------------------------------------------------------------------------------------
@@ -239,20 +237,112 @@ Tab1:Toggle({
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-Tab1:Dropdown({
-    Title = "pegar permissão das casas",
-    Desc = "",
-    Value = "Option 1",
-    Multi = false,
-    AllowNone = true,
-    Values = {"Option 1", "Option 2", "Option 3", "Option 4", "Option 5", "Option 6", "Option 7", "Option 8", "Option 9", "Option 10", "Option 11", "Option 12", "Option 13", "Option 14", "Option 15", "Option 16", "Option 17", "Option 18", "Option 19", "Option 20", "Option 21", "Option 22", "Option 23", "Option 24", "Option 25", "Option 26", "Option 27", "Option 28", "Option 29", "Option 30", "Option 31", "Option 32", "Option 33", "Option 34", "Option 35"},
-    Callback = function(tab)
-        local permission = tonumber(tab:match("%d+")) or 1
-        fireServer("1Playe1rTrigge1rEven1t", {"GivePermissionLoopToServer", LocalPlayer, permission})
+-----------------------------------------------------------------------------------------------------------------------------------------------
+Tab1:Paragraph({ Title = "Jogador", Desc = "funçoes paara o jogador no caso voçe" })
+
+-- Variáveis para o noclip
+local noclipEnabled = false
+local noclipConnections = {}
+
+-- Função para ativar/desativar o noclip
+local function toggleNoclip()
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+    if not character then
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Erro",
+            Text = "Personagem não encontrado!",
+            Duration = 5
+        })
+        return
+    end
+
+    noclipEnabled = not noclipEnabled -- Alterna o estado do noclip
+
+    if noclipEnabled then
+        -- Desativa as colisões do personagem
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+
+        -- Loop para manter o noclip ativo (caso o servidor tente reverter)
+        local connection = game:GetService("RunService").Heartbeat:Connect(function()
+            if not noclipEnabled or not character then
+                connection:Disconnect()
+                return
+            end
+            for _, part in pairs(character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+        end)
+        table.insert(noclipConnections, connection)
+
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Noclip",
+            Text = "Noclip ativado!",
+            Duration = 5
+        })
+    else
+        -- Desativa o noclip e reativa as colisões
+        for _, connection in pairs(noclipConnections) do
+            connection:Disconnect()
+        end
+        noclipConnections = {}
+
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
+        end
+
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Noclip",
+            Text = "Noclip desativado!",
+            Duration = 5
+        })
+    end
+end
+
+-- Toggle para ativar/desativar o noclip
+Tab1:Toggle({
+    Title = "Noclip",
+    Desc = "Ativa/desativa o noclip para atravessar paredes",
+    Default = false,
+    Callback = function(value)
+        toggleNoclip()
     end,
 })
------------------------------------------------------------------------------------------------------------------------------------------------
-Tab1:Paragraph({ Title = "Jogador", Desc = "" })
+
+-- Botão para executar o script de fly
+Tab1:Button({
+    Title = "Ativar Fly GUI",
+    Desc = "Carrega um GUI de fly universal",
+    Callback = function()
+        local success, errorMessage = pcall(function()
+            loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Fly-gui-v3-30439"))()
+        end)
+
+        if success then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Sucesso",
+                Text = "Fly GUI carregado!",
+                Duration = 5
+            })
+        else
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Falha ao carregar o Fly GUI.",
+                Duration = 5
+            })
+        end
+    end,
+})
+
+----------------------------------------------------------------------------------------------------------------------------------------------
 
 Tab1:Slider({
     Title = "definir a velocidade do jogador",
