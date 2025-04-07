@@ -680,6 +680,449 @@ Tab2:Button({
                                           -- === Tab 3: Carro === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
+-- Variável global para armazenar o carro selecionado
+_G.selectedCar = nil
+
+-- Função para encontrar os carros dos jogadores
+local function getPlayerCars()
+    local playerCars = {}
+    local player = game.Players.LocalPlayer
+
+    -- Procura os carros em Workspace.Vehicles
+    local vehicles = Workspace:FindFirstChild("Vehicles")
+    if vehicles then
+        for _, vehicle in pairs(vehicles:GetChildren()) do
+            local seat = vehicle:FindFirstChild("VehicleSeat")
+            local ownerName = "Desconhecido"
+            
+            for _, p in pairs(game.Players:GetPlayers()) do
+                if vehicle.Name:lower():find(p.Name:lower()) then
+                    ownerName = p.Name
+                    break
+                end
+            end
+
+            if seat and seat:IsA("VehicleSeat") and seat.Occupant then
+                local humanoid = seat.Occupant
+                local seatedPlayer = game.Players:GetPlayerFromCharacter(humanoid.Parent)
+                if seatedPlayer then
+                    ownerName = seatedPlayer.Name
+                end
+            end
+
+            table.insert(playerCars, {name = vehicle.Name .. " (" .. ownerName .. ")", vehicle = vehicle})
+        end
+    end
+
+    -- Procura carros em todo o Workspace
+    for _, vehicle in pairs(Workspace:GetDescendants()) do
+        if vehicle:IsA("Model") and vehicle:FindFirstChild("VehicleSeat") and (not vehicles or not vehicles:FindFirstChild(vehicle.Name)) then
+            local seat = vehicle:FindFirstChild("VehicleSeat")
+            local ownerName = "Desconhecido"
+
+            for _, p in pairs(game.Players:GetPlayers()) do
+                if vehicle.Name:lower():find(p.Name:lower()) then
+                    ownerName = p.Name
+                    break
+                end
+            end
+
+            if seat and seat:IsA("VehicleSeat") and seat.Occupant then
+                local humanoid = seat.Occupant
+                local seatedPlayer = game.Players:GetPlayerFromCharacter(humanoid.Parent)
+                if seatedPlayer then
+                    ownerName = seatedPlayer.Name
+                end
+            end
+
+            table.insert(playerCars, {name = vehicle.Name .. " (" .. ownerName .. ")", vehicle = vehicle})
+        end
+    end
+
+    return playerCars
+end
+
+-- Cria o dropdown
+local carDropdown = Tab3:Dropdown({
+    Title = "Selecionar Carro",
+    Desc = "Escolha um carro para interagir",
+    Options = {"Nenhum carro encontrado"},
+    Callback = function(value)
+        local playerCars = getPlayerCars()
+        for _, car in pairs(playerCars) do
+            if car.name == value then
+                _G.selectedCar = car.vehicle
+                break
+            end
+        end
+    end,
+})
+
+-- Função para atualizar o dropdown
+local function updateCarDropdown()
+    local playerCars = getPlayerCars()
+    local carNames = {}
+    for _, car in pairs(playerCars) do
+        table.insert(carNames, car.name)
+    end
+
+    if #carNames == 0 then
+        carNames = {"Nenhum carro encontrado"}
+    end
+
+    carDropdown.Options = carNames
+    if carDropdown.Refresh then
+        carDropdown:Refresh()
+    end
+end
+
+-- Atualiza o dropdown inicialmente e a cada 5 segundos
+updateCarDropdown()
+game:GetService("RunService").Heartbeat:Connect(function()
+    if tick() % 5 < 0.1 then
+        updateCarDropdown()
+    end
+end)
+
+Tab3:Toggle({
+    Title = "Visualizar Carro",
+    Desc = "Teleporta você temporariamente para visualizar o carro selecionado",
+    Default = false,
+    Callback = function(value)
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+        if not character or not character:FindFirstChild("HumanoidRootPart") then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Personagem não encontrado!",
+                Duration = 5
+            })
+            return
+        end
+
+        if not _G.selectedCar then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Nenhum carro selecionado!",
+                Duration = 5
+            })
+            return
+        end
+
+        if value then
+            local chassis = _G.selectedCar:FindFirstChild("Chassis") or _G.selectedCar:FindFirstChild("VehicleSeat")
+            if not chassis then
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = "Erro",
+                    Text = "Chassis ou VehicleSeat não encontrado no carro!",
+                    Duration = 5
+                })
+                return
+            end
+
+            local carPos = chassis.Position
+            character.HumanoidRootPart.CFrame = CFrame.new(carPos + Vector3.new(5, 5, 5))
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Visualizar",
+                Text = "Teleportado para visualizar o carro!",
+                Duration = 5
+            })
+        else
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Visualizar",
+                Text = "Visualização desativada!",
+                Duration = 5
+            })
+        end
+    end,
+})
+
+Tab3:Button({
+    Title = "Teleportar Carro para Mim",
+    Desc = "Teleporta o carro selecionado para sua posição",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+        if not character or not character:FindFirstChild("HumanoidRootPart") then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Personagem não encontrado!",
+                Duration = 5
+            })
+            return
+        end
+
+        if not _G.selectedCar then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Nenhum carro selecionado!",
+                Duration = 5
+            })
+            return
+        end
+
+        local chassis = _G.selectedCar:FindFirstChild("Chassis") or _G.selectedCar:FindFirstChild("VehicleSeat")
+        if not chassis then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Chassis ou VehicleSeat não encontrado no carro!",
+                Duration = 5
+            })
+            return
+        end
+
+        local playerPos = character.HumanoidRootPart.Position
+        local success, errorMessage = pcall(function()
+            _G.selectedCar:MoveTo(playerPos + Vector3.new(5, 2, 5))
+        end)
+
+        if success then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Sucesso",
+                Text = "Carro teleportado para sua posição!",
+                Duration = 5
+            })
+        else
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Falha ao teleportar o carro: " .. tostring(errorMessage),
+                Duration = 5
+            })
+        end
+    end,
+})
+
+Tab3:Button({
+    Title = "Teleportar Carro para o Void",
+    Desc = "Teleporta você para o carro e depois o carro para o void",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+        if not character or not character:FindFirstChild("HumanoidRootPart") then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Personagem não encontrado!",
+                Duration = 5
+            })
+            return
+        end
+
+        if not _G.selectedCar then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Nenhum carro selecionado!",
+                Duration = 5
+            })
+            return
+        end
+
+        local seat = _G.selectedCar:FindFirstChild("VehicleSeat")
+        if not seat then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "VehicleSeat não encontrado no carro!",
+                Duration = 5
+            })
+            return
+        end
+
+        if seat.Occupant then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Há um jogador sentado no assento do motorista!",
+                Duration = 5
+            })
+            return
+        end
+
+        local originalPos = character.HumanoidRootPart.Position
+        character.HumanoidRootPart.CFrame = seat.CFrame + Vector3.new(0, 2, 0)
+        wait(0.5)
+        character.Humanoid.Sit = true
+
+        local voidPos = Vector3.new(0, -500, 0)
+        local success, errorMessage = pcall(function()
+            _G.selectedCar:MoveTo(voidPos + Vector3.new(0, 10, 0))
+        end)
+
+        if not success then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Falha ao teleportar o carro para o void: " .. tostring(errorMessage),
+                Duration = 5
+            })
+            return
+        end
+
+        wait(0.5)
+        character.Humanoid.Jump = true
+        wait(0.5)
+        character.HumanoidRootPart.CFrame = CFrame.new(originalPos)
+
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Sucesso",
+            Text = "Carro teleportado para o void e você voltou à sua posição!",
+            Duration = 5
+        })
+    end,
+})
+
+-- Função para encontrar os carros dos jogadores (repetida para este script independente)
+local function getPlayerCars()
+    local playerCars = {}
+    local player = game.Players.LocalPlayer
+
+    local vehicles = Workspace:FindFirstChild("Vehicles")
+    if vehicles then
+        for _, vehicle in pairs(vehicles:GetChildren()) do
+            local seat = vehicle:FindFirstChild("VehicleSeat")
+            local ownerName = "Desconhecido"
+            
+            for _, p in pairs(game.Players:GetPlayers()) do
+                if vehicle.Name:lower():find(p.Name:lower()) then
+                    ownerName = p.Name
+                    break
+                end
+            end
+
+            if seat and seat:IsA("VehicleSeat") and seat.Occupant then
+                local humanoid = seat.Occupant
+                local seatedPlayer = game.Players:GetPlayerFromCharacter(humanoid.Parent)
+                if seatedPlayer then
+                    ownerName = seatedPlayer.Name
+                end
+            end
+
+            table.insert(playerCars, {name = vehicle.Name .. " (" .. ownerName .. ")", vehicle = vehicle})
+        end
+    end
+
+    for _, vehicle in pairs(Workspace:GetDescendants()) do
+        if vehicle:IsA("Model") and vehicle:FindFirstChild("VehicleSeat") and (not vehicles or not vehicles:FindFirstChild(vehicle.Name)) then
+            local seat = vehicle:FindFirstChild("VehicleSeat")
+            local ownerName = "Desconhecido"
+
+            for _, p in pairs(game.Players:GetPlayers()) do
+                if vehicle.Name:lower():find(p.Name:lower()) then
+                    ownerName = p.Name
+                    break
+                end
+            end
+
+            if seat and seat:IsA("VehicleSeat") and seat.Occupant then
+                local humanoid = seat.Occupant
+                local seatedPlayer = game.Players:GetPlayerFromCharacter(humanoid.Parent)
+                if seatedPlayer then
+                    ownerName = seatedPlayer.Name
+                end
+            end
+
+            table.insert(playerCars, {name = vehicle.Name .. " (" .. ownerName .. ")", vehicle = vehicle})
+        end
+    end
+
+    return playerCars
+end
+
+-- Toggle para o loop
+local voidLoopEnabled = false
+local voidLoopConnection = nil
+
+Tab3:Toggle({
+    Title = "Loop: Teleportar Todos os Carros para o Void",
+    Desc = "Teleporta todos os carros para o void em loop até desativar",
+    Default = false,
+    Callback = function(value)
+        voidLoopEnabled = value
+
+        if voidLoopEnabled then
+            voidLoopConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                if not voidLoopEnabled then
+                    return
+                end
+
+                local player = game.Players.LocalPlayer
+                local character = player.Character
+                if not character or not character:FindFirstChild("HumanoidRootPart") then
+                    return
+                end
+
+                local playerCars = getPlayerCars()
+                if #playerCars == 0 then
+                    game.StarterGui:SetCore("SendNotification", {
+                        Title = "Aviso",
+                        Text = "Nenhum carro encontrado para teleportar!",
+                        Duration = 5
+                    })
+                    voidLoopEnabled = false
+                    return
+                end
+
+                for _, carData in pairs(playerCars) do
+                    if not voidLoopEnabled then
+                        break
+                    end
+
+                    local car = carData.vehicle
+                    local seat = car:FindFirstChild("VehicleSeat")
+                    if not seat then
+                        continue
+                    end
+
+                    if seat.Occupant then
+                        continue
+                    end
+
+                    local originalPos = character.HumanoidRootPart.Position
+                    character.HumanoidRootPart.CFrame = seat.CFrame + Vector3.new(0, 2, 0)
+                    wait(0.5)
+                    character.Humanoid.Sit = true
+
+                    local voidPos = Vector3.new(0, -500, 0)
+                    local success, errorMessage = pcall(function()
+                        car:MoveTo(voidPos + Vector3.new(0, 10, 0))
+                    end)
+
+                    if success then
+                        wait(0.5)
+                        character.Humanoid.Jump = true
+                        wait(0.5)
+                        character.HumanoidRootPart.CFrame = CFrame.new(originalPos)
+
+                        game.StarterGui:SetCore("SendNotification", {
+                            Title = "Sucesso",
+                            Text = "Carro " .. carData.name .. " teleportado para o void!",
+                            Duration = 3
+                        })
+                    end
+
+                    wait(1)
+                end
+
+                if #playerCars == 0 or not voidLoopEnabled then
+                    voidLoopEnabled = false
+                    game.StarterGui:SetCore("SendNotification", {
+                        Title = "Loop Finalizado",
+                        Text = "Todos os carros foram teleportados ou o loop foi desativado!",
+                        Duration = 5
+                    })
+                end
+            end)
+        else
+            if voidLoopConnection then
+                voidLoopConnection:Disconnect()
+                voidLoopConnection = nil
+            end
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Loop",
+                Text = "Loop desativado!",
+                Duration = 5
+            })
+        end
+    end,
+})
+
+
 
 -----------------------------------------------------------------------------------------------------
                                           -- === Tab 4: RGB Color === --
