@@ -688,22 +688,29 @@ local function getCarNames()
     local carNames = {}
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
     if vehiclesFolder then
+        -- Notificação temporária para depuração: mostra os nomes brutos dos carros
+        local rawCarNames = {}
         for _, vehicle in pairs(vehiclesFolder:GetChildren()) do
-            -- Verifica se é um carro de jogador (termina com "[nome]car")
-            local ownerName = nil
+            table.insert(rawCarNames, vehicle.Name)
+        end
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Depuração: Nomes dos Carros",
+            Text = "Carros encontrados: " .. table.concat(rawCarNames, ", "),
+            Duration = 10
+        })
+
+        for _, vehicle in pairs(vehiclesFolder:GetChildren()) do
+            local seat = vehicle:FindFirstChild("VehicleSeat")
+            if not seat then continue end -- Pula se não houver VehicleSeat
+
+            -- Tenta determinar o dono do carro
+            local ownerName = "Desconhecido"
             for _, player in pairs(game.Players:GetPlayers()) do
-                if vehicle.Name:lower():find(player.Name:lower() .. "car$") then
+                if vehicle.Name:lower():find(player.Name:lower()) then
                     ownerName = player.Name
                     break
                 end
             end
-
-            if not ownerName then
-                continue -- Pula se não for um carro de jogador
-            end
-
-            local seat = vehicle:FindFirstChild("VehicleSeat")
-            if not seat then continue end -- Pula se não houver VehicleSeat
 
             -- Verifica se há um jogador sentado
             if seat:IsA("VehicleSeat") and seat.Occupant then
@@ -731,21 +738,17 @@ local function getPlayerCars()
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
     if vehiclesFolder then
         for _, vehicle in pairs(vehiclesFolder:GetChildren()) do
-            -- Verifica se é um carro de jogador (termina com "[nome]car")
-            local ownerName = nil
+            local seat = vehicle:FindFirstChild("VehicleSeat")
+            if not seat then continue end -- Pula se não houver VehicleSeat
+
+            -- Tenta determinar o dono do carro
+            local ownerName = "Desconhecido"
             for _, player in pairs(game.Players:GetPlayers()) do
-                if vehicle.Name:lower():find(player.Name:lower() .. "car$") then
+                if vehicle.Name:lower():find(player.Name:lower()) then
                     ownerName = player.Name
                     break
                 end
             end
-
-            if not ownerName then
-                continue -- Pula se não for um carro de jogador
-            end
-
-            local seat = vehicle:FindFirstChild("VehicleSeat")
-            if not seat then continue end -- Pula se não houver VehicleSeat
 
             -- Verifica se há um jogador sentado
             if seat:IsA("VehicleSeat") and seat.Occupant then
@@ -1021,7 +1024,6 @@ Tab3:Button({
         })
     end,
 })
-
 -----------------------------------------------------------------------------------------------------
                                           -- === Tab 4: RGB Color === --
 ---------------------------------------------------------------------------------------------------------------------------------
