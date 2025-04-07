@@ -73,7 +73,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.3",
+    Title = "Lolyta Hub 2.5",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -311,7 +311,7 @@ end
 setNoclip(false)
 
 -- Toggle para ativar/desativar o noclip
-Tab3:Toggle({
+Tab1:Toggle({
     Title = "Noclip",
     Desc = "Ativa/desativa o noclip para atravessar paredes",
     Default = false,
@@ -321,7 +321,7 @@ Tab3:Toggle({
 })
 
 -- Botão para executar o script de fly
-Tab3:Button({
+Tab1:Button({
     Title = "Ativar Fly GUI",
     Desc = "Carrega um GUI de fly universal",
     Callback = function()
@@ -680,301 +680,426 @@ Tab2:Button({
                                           -- === Tab 3: Carro === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
--- Função para encontrar o carro do jogador
-local function findPlayerCar()
-    local player = game.Players.LocalPlayer
-    local character = player.Character
-    if not character then
-        return nil
-    end
+---------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 3: Carro === --
+---------------------------------------------------------------------------------------------------------------------------------
 
-    -- Procura o carro em Workspace.Vehicles
+-- Função para encontrar os carros dos jogadores
+local function getPlayerCars()
+    local playerCars = {}
+    local player = game.Players.LocalPlayer
+
+    -- Procura os carros em Workspace.Vehicles
     local vehicles = Workspace:FindFirstChild("Vehicles")
     if vehicles then
         for _, vehicle in pairs(vehicles:GetChildren()) do
+            -- Verifica se o carro pertence a um jogador (pelo nome ou pelo VehicleSeat)
             local seat = vehicle:FindFirstChild("VehicleSeat")
-            if seat and seat:IsA("VehicleSeat") and seat.Occupant == character:FindFirstChild("Humanoid") then
-                return vehicle
+            local ownerName = "Desconhecido"
+            
+            -- Verifica se o nome do carro contém o nome de um jogador
+            for _, p in pairs(game.Players:GetPlayers()) do
+                if vehicle.Name:lower():find(p.Name:lower()) then
+                    ownerName = p.Name
+                    break
+                end
             end
-            if vehicle.Name:lower():find(player.Name:lower()) then
-                return vehicle
+
+            -- Se houver um VehicleSeat, verifica quem está sentado (se aplicável)
+            if seat and seat:IsA("VehicleSeat") and seat.Occupant then
+                local humanoid = seat.Occupant
+                local seatedPlayer = game.Players:GetPlayerFromCharacter(humanoid.Parent)
+                if seatedPlayer then
+                    ownerName = seatedPlayer.Name
+                end
             end
+
+            table.insert(playerCars, {name = vehicle.Name .. " (" .. ownerName .. ")", vehicle = vehicle})
         end
     end
 
-    -- Procura em todo o Workspace
+    -- Procura carros em todo o Workspace (caso não estejam em Vehicles)
     for _, vehicle in pairs(Workspace:GetDescendants()) do
-        if vehicle:IsA("Model") and vehicle:FindFirstChild("VehicleSeat") then
+        if vehicle:IsA("Model") and vehicle:FindFirstChild("VehicleSeat") and (not vehicles or not vehicles:FindFirstChild(vehicle.Name)) then
             local seat = vehicle:FindFirstChild("VehicleSeat")
-            if seat and seat:IsA("VehicleSeat") and seat.Occupant == character:FindFirstChild("Humanoid") then
-                return vehicle
+            local ownerName = "Desconhecido"
+
+            -- Verifica se o nome do carro contém o nome de um jogador
+            for _, p in pairs(game.Players:GetPlayers()) do
+                if vehicle.Name:lower():find(p.Name:lower()) then
+                    ownerName = p.Name
+                    break
+                end
             end
+
+            -- Verifica quem está sentado no VehicleSeat
+            if seat and seat:IsA("VehicleSeat") and seat.Occupant then
+                local humanoid = seat.Occupant
+                local seatedPlayer = game.Players:GetPlayerFromCharacter(humanoid.Parent)
+                if seatedPlayer then
+                    ownerName = seatedPlayer.Name
+                end
+            end
+
+            table.insert(playerCars, {name = vehicle.Name .. " (" .. ownerName .. ")", vehicle = vehicle})
         end
     end
 
-    return nil
+    return playerCars
 end
 
--- Variáveis para controlar a velocidade e o turbo
-local carSpeed = 55 -- Valor padrão (máximo permitido sem gamepass)
-local carTurbo = 3 -- Valor padrão
-local speedConnections = {} -- Para armazenar as conexões da força (velocidade)
-local turboConnections = {} -- Para armazenar as conexões da força (turbo)
+-- Variável para armazenar o carro selecionado
+local selectedCar = nil
 
--- Função para ajustar a física do carro (reduzir massa)
-local function adjustCarPhysics(car)
-    local chassis = car:FindFirstChild("Chassis")
-    if not chassis then
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Erro",
-            Text = "Chassis não encontrado no carro!",
-            Duration = 5
-        })
-        return false
-    end
-
-    -- Reduz a massa do chassis para acelerar mais rápido
-    local physicalProperties = PhysicalProperties.new(0.1, chassis:GetPhysicalProperties().Friction, chassis:GetPhysicalProperties().Elasticity)
-    chassis.CustomPhysicalProperties = physicalProperties
-
-    -- Reduz a massa de outras partes principais do carro
-    for _, part in pairs(car:GetDescendants()) do
-        if part:IsA("BasePart") and part ~= chassis then
-            part.CustomPhysicalProperties = physicalProperties
-        end
-    end
-
-    return true
-end
-
--- Função para forçar a velocidade usando BodyForce
-local function forceSpeed(car, speed)
-    -- Limpa conexões anteriores
-    for _, connection in pairs(speedConnections) do
-        connection:Disconnect()
-    end
-    speedConnections = {}
-
-    local chassis = car:FindFirstChild("Chassis")
-    if not chassis then
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Erro",
-            Text = "Chassis não encontrado no carro!",
-            Duration = 5
-        })
-        return false
-    end
-
-    -- Aplica uma BodyForce para forçar o movimento
-    local bodyForce = chassis:FindFirstChild("SpeedForce")
-    if not bodyForce then
-        bodyForce = Instance.new("BodyForce")
-        bodyForce.Name = "SpeedForce"
-        bodyForce.Parent = chassis
-    end
-
-    -- Aplica uma BodyGyro para estabilizar o carro
-    local bodyGyro = chassis:FindFirstChild("StabilizerGyro")
-    if not bodyGyro then
-        bodyGyro = Instance.new("BodyGyro")
-        bodyGyro.Name = "StabilizerGyro"
-        bodyGyro.MaxTorque = Vector3.new(0, math.huge, 0) -- Estabiliza apenas no eixo Y
-        bodyGyro.P = 1000
-        bodyGyro.D = 100
-        bodyGyro.Parent = chassis
-    end
-
-    -- Loop para aplicar a força continuamente
-    local connection = game:GetService("RunService").Heartbeat:Connect(function()
-        if chassis.Parent and bodyForce.Parent then
-            -- Aplica uma força na direção do movimento do carro
-            local direction = chassis.CFrame.LookVector
-            local force = direction * (speed * 500) -- Ajusta a força com base na velocidade
-            bodyForce.Force = Vector3.new(force.X, 0, force.Z) -- Aplica a força apenas no plano XZ
-
-            -- Mantém o carro estabilizado
-            bodyGyro.CFrame = CFrame.new(chassis.Position, chassis.Position + direction)
-        else
-            connection:Disconnect()
-        end
-    end)
-    table.insert(speedConnections, connection)
-
-    return true
-end
-
--- Função para simular o turbo usando BodyForce
-local function applyTurbo(car, turboLevel)
-    -- Limpa conexões anteriores
-    for _, connection in pairs(turboConnections) do
-        connection:Disconnect()
-    end
-    turboConnections = {}
-
-    local chassis = car:FindFirstChild("Chassis")
-    if not chassis then
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Erro",
-            Text = "Chassis não encontrado no carro!",
-            Duration = 5
-        })
-        return false
-    end
-
-    local bodyForce = chassis:FindFirstChild("SpeedForce")
-    if not bodyForce then
-        bodyForce = Instance.new("BodyForce")
-        bodyForce.Name = "SpeedForce"
-        bodyForce.Parent = chassis
-    end
-
-    -- Loop para aplicar a força adicional do turbo continuamente
-    local connection = game:GetService("RunService").Heartbeat:Connect(function()
-        if chassis.Parent and bodyForce.Parent then
-            -- Aplica uma força adicional na direção do movimento
-            local direction = chassis.CFrame.LookVector
-            local currentForce = bodyForce.Force
-            local turboForce = direction * (turboLevel * 2000) -- Aumenta a força com base no nível do turbo
-            bodyForce.Force = Vector3.new(currentForce.X + turboForce.X, 0, currentForce.Z + turboForce.Z)
-        else
-            connection:Disconnect()
-        end
-    end)
-    table.insert(turboConnections, connection)
-
-    return true
-end
-
--- Input para definir a velocidade do carro
-Tab3:Input({
-    Title = "Definir Velocidade do Carro",
-    Desc = "Digite a velocidade desejada (sem limites)",
-    Placeholder = "55",
-    Numeric = true, -- Aceita apenas números
+-- Dropdown para selecionar o carro
+Tab3:Dropdown({
+    Title = "Selecionar Carro",
+    Desc = "Escolha um carro para interagir",
+    Options = {}, -- Será preenchido dinamicamente
     Callback = function(value)
-        carSpeed = tonumber(value) -- Aceita qualquer número, sem limites
-        if carSpeed == nil then
-            carSpeed = 55 -- Valor padrão se o input for inválido
+        local playerCars = getPlayerCars()
+        for _, car in pairs(playerCars) do
+            if car.name == value then
+                selectedCar = car.vehicle
+                break
+            end
         end
     end,
 })
 
--- Botão para aplicar a velocidade
-Tab3:Button({
-    Title = "Aplicar Velocidade",
-    Desc = "Define a velocidade do carro com o valor inserido",
-    Callback = function()
-        local car = findPlayerCar()
-        if not car then
+-- Atualiza o dropdown com a lista de carros
+local function updateCarDropdown()
+    local playerCars = getPlayerCars()
+    local carNames = {}
+    for _, car in pairs(playerCars) do
+        table.insert(carNames, car.name)
+    end
+
+    -- Atualiza as opções do dropdown
+    local dropdown = Tab3:FindFirstChild("Selecionar Carro") -- Ajuste conforme a estrutura do seu hub
+    if dropdown then
+        dropdown.Options = carNames
+        dropdown:Refresh() -- Atualiza o dropdown (pode variar dependendo do hub)
+    end
+end
+
+-- Atualiza o dropdown inicialmente e a cada 5 segundos
+updateCarDropdown()
+game:GetService("RunService").Heartbeat:Connect(function()
+    if tick() % 5 < 0.1 then -- Atualiza a cada 5 segundos
+        updateCarDropdown()
+    end
+end)
+
+-- Toggle para visualizar o carro selecionado
+Tab3:Toggle({
+    Title = "Visualizar Carro",
+    Desc = "Teleporta você temporariamente para visualizar o carro selecionado",
+    Default = false,
+    Callback = function(value)
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+        if not character or not character:FindFirstChild("HumanoidRootPart") then
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Erro",
-                Text = "Carro não encontrado! Certifique-se de estar dentro de um carro.",
+                Text = "Personagem não encontrado!",
                 Duration = 5
             })
             return
         end
 
-        -- Ajusta a física do carro (reduz a massa)
-        local physicsSuccess, physicsError = pcall(function()
-            return adjustCarPhysics(car)
+        if not selectedCar then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Nenhum carro selecionado!",
+                Duration = 5
+            })
+            return
+        end
+
+        if value then
+            local chassis = selectedCar:FindFirstChild("Chassis") or selectedCar:FindFirstChild("VehicleSeat")
+            if not chassis then
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = "Erro",
+                    Text = "Chassis ou VehicleSeat não encontrado no carro!",
+                    Duration = 5
+                })
+                return
+            end
+
+            -- Teleporta o jogador para visualizar o carro
+            local carPos = chassis.Position
+            character.HumanoidRootPart.CFrame = CFrame.new(carPos + Vector3.new(5, 5, 5)) -- Um pouco acima e ao lado do carro
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Visualizar",
+                Text = "Teleportado para visualizar o carro!",
+                Duration = 5
+            })
+        else
+            -- Volta para a posição original (pode ser ajustado para lembrar a posição anterior)
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Visualizar",
+                Text = "Visualização desativada!",
+                Duration = 5
+            })
+        end
+    end,
+})
+
+-- Botão para teleportar o carro selecionado para o jogador
+Tab3:Button({
+    Title = "Teleportar Carro para Mim",
+    Desc = "Teleporta o carro selecionado para sua posição",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+        if not character or not character:FindFirstChild("HumanoidRootPart") then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Personagem não encontrado!",
+                Duration = 5
+            })
+            return
+        end
+
+        if not selectedCar then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Nenhum carro selecionado!",
+                Duration = 5
+            })
+            return
+        end
+
+        -- Encontra a parte principal do carro para teleportar (geralmente o Chassis ou VehicleSeat)
+        local chassis = selectedCar:FindFirstChild("Chassis") or selectedCar:FindFirstChild("VehicleSeat")
+        if not chassis then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Chassis ou VehicleSeat não encontrado no carro!",
+                Duration = 5
+            })
+            return
+        end
+
+        -- Teleporta o carro para a posição do jogador
+        local playerPos = character.HumanoidRootPart.Position
+        local success, errorMessage = pcall(function()
+            selectedCar:MoveTo(playerPos + Vector3.new(5, 2, 5)) -- Desloca um pouco para evitar colisões
         end)
 
-        if not physicsSuccess then
+        if success then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Sucesso",
+                Text = "Carro teleportado para sua posição!",
+                Duration = 5
+            })
+        else
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Erro",
-                Text = "Falha ao ajustar a física do carro.",
+                Text = "Falha ao teleportar o carro.",
+                Duration = 5
+            })
+        end
+    end,
+})
+
+-- Botão para teleportar o carro selecionado para o void
+Tab3:Button({
+    Title = "Teleportar Carro para o Void",
+    Desc = "Teleporta você para o carro e depois o carro para o void",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+        if not character or not character:FindFirstChild("HumanoidRootPart") then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Personagem não encontrado!",
                 Duration = 5
             })
             return
         end
 
-        -- Tenta definir a velocidade usando o evento 200PlayerGiveSpeed (com o valor máximo permitido sem gamepass)
+        if not selectedCar then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Nenhum carro selecionado!",
+                Duration = 5
+            })
+            return
+        end
+
+        local seat = selectedCar:FindFirstChild("VehicleSeat")
+        if not seat then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "VehicleSeat não encontrado no carro!",
+                Duration = 5
+            })
+            return
+        end
+
+        -- Verifica se há um jogador sentado no assento do motorista
+        if seat.Occupant then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Há um jogador sentado no assento do motorista!",
+                Duration = 5
+            })
+            return
+        end
+
+        -- Salva a posição atual do jogador
+        local originalPos = character.HumanoidRootPart.Position
+
+        -- Teleporta o jogador para o assento do motorista
+        character.HumanoidRootPart.CFrame = seat.CFrame + Vector3.new(0, 2, 0) -- Um pouco acima do assento
+        wait(0.5) -- Aguarda para garantir que o jogador sente
+        character.Humanoid.Sit = true
+
+        -- Teleporta o carro para o void (um pouco acima do void)
+        local voidPos = Vector3.new(0, -500, 0) -- Posição do void (ajuste conforme necessário)
         local success, errorMessage = pcall(function()
-            local args = {
-                [1] = "200PlayerGiveSpeed",
-                [2] = tostring(math.min(carSpeed, 55)) -- Usa o valor máximo permitido (55) sem gamepass
-            }
-            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
+            selectedCar:MoveTo(voidPos + Vector3.new(0, 10, 0)) -- Um pouco acima do void
         end)
 
         if not success then
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Erro",
-                Text = "Falha ao disparar o evento de velocidade.",
-                Duration = 5
-            })
-        end
-
-        -- Força a velocidade usando BodyForce
-        local forceSuccess, forceError = pcall(function()
-            return forceSpeed(car, carSpeed)
-        end)
-
-        if forceSuccess then
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Sucesso",
-                Text = "Velocidade ajustada para " .. carSpeed .. "!",
-                Duration = 5
-            })
-        else
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Erro",
-                Text = "Falha ao ajustar a velocidade.",
-                Duration = 5
-            })
-        end
-    end,
-})
-
--- Input para definir o turbo do carro
-Tab3:Input({
-    Title = "Definir Turbo do Carro",
-    Desc = "Digite o nível do turbo (ex.: 3)",
-    Placeholder = "3",
-    Numeric = true, -- Aceita apenas números
-    Callback = function(value)
-        carTurbo = tonumber(value) -- Aceita qualquer número, sem limites
-        if carTurbo == nil then
-            carTurbo = 3 -- Valor padrão se o input for inválido
-        end
-    end,
-})
-
--- Botão para aplicar o turbo
-Tab3:Button({
-    Title = "Aplicar Turbo",
-    Desc = "Define o turbo do carro com o valor inserido",
-    Callback = function()
-        local car = findPlayerCar()
-        if not car then
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Erro",
-                Text = "Carro não encontrado! Certifique-se de estar dentro de um carro.",
+                Text = "Falha ao teleportar o carro para o void.",
                 Duration = 5
             })
             return
         end
 
-        -- Aplica o turbo usando BodyForce
-        local turboSuccess, turboError = pcall(function()
-            return applyTurbo(car, carTurbo)
-        end)
+        -- Faz o jogador pular (sair do assento)
+        wait(0.5)
+        character.Humanoid.Jump = true
 
-        if turboSuccess then
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Sucesso",
-                Text = "Turbo aplicado com nível " .. carTurbo .. "!",
-                Duration = 5
-            })
+        -- Teleporta o jogador de volta para a posição original
+        wait(0.5)
+        character.HumanoidRootPart.CFrame = CFrame.new(originalPos)
+
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Sucesso",
+            Text = "Carro teleportado para o void e você voltou à sua posição!",
+            Duration = 5
+        })
+    end,
+})
+
+-- Toggle para teleportar todos os carros para o void em loop
+local voidLoopEnabled = false
+local voidLoopConnection = nil
+
+Tab3:Toggle({
+    Title = "Loop: Teleportar Todos os Carros para o Void",
+    Desc = "Teleporta todos os carros para o void em loop até desativar",
+    Default = false,
+    Callback = function(value)
+        voidLoopEnabled = value
+
+        if voidLoopEnabled then
+            -- Inicia o loop
+            voidLoopConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                if not voidLoopEnabled then
+                    return
+                end
+
+                local player = game.Players.LocalPlayer
+                local character = player.Character
+                if not character or not character:FindFirstChild("HumanoidRootPart") then
+                    return
+                end
+
+                -- Pega a lista de todos os carros
+                local playerCars = getPlayerCars()
+                if #playerCars == 0 then
+                    game.StarterGui:SetCore("SendNotification", {
+                        Title = "Aviso",
+                        Text = "Nenhum carro encontrado para teleportar!",
+                        Duration = 5
+                    })
+                    voidLoopEnabled = false
+                    return
+                end
+
+                -- Processa cada carro
+                for _, carData in pairs(playerCars) do
+                    if not voidLoopEnabled then
+                        break
+                    end
+
+                    local car = carData.vehicle
+                    local seat = car:FindFirstChild("VehicleSeat")
+                    if not seat then
+                        continue
+                    end
+
+                    -- Verifica se há um jogador sentado no assento do motorista
+                    if seat.Occupant then
+                        continue
+                    end
+
+                    -- Salva a posição atual do jogador
+                    local originalPos = character.HumanoidRootPart.Position
+
+                    -- Teleporta o jogador para o assento do motorista
+                    character.HumanoidRootPart.CFrame = seat.CFrame + Vector3.new(0, 2, 0)
+                    wait(0.5)
+                    character.Humanoid.Sit = true
+
+                    -- Teleporta o carro para o void (um pouco acima do void)
+                    local voidPos = Vector3.new(0, -500, 0)
+                    local success, errorMessage = pcall(function()
+                        car:MoveTo(voidPos + Vector3.new(0, 10, 0))
+                    end)
+
+                    if success then
+                        -- Faz o jogador pular (sair do assento)
+                        wait(0.5)
+                        character.Humanoid.Jump = true
+
+                        -- Teleporta o jogador de volta para a posição original
+                        wait(0.5)
+                        character.HumanoidRootPart.CFrame = CFrame.new(originalPos)
+
+                        game.StarterGui:SetCore("SendNotification", {
+                            Title = "Sucesso",
+                            Text = "Carro " .. carData.name .. " teleportado para o void!",
+                            Duration = 3
+                        })
+                    end
+
+                    wait(1) -- Pequeno intervalo entre cada carro
+                end
+
+                -- Se não houver mais carros ou o loop for desativado, para o loop
+                if #playerCars == 0 or not voidLoopEnabled then
+                    voidLoopEnabled = false
+                    game.StarterGui:SetCore("SendNotification", {
+                        Title = "Loop Finalizado",
+                        Text = "Todos os carros foram teleportados ou o loop foi desativado!",
+                        Duration = 5
+                    })
+                end
+            end)
         else
+            -- Desativa o loop
+            if voidLoopConnection then
+                voidLoopConnection:Disconnect()
+                voidLoopConnection = nil
+            end
             game.StarterGui:SetCore("SendNotification", {
-                Title = "Erro",
-                Text = "Falha ao aplicar o turbo.",
+                Title = "Loop",
+                Text = "Loop desativado!",
                 Duration = 5
             })
         end
     end,
 })
+
 -----------------------------------------------------------------------------------------------------
                                           -- === Tab 4: RGB Color === --
 ---------------------------------------------------------------------------------------------------------------------------------
