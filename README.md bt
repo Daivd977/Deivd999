@@ -688,17 +688,6 @@ local function getCarNames()
     local carNames = {}
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
     if vehiclesFolder then
-        -- Notificação temporária para depuração: mostra os nomes brutos dos carros
-        local rawCarNames = {}
-        for _, vehicle in pairs(vehiclesFolder:GetChildren()) do
-            table.insert(rawCarNames, vehicle.Name)
-        end
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Depuração: Nomes dos Carros",
-            Text = "Carros encontrados: " .. table.concat(rawCarNames, ", "),
-            Duration = 10
-        })
-
         for _, vehicle in pairs(vehiclesFolder:GetChildren()) do
             local seat = vehicle:FindFirstChild("VehicleSeat")
             if not seat then continue end -- Pula se não houver VehicleSeat
@@ -769,7 +758,12 @@ end
 -- Função para atualizar o dropdown
 local function updateCarDropdown(dropdown)
     local carNames = getCarNames()
-    dropdown.Values = carNames
+    -- Garante que o dropdown seja atualizado corretamente
+    if dropdown.SetValues then
+        dropdown:SetValues(carNames) -- Tenta usar um método SetValues, se disponível
+    else
+        dropdown.Values = carNames -- Caso contrário, usa a propriedade Values
+    end
 end
 
 -- Cria o dropdown
