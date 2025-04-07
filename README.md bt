@@ -683,7 +683,7 @@ Tab2:Button({
 -- Variável global para armazenar o carro selecionado
 _G.selectedCar = nil
 
--- Função para obter os carros e seus nomes
+-- Função para obter os carros e os nomes dos jogadores
 local function getPlayerCars()
     local playerCars = {}
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
@@ -711,16 +711,12 @@ local function getPlayerCars()
                 end
             end
 
-            table.insert(playerCars, {name = vehicle.Name .. " (" .. ownerName .. ")", vehicle = vehicle})
+            -- Adiciona apenas o nome do jogador e o veículo correspondente
+            if ownerName ~= "Desconhecido" then
+                table.insert(playerCars, {name = ownerName, vehicle = vehicle})
+            end
         end
     end
-
-    -- Notificação temporária para depuração
-    game.StarterGui:SetCore("SendNotification", {
-        Title = "Depuração: Carros Encontrados",
-        Text = "Carros encontrados: " .. #playerCars,
-        Duration = 5
-    })
 
     return playerCars
 end
@@ -749,29 +745,22 @@ local function createCarButtons()
         return
     end
 
-    -- Cria um botão para cada carro
+    -- Cria um botão para cada jogador com carro
     for _, car in pairs(playerCars) do
         local button = Tab3:Button({
             Title = "Selecionar " .. car.name,
-            Desc = "Seleciona este carro para interagir",
+            Desc = "Seleciona o carro de " .. car.name,
             Callback = function()
                 _G.selectedCar = car.vehicle
                 game.StarterGui:SetCore("SendNotification", {
                     Title = "Carro Selecionado",
-                    Text = "Carro selecionado: " .. car.name,
+                    Text = "Carro de " .. car.name .. " selecionado!",
                     Duration = 5
                 })
             end,
         })
         table.insert(currentButtons, button)
     end
-
-    -- Notificação temporária para depuração
-    game.StarterGui:SetCore("SendNotification", {
-        Title = "Depuração: Botões Criados",
-        Text = "Botões criados: " .. #currentButtons,
-        Duration = 5
-    })
 end
 
 -- Cria os botões inicialmente
