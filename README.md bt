@@ -689,43 +689,23 @@ local function getCarNames()
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
     if vehiclesFolder then
         for _, vehicle in pairs(vehiclesFolder:GetChildren()) do
-            local seat = vehicle:FindFirstChild("VehicleSeat")
-            if not seat then continue end -- Pula se não houver VehicleSeat
-
-            local ownerName = "Desconhecido"
-            for _, p in pairs(game.Players:GetPlayers()) do
-                if vehicle.Name:lower():find(p.Name:lower()) then
-                    ownerName = p.Name
+            -- Verifica se é um carro de jogador (termina com "[nome]car")
+            local ownerName = nil
+            for _, player in pairs(game.Players:GetPlayers()) do
+                if vehicle.Name:lower():find(player.Name:lower() .. "car$") then
+                    ownerName = player.Name
                     break
                 end
             end
 
-            if seat:IsA("VehicleSeat") and seat.Occupant then
-                local humanoid = seat.Occupant
-                local seatedPlayer = game.Players:GetPlayerFromCharacter(humanoid.Parent)
-                if seatedPlayer then
-                    ownerName = seatedPlayer.Name
-                end
+            if not ownerName then
+                continue -- Pula se não for um carro de jogador
             end
 
-            table.insert(carNames, vehicle.Name .. " (" .. ownerName .. ")")
-        end
-    end
-
-    -- Procura carros em todo o Workspace
-    for _, vehicle in pairs(Workspace:GetDescendants()) do
-        if vehicle:IsA("Model") and vehicle:FindFirstChild("VehicleSeat") and (not vehiclesFolder or not vehiclesFolder:FindFirstChild(vehicle.Name)) then
             local seat = vehicle:FindFirstChild("VehicleSeat")
             if not seat then continue end -- Pula se não houver VehicleSeat
 
-            local ownerName = "Desconhecido"
-            for _, p in pairs(game.Players:GetPlayers()) do
-                if vehicle.Name:lower():find(p.Name:lower()) then
-                    ownerName = p.Name
-                    break
-                end
-            end
-
+            -- Verifica se há um jogador sentado
             if seat:IsA("VehicleSeat") and seat.Occupant then
                 local humanoid = seat.Occupant
                 local seatedPlayer = game.Players:GetPlayerFromCharacter(humanoid.Parent)
@@ -751,42 +731,23 @@ local function getPlayerCars()
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
     if vehiclesFolder then
         for _, vehicle in pairs(vehiclesFolder:GetChildren()) do
-            local seat = vehicle:FindFirstChild("VehicleSeat")
-            if not seat then continue end -- Pula se não houver VehicleSeat
-
-            local ownerName = "Desconhecido"
-            for _, p in pairs(game.Players:GetPlayers()) do
-                if vehicle.Name:lower():find(p.Name:lower()) then
-                    ownerName = p.Name
+            -- Verifica se é um carro de jogador (termina com "[nome]car")
+            local ownerName = nil
+            for _, player in pairs(game.Players:GetPlayers()) do
+                if vehicle.Name:lower():find(player.Name:lower() .. "car$") then
+                    ownerName = player.Name
                     break
                 end
             end
 
-            if seat:IsA("VehicleSeat") and seat.Occupant then
-                local humanoid = seat.Occupant
-                local seatedPlayer = game.Players:GetPlayerFromCharacter(humanoid.Parent)
-                if seatedPlayer then
-                    ownerName = seatedPlayer.Name
-                end
+            if not ownerName then
+                continue -- Pula se não for um carro de jogador
             end
 
-            table.insert(playerCars, {name = vehicle.Name .. " (" .. ownerName .. ")", vehicle = vehicle})
-        end
-    end
-
-    for _, vehicle in pairs(Workspace:GetDescendants()) do
-        if vehicle:IsA("Model") and vehicle:FindFirstChild("VehicleSeat") and (not vehiclesFolder or not vehiclesFolder:FindFirstChild(vehicle.Name)) then
             local seat = vehicle:FindFirstChild("VehicleSeat")
             if not seat then continue end -- Pula se não houver VehicleSeat
 
-            local ownerName = "Desconhecido"
-            for _, p in pairs(game.Players:GetPlayers()) do
-                if vehicle.Name:lower():find(p.Name:lower()) then
-                    ownerName = p.Name
-                    break
-                end
-            end
-
+            -- Verifica se há um jogador sentado
             if seat:IsA("VehicleSeat") and seat.Occupant then
                 local humanoid = seat.Occupant
                 local seatedPlayer = game.Players:GetPlayerFromCharacter(humanoid.Parent)
@@ -805,7 +766,7 @@ end
 -- Função para atualizar o dropdown
 local function updateCarDropdown(dropdown)
     local carNames = getCarNames()
-    dropdown.Values = carNames -- Usa Values em vez de Options, seguindo o exemplo do dropdown de jogadores
+    dropdown.Values = carNames
 end
 
 -- Cria o dropdown
@@ -843,19 +804,25 @@ Tab3:Button({
 })
 
 -- Atualiza o dropdown quando um carro é adicionado ou removido
-local vehiclesFolder = Workspace:FindFirstChild("Vehicles") or Workspace
-vehiclesFolder.ChildAdded:Connect(function() updateCarDropdown(DropdownCar) end)
-vehiclesFolder.ChildRemoved:Connect(function() updateCarDropdown(DropdownCar) end)
+local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
+if vehiclesFolder then
+    vehiclesFolder.ChildAdded:Connect(function() updateCarDropdown(DropdownCar) end)
+    vehiclesFolder.ChildRemoved:Connect(function() updateCarDropdown(DropdownCar) end)
+end
 
--- Toggle para visualizar o carro selecionado
+-- Toggle para visualizar o carro (ajustado para mudar a câmera)
+local camera = Workspace.CurrentCamera
+local originalCameraSubject = nil
+local cameraConnection = nil
+
 Tab3:Toggle({
     Title = "Visualizar Carro",
-    Desc = "Teleporta você temporariamente para visualizar o carro selecionado",
+    Desc = "Muda a câmera para seguir o carro selecionado",
     Default = false,
     Callback = function(value)
         local player = game.Players.LocalPlayer
         local character = player.Character
-        if not character or not character:FindFirstChild("HumanoidRootPart") then
+        if not character or not character:FindFirstChild("Humanoid") then
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Erro",
                 Text = "Personagem não encontrado!",
@@ -884,17 +851,39 @@ Tab3:Toggle({
                 return
             end
 
+            -- Salva o estado atual da câmera
+            originalCameraSubject = camera.CameraSubject
+
+            -- Muda a câmera para seguir o carro
+            camera.CameraSubject = chassis
+            camera.CameraType = Enum.CameraType.Follow
+
+            -- Ajusta a posição inicial da câmera para evitar que fique muito próxima
             local carPos = chassis.Position
-            character.HumanoidRootPart.CFrame = CFrame.new(carPos + Vector3.new(5, 5, 5))
+            camera.CFrame = CFrame.new(carPos + Vector3.new(10, 5, 10), carPos)
+
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Visualizar",
-                Text = "Teleportado para visualizar o carro!",
+                Text = "Câmera agora está seguindo o carro!",
                 Duration = 5
             })
         else
+            -- Restaura a câmera para o jogador
+            if originalCameraSubject then
+                camera.CameraSubject = originalCameraSubject
+                camera.CameraType = Enum.CameraType.Custom
+                originalCameraSubject = nil
+            end
+
+            -- Garante que a câmera volte para o jogador
+            if cameraConnection then
+                cameraConnection:Disconnect()
+                cameraConnection = nil
+            end
+
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Visualizar",
-                Text = "Visualização desativada!",
+                Text = "Câmera voltou para o jogador!",
                 Duration = 5
             })
         end
