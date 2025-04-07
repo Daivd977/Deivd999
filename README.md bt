@@ -683,45 +683,7 @@ Tab2:Button({
 -- Variável global para armazenar o carro selecionado
 _G.selectedCar = nil
 
--- Função para obter os nomes dos carros
-local function getCarNames()
-    local carNames = {}
-    local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
-    if vehiclesFolder then
-        for _, vehicle in pairs(vehiclesFolder:GetChildren()) do
-            local seat = vehicle:FindFirstChild("VehicleSeat")
-            if not seat then continue end -- Pula se não houver VehicleSeat
-
-            -- Tenta determinar o dono do carro
-            local ownerName = "Desconhecido"
-            for _, player in pairs(game.Players:GetPlayers()) do
-                if vehicle.Name:lower():find(player.Name:lower()) then
-                    ownerName = player.Name
-                    break
-                end
-            end
-
-            -- Verifica se há um jogador sentado
-            if seat:IsA("VehicleSeat") and seat.Occupant then
-                local humanoid = seat.Occupant
-                local seatedPlayer = game.Players:GetPlayerFromCharacter(humanoid.Parent)
-                if seatedPlayer then
-                    ownerName = seatedPlayer.Name
-                end
-            end
-
-            table.insert(carNames, vehicle.Name .. " (" .. ownerName .. ")")
-        end
-    end
-
-    if #carNames == 0 then
-        carNames = {"Nenhum carro encontrado"}
-    end
-
-    return carNames
-end
-
--- Função para encontrar os carros dos jogadores (usada para o callback do dropdown)
+-- Função para obter os carros e seus nomes
 local function getPlayerCars()
     local playerCars = {}
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
@@ -755,48 +717,56 @@ local function getPlayerCars()
     return playerCars
 end
 
--- Variável para armazenar o dropdown atual
-local currentDropdown = nil
+-- Variável para armazenar os botões atuais
+local currentButtons = {}
 
--- Função para criar ou recriar o dropdown
-local function createCarDropdown()
-    -- Remove o dropdown anterior, se existir
-    if currentDropdown then
-        -- Lolyta Hub pode não ter um método para remover o dropdown, então vamos apenas recriá-lo
-        currentDropdown = nil
+-- Função para criar ou recriar os botões de seleção de carros
+local function createCarButtons()
+    -- Remove os botões anteriores, se existirem
+    for _, button in pairs(currentButtons) do
+        -- Lolyta Hub pode não ter um método para remover botões, então vamos apenas recriá-los
+    end
+    currentButtons = {}
+
+    -- Obtém a lista de carros
+    local playerCars = getPlayerCars()
+
+    if #playerCars == 0 then
+        Tab3:Button({
+            Title = "Nenhum carro encontrado",
+            Desc = "Não há carros disponíveis no momento",
+            Callback = function() end,
+        })
+        return
     end
 
-    -- Cria o novo dropdown
-    local carNames = getCarNames()
-    currentDropdown = Tab3:Dropdown({
-        Title = "Selecionar Carro",
-        Desc = "Escolha um carro para interagir",
-        Value = "",
-        Multi = false,
-        AllowNone = true,
-        Values = carNames, -- Preenche com a lista de carros
-        Callback = function(value)
-            local playerCars = getPlayerCars()
-            for _, car in pairs(playerCars) do
-                if car.name == value then
-                    _G.selectedCar = car.vehicle
-                    return
-                end
-            end
-            _G.selectedCar = nil
-        end,
-    })
+    -- Cria um botão para cada carro
+    for _, car in pairs(playerCars) do
+        local button = Tab3:Button({
+            Title = "Selecionar " .. car.name,
+            Desc = "Seleciona este carro para interagir",
+            Callback = function()
+                _G.selectedCar = car.vehicle
+                game.StarterGui:SetCore("SendNotification", {
+                    Title = "Carro Selecionado",
+                    Text = "Carro selecionado: " .. car.name,
+                    Duration = 5
+                })
+            end,
+        })
+        table.insert(currentButtons, button)
+    end
 end
 
--- Cria o dropdown inicialmente
-createCarDropdown()
+-- Cria os botões inicialmente
+createCarButtons()
 
--- Botão para atualizar a lista de carros (recria o dropdown)
+-- Botão para atualizar a lista de carros (recria os botões)
 Tab3:Button({
     Title = "Atualizar Lista de Carros",
     Desc = "Atualiza a lista de carros disponíveis",
     Callback = function()
-        createCarDropdown()
+        createCarButtons()
         game.StarterGui:SetCore("SendNotification", {
             Title = "Sucesso",
             Text = "Lista de carros atualizada!",
