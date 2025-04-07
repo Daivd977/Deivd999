@@ -683,15 +683,74 @@ Tab2:Button({
 -- Variável global para armazenar o carro selecionado
 _G.selectedCar = nil
 
--- Função para encontrar os carros dos jogadores
+-- Função para obter os nomes dos carros
+local function getCarNames()
+    local carNames = {}
+    local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
+    if vehiclesFolder then
+        for _, vehicle in pairs(vehiclesFolder:GetChildren()) do
+            local seat = vehicle:FindFirstChild("VehicleSeat")
+            if not seat then continue end -- Pula se não houver VehicleSeat
+
+            local ownerName = "Desconhecido"
+            for _, p in pairs(game.Players:GetPlayers()) do
+                if vehicle.Name:lower():find(p.Name:lower()) then
+                    ownerName = p.Name
+                    break
+                end
+            end
+
+            if seat:IsA("VehicleSeat") and seat.Occupant then
+                local humanoid = seat.Occupant
+                local seatedPlayer = game.Players:GetPlayerFromCharacter(humanoid.Parent)
+                if seatedPlayer then
+                    ownerName = seatedPlayer.Name
+                end
+            end
+
+            table.insert(carNames, vehicle.Name .. " (" .. ownerName .. ")")
+        end
+    end
+
+    -- Procura carros em todo o Workspace
+    for _, vehicle in pairs(Workspace:GetDescendants()) do
+        if vehicle:IsA("Model") and vehicle:FindFirstChild("VehicleSeat") and (not vehiclesFolder or not vehiclesFolder:FindFirstChild(vehicle.Name)) then
+            local seat = vehicle:FindFirstChild("VehicleSeat")
+            if not seat then continue end -- Pula se não houver VehicleSeat
+
+            local ownerName = "Desconhecido"
+            for _, p in pairs(game.Players:GetPlayers()) do
+                if vehicle.Name:lower():find(p.Name:lower()) then
+                    ownerName = p.Name
+                    break
+                end
+            end
+
+            if seat:IsA("VehicleSeat") and seat.Occupant then
+                local humanoid = seat.Occupant
+                local seatedPlayer = game.Players:GetPlayerFromCharacter(humanoid.Parent)
+                if seatedPlayer then
+                    ownerName = seatedPlayer.Name
+                end
+            end
+
+            table.insert(carNames, vehicle.Name .. " (" .. ownerName .. ")")
+        end
+    end
+
+    if #carNames == 0 then
+        carNames = {"Nenhum carro encontrado"}
+    end
+
+    return carNames
+end
+
+-- Função para encontrar os carros dos jogadores (usada para o callback do dropdown)
 local function getPlayerCars()
     local playerCars = {}
-    local player = game.Players.LocalPlayer
-
-    -- Procura os carros em Workspace.Vehicles
-    local vehicles = Workspace:FindFirstChild("Vehicles")
-    if vehicles then
-        for _, vehicle in pairs(vehicles:GetChildren()) do
+    local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
+    if vehiclesFolder then
+        for _, vehicle in pairs(vehiclesFolder:GetChildren()) do
             local seat = vehicle:FindFirstChild("VehicleSeat")
             if not seat then continue end -- Pula se não houver VehicleSeat
 
@@ -715,9 +774,8 @@ local function getPlayerCars()
         end
     end
 
-    -- Procura carros em todo o Workspace
     for _, vehicle in pairs(Workspace:GetDescendants()) do
-        if vehicle:IsA("Model") and vehicle:FindFirstChild("VehicleSeat") and (not vehicles or not vehicles:FindFirstChild(vehicle.Name)) then
+        if vehicle:IsA("Model") and vehicle:FindFirstChild("VehicleSeat") and (not vehiclesFolder or not vehiclesFolder:FindFirstChild(vehicle.Name)) then
             local seat = vehicle:FindFirstChild("VehicleSeat")
             if not seat then continue end -- Pula se não houver VehicleSeat
 
@@ -744,20 +802,20 @@ local function getPlayerCars()
     return playerCars
 end
 
--- Cria o dropdown (simplificado, sem atualização automática)
-local carNames = {"Nenhum carro encontrado"}
-local playerCars = getPlayerCars()
-if #playerCars > 0 then
-    carNames = {}
-    for _, car in pairs(playerCars) do
-        table.insert(carNames, car.name)
-    end
+-- Função para atualizar o dropdown
+local function updateCarDropdown(dropdown)
+    local carNames = getCarNames()
+    dropdown.Values = carNames -- Usa Values em vez de Options, seguindo o exemplo do dropdown de jogadores
 end
 
-local carDropdown = Tab3:Dropdown({
+-- Cria o dropdown
+local DropdownCar = Tab3:Dropdown({
     Title = "Selecionar Carro",
     Desc = "Escolha um carro para interagir",
-    Options = carNames,
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = getCarNames(), -- Preenche inicialmente com a lista de carros
     Callback = function(value)
         local playerCars = getPlayerCars()
         for _, car in pairs(playerCars) do
@@ -775,17 +833,7 @@ Tab3:Button({
     Title = "Atualizar Lista de Carros",
     Desc = "Atualiza a lista de carros disponíveis",
     Callback = function()
-        local playerCars = getPlayerCars()
-        local newCarNames = {}
-        for _, car in pairs(playerCars) do
-            table.insert(newCarNames, car.name)
-        end
-
-        if #newCarNames == 0 then
-            newCarNames = {"Nenhum carro encontrado"}
-        end
-
-        carDropdown.Options = newCarNames
+        updateCarDropdown(DropdownCar)
         game.StarterGui:SetCore("SendNotification", {
             Title = "Sucesso",
             Text = "Lista de carros atualizada!",
@@ -793,6 +841,11 @@ Tab3:Button({
         })
     end,
 })
+
+-- Atualiza o dropdown quando um carro é adicionado ou removido
+local vehiclesFolder = Workspace:FindFirstChild("Vehicles") or Workspace
+vehiclesFolder.ChildAdded:Connect(function() updateCarDropdown(DropdownCar) end)
+vehiclesFolder.ChildRemoved:Connect(function() updateCarDropdown(DropdownCar) end)
 
 -- Toggle para visualizar o carro selecionado
 Tab3:Toggle({
