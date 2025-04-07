@@ -73,7 +73,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.4",
+    Title = "Lolyta Hub 2.2",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -490,7 +490,7 @@ Tab2:Button({
     end,
 })
 
-
+-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -679,20 +679,17 @@ Tab2:Button({
 
 -----------------------------------------------------------------------------------------------------------------------------------------------
 
-print("Antes do Dropdown")
-    local DropdownCar = Tab3:Dropdown({
-        Title = "Selecionar Carro",
-        Desc = "Escolha um carro para interagir",
-        Value = "",
-        Multi = false,
-        AllowNone = true,
-        Values = getPlayerCars(),
-        Callback = function(tab)
-            selectedCar = getCarByName(tab)
-            print("Carro selecionado: " .. tab)
-        end,
-    })
-    print("Depois do Dropdown")
+local TestDropdown = Tab3:Dropdown({
+    Title = "Teste Dropdown",
+    Desc = "Verificar se carrega corretamente",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = {"Opção 1", "Opção 2", "Opção 3"},
+    Callback = function(tab)
+        print("Selecionado: " .. tab)
+    end,
+})
 -----------------------------------------------------------------------------------------------------
                                           -- === Tab 4: RGB Color === --
 ---------------------------------------------------------------------------------------------------------------------------------
