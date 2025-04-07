@@ -689,8 +689,9 @@ local function getPlayerCars()
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
     if vehiclesFolder then
         for _, vehicle in pairs(vehiclesFolder:GetChildren()) do
-            local seat = vehicle:FindFirstChild("VehicleSeat")
-            if not seat then continue end -- Pula se não houver VehicleSeat
+            -- Procura por qualquer assento (VehicleSeat, Seat, etc.)
+            local seat = vehicle:FindFirstChildOfClass("VehicleSeat") or vehicle:FindFirstChild("Seat") or vehicle:FindFirstChild("DriverSeat")
+            if not seat then continue end -- Pula se não houver assento
 
             -- Tenta determinar o dono do carro
             local ownerName = "Desconhecido"
@@ -714,6 +715,13 @@ local function getPlayerCars()
         end
     end
 
+    -- Notificação temporária para depuração
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "Depuração: Carros Encontrados",
+        Text = "Carros encontrados: " .. #playerCars,
+        Duration = 5
+    })
+
     return playerCars
 end
 
@@ -732,11 +740,12 @@ local function createCarButtons()
     local playerCars = getPlayerCars()
 
     if #playerCars == 0 then
-        Tab3:Button({
+        local button = Tab3:Button({
             Title = "Nenhum carro encontrado",
             Desc = "Não há carros disponíveis no momento",
             Callback = function() end,
         })
+        table.insert(currentButtons, button)
         return
     end
 
@@ -756,6 +765,13 @@ local function createCarButtons()
         })
         table.insert(currentButtons, button)
     end
+
+    -- Notificação temporária para depuração
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "Depuração: Botões Criados",
+        Text = "Botões criados: " .. #currentButtons,
+        Duration = 5
+    })
 end
 
 -- Cria os botões inicialmente
@@ -806,11 +822,11 @@ Tab3:Toggle({
         end
 
         if value then
-            local chassis = _G.selectedCar:FindFirstChild("Chassis") or _G.selectedCar:FindFirstChild("VehicleSeat")
+            local chassis = _G.selectedCar:FindFirstChild("Chassis") or _G.selectedCar:FindFirstChild("VehicleSeat") or _G.selectedCar:FindFirstChild("Seat") or _G.selectedCar:FindFirstChild("DriverSeat")
             if not chassis then
                 game.StarterGui:SetCore("SendNotification", {
                     Title = "Erro",
-                    Text = "Chassis ou VehicleSeat não encontrado no carro!",
+                    Text = "Chassis ou assento não encontrado no carro!",
                     Duration = 5
                 })
                 return
@@ -880,11 +896,11 @@ Tab3:Button({
             return
         end
 
-        local chassis = _G.selectedCar:FindFirstChild("Chassis") or _G.selectedCar:FindFirstChild("VehicleSeat")
+        local chassis = _G.selectedCar:FindFirstChild("Chassis") or _G.selectedCar:FindFirstChild("VehicleSeat") or _G.selectedCar:FindFirstChild("Seat") or _G.selectedCar:FindFirstChild("DriverSeat")
         if not chassis then
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Erro",
-                Text = "Chassis ou VehicleSeat não encontrado no carro!",
+                Text = "Chassis ou assento não encontrado no carro!",
                 Duration = 5
             })
             return
@@ -936,11 +952,11 @@ Tab3:Button({
             return
         end
 
-        local seat = _G.selectedCar:FindFirstChild("VehicleSeat")
+        local seat = _G.selectedCar:FindFirstChild("VehicleSeat") or _G.selectedCar:FindFirstChild("Seat") or _G.selectedCar:FindFirstChild("DriverSeat")
         if not seat then
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Erro",
-                Text = "VehicleSeat não encontrado no carro!",
+                Text = "Assento não encontrado no carro!",
                 Duration = 5
             })
             return
