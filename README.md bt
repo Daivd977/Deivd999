@@ -73,7 +73,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.5",
+    Title = "Lolyta Hub 2.4",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -731,7 +731,13 @@ local function getPlayerCars()
         carOwners = {"Nenhum carro encontrado"}
     end
 
-    print("Jogadores com carros encontrados:", table.concat(carOwners, ", ")) -- Verifica quais jogadores são encontrados
+    -- Notificação para confirmar os nomes carregados
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "Carros Carregados",
+        Text = "Jogadores com carros: " .. table.concat(carOwners, ", "),
+        Duration = 5
+    })
+
     return carOwners
 end
 
@@ -846,11 +852,12 @@ Tab3:Button({
     end,
 })
 
--- Botão "Visualizar Carro"
-Tab3:Button({
+-- Toggle "Visualizar Carro"
+Tab3:Toggle({
     Title = "Visualizar Carro",
-    Desc = "Muda a câmera para seguir o carro selecionado",
-    Callback = function()
+    Desc = "Ativa/desativa a visualização do carro selecionado",
+    Default = false,
+    Callback = function(value)
         local player = game.Players.LocalPlayer
         local character = player.Character
         if not character or not character:FindFirstChild("Humanoid") then
@@ -871,7 +878,7 @@ Tab3:Button({
             return
         end
 
-        if not isViewingCar then
+        if value then
             local chassis = _G.selectedCar:FindFirstChild("Chassis") or _G.selectedCar:FindFirstChild("VehicleSeat") or _G.selectedCar:FindFirstChild("Seat") or _G.selectedCar:FindFirstChild("DriverSeat")
             if not chassis then
                 game.StarterGui:SetCore("SendNotification", {
@@ -896,7 +903,7 @@ Tab3:Button({
             isViewingCar = true
             game.StarterGui:SetCore("SendNotification", {
                 Title = "Visualizar",
-                Text = "Câmera agora está seguindo o carro! Clique novamente para parar.",
+                Text = "Câmera agora está seguindo o carro!",
                 Duration = 5
             })
         else
