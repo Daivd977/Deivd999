@@ -414,8 +414,6 @@ Tab1:Toggle({
     end,
 })
 
--- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta-- brookhaven script teste funcionando beta
-
 ---------------------------------------------------------------------------------------------------------------------------------
                                           -- === Tab 2: casa === --
 ---------------------------------------------------------------------------------------------------------------------------------
@@ -682,10 +680,56 @@ Tab2:Button({
                                           -- === Tab 3: Carro === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
+---------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 3: Carro === --
+---------------------------------------------------------------------------------------------------------------------------------
+
 -- Variável global para armazenar o carro selecionado
 _G.selectedCar = nil
 
--- Função para obter os carros e os nomes dos jogadores
+-- Função para obter os nomes dos jogadores com carros
+local function getCarOwners()
+    local carOwners = {}
+    local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
+    if vehiclesFolder then
+        for _, vehicle in pairs(vehiclesFolder:GetChildren()) do
+            -- Procura por qualquer assento (VehicleSeat, Seat, etc.)
+            local seat = vehicle:FindFirstChildOfClass("VehicleSeat") or vehicle:FindFirstChild("Seat") or vehicle:FindFirstChild("DriverSeat")
+            if not seat then continue end -- Pula se não houver assento
+
+            -- Tenta determinar o dono do carro
+            local ownerName = "Desconhecido"
+            for _, player in pairs(game.Players:GetPlayers()) do
+                if vehicle.Name:lower():find(player.Name:lower()) then
+                    ownerName = player.Name
+                    break
+                end
+            end
+
+            -- Verifica se há um jogador sentado
+            if seat:IsA("VehicleSeat") and seat.Occupant then
+                local humanoid = seat.Occupant
+                local seatedPlayer = game.Players:GetPlayerFromCharacter(humanoid.Parent)
+                if seatedPlayer then
+                    ownerName = seatedPlayer.Name
+                end
+            end
+
+            -- Adiciona apenas o nome do jogador
+            if ownerName ~= "Desconhecido" then
+                table.insert(carOwners, ownerName)
+            end
+        end
+    end
+
+    if #carOwners == 0 then
+        carOwners = {"Nenhum carro encontrado"}
+    end
+
+    return carOwners
+end
+
+-- Função para obter os carros e os nomes dos jogadores (usada para o callback do dropdown)
 local function getPlayerCars()
     local playerCars = {}
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
@@ -723,213 +767,51 @@ local function getPlayerCars()
     return playerCars
 end
 
--- Variável para armazenar o dropdown atual
-local currentDropdown = nil
-
--- Função para criar ou recriar o dropdown de seleção de carros
-local function createCarDropdown()
-    -- Remove o dropdown anterior, se existir
-    if currentDropdown then
-        -- Lolyta Hub pode não ter um método para remover o dropdown, então vamos apenas recriá-lo
-        currentDropdown = nil
-    end
-
-    -- Obtém a lista de carros
-    local playerCars = getPlayerCars()
-
-    -- Cria a lista de nomes dos jogadores para o dropdown
-    local playerNames = {}
-    if #playerCars == 0 then
-        playerNames = {"Nenhum carro encontrado"}
-    else
-        for _, car in pairs(playerCars) do
-            table.insert(playerNames, car.name)
-        end
-    end
-
-    -- Cria o novo dropdown
-    currentDropdown = Tab3:Dropdown({
-        Title = "Selecionar Carro",
-        Desc = "Escolha o carro de um jogador para interagir",
-        Value = "",
-        Multi = false,
-        AllowNone = true,
-        Values = playerNames, -- Preenche com os nomes dos jogadores
-        Callback = function(value)
-            if value == "Nenhum carro encontrado" then
-                _G.selectedCar = nil
-                return
-            end
-
-            local playerCars = getPlayerCars()
-            for _, car in pairs(playerCars) do
-                if car.name == value then
-                    _G.selectedCar = car.vehicle
-                    game.StarterGui:SetCore("SendNotification", {
-                        Title = "Carro Selecionado",
-                        Text = "Carro de " .. car.name .. " selecionado!",
-                        Duration = 5
-                    })
-                    return
-                end
-            end
-            _G.selectedCar = nil
-        end,
-    })
+-- Função para atualizar o dropdown
+local function updateCarDropdown(dropdown)
+    local carOwners = getCarOwners()
+    dropdown.Values = carOwners
 end
 
--- Cria o dropdown inicialmente
-createCarDropdown()
-
--- Botão para atualizar a lista de carros (recria o dropdown)
-Tab3:Button({
-    Title = "Atualizar Lista de Carros",
-    Desc = "Atualiza a lista de carros disponíveis",
-    Callback = function()
-        createCarDropdown()
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Sucesso",
-            Text = "Lista de carros atualizada!",
-            Duration = 5
-        })
-    end,
-})
-
--- Toggle para visualizar o carro (ajustado para mudar a câmera)
-local camera = Workspace.CurrentCamera
-local originalCameraSubject = nil
-local cameraConnection = nil
-
-Tab3:Toggle({
-    Title = "Visualizar Carro",
-    Desc = "Muda a câmera para seguir o carro selecionado",
-    Default = false,
-    Callback = function(value)
-        local player = game.Players.LocalPlayer
-        local character = player.Character
-        if not character or not character:FindFirstChild("Humanoid") then
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Erro",
-                Text = "Personagem não encontrado!",
-                Duration = 5
-            })
+-- Cria o dropdown
+local DropdownCar = Tab3:Dropdown({
+    Title = "Selecionar Carro",
+    Desc = "Selecione o carro de um jogador para interagir",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = getCarOwners(), -- Preenche inicialmente com os nomes dos jogadores
+    Callback = function(selectedPlayerName)
+        if selectedPlayerName == "Nenhum carro encontrado" then
+            _G.selectedCar = nil
             return
         end
 
-        if not _G.selectedCar then
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Erro",
-                Text = "Nenhum carro selecionado!",
-                Duration = 5
-            })
-            return
-        end
-
-        if value then
-            local chassis = _G.selectedCar:FindFirstChild("Chassis") or _G.selectedCar:FindFirstChild("VehicleSeat") or _G.selectedCar:FindFirstChild("Seat") or _G.selectedCar:FindFirstChild("DriverSeat")
-            if not chassis then
+        local playerCars = getPlayerCars()
+        for _, car in pairs(playerCars) do
+            if car.name == selectedPlayerName then
+                _G.selectedCar = car.vehicle
                 game.StarterGui:SetCore("SendNotification", {
-                    Title = "Erro",
-                    Text = "Chassis ou assento não encontrado no carro!",
+                    Title = "Carro Selecionado",
+                    Text = "Carro de " .. car.name .. " selecionado!",
                     Duration = 5
                 })
                 return
             end
-
-            -- Salva o estado atual da câmera
-            originalCameraSubject = camera.CameraSubject
-
-            -- Muda a câmera para seguir o carro
-            camera.CameraSubject = chassis
-            camera.CameraType = Enum.CameraType.Follow
-
-            -- Ajusta a posição inicial da câmera para evitar que fique muito próxima
-            local carPos = chassis.Position
-            camera.CFrame = CFrame.new(carPos + Vector3.new(10, 5, 10), carPos)
-
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Visualizar",
-                Text = "Câmera agora está seguindo o carro!",
-                Duration = 5
-            })
-        else
-            -- Restaura a câmera para o jogador
-            if originalCameraSubject then
-                camera.CameraSubject = originalCameraSubject
-                camera.CameraType = Enum.CameraType.Custom
-                originalCameraSubject = nil
-            end
-
-            -- Garante que a câmera volte para o jogador
-            if cameraConnection then
-                cameraConnection:Disconnect()
-                cameraConnection = nil
-            end
-
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Visualizar",
-                Text = "Câmera voltou para o jogador!",
-                Duration = 5
-            })
         end
+        _G.selectedCar = nil
     end,
 })
 
--- Botão para teleportar o carro selecionado para o jogador
-Tab3:Button({
-    Title = "Teleportar Carro para Mim",
-    Desc = "Teleporta o carro selecionado para sua posição",
-    Callback = function()
-        local player = game.Players.LocalPlayer
-        local character = player.Character
-        if not character or not character:FindFirstChild("HumanoidRootPart") then
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Erro",
-                Text = "Personagem não encontrado!",
-                Duration = 5
-            })
-            return
-        end
+-- Atualiza o dropdown inicialmente
+updateCarDropdown(DropdownCar)
 
-        if not _G.selectedCar then
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Erro",
-                Text = "Nenhum carro selecionado!",
-                Duration = 5
-            })
-            return
-        end
-
-        local chassis = _G.selectedCar:FindFirstChild("Chassis") or _G.selectedCar:FindFirstChild("VehicleSeat") or _G.selectedCar:FindFirstChild("Seat") or _G.selectedCar:FindFirstChild("DriverSeat")
-        if not chassis then
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Erro",
-                Text = "Chassis ou assento não encontrado no carro!",
-                Duration = 5
-            })
-            return
-        end
-
-        local playerPos = character.HumanoidRootPart.Position
-        local success, errorMessage = pcall(function()
-            _G.selectedCar:MoveTo(playerPos + Vector3.new(5, 2, 5))
-        end)
-
-        if success then
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Sucesso",
-                Text = "Carro teleportado para sua posição!",
-                Duration = 5
-            })
-        else
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Erro",
-                Text = "Falha ao teleportar o carro: " .. tostring(errorMessage),
-                Duration = 5
-            })
-        end
-    end,
-})
+-- Atualiza o dropdown quando um carro é adicionado ou removido
+local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
+if vehiclesFolder then
+    vehiclesFolder.ChildAdded:Connect(function() updateCarDropdown(DropdownCar) end)
+    vehiclesFolder.ChildRemoved:Connect(function() updateCarDropdown(DropdownCar) end)
+end
 
 -- Botão para teleportar o carro selecionado para o void
 Tab3:Button({
