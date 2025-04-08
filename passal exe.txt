@@ -347,26 +347,76 @@ Tab1:Button({
 
 ----------------------------------------------------------------------------------------------------------------------------------------------
 
-Tab1:Slider({
-    Title = "definir a velocidade do jogador",
-    Step = 1,
-    Value = { Min = 1, Max = 300, Default = 70 },
-    Callback = function(value)
+local SpeedInput = Tab1:Input({
+    Title = "Definir a velocidade do jogador",
+    Desc = "Insira a velocidade (mínimo 1, sem limite máximo)",
+    Value = "70", -- Valor padrão como string
+    PlaceholderText = "Digite um número maior que 1...",
+    ClearTextOnFocus = false,
+    Callback = function(Text)
+        local value = tonumber(Text) -- Converte o texto para número
+        if value then
+            -- Garante que o valor seja pelo menos 1
+            value = math.max(value, 1)
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.WalkSpeed = value
+                print("Velocidade definida para: " .. value)
+            else
+                warn("Personagem ou Humanoid não encontrado!")
+            end
+        else
+            warn("Por favor, insira um número válido!")
+        end
+    end
+})
+
+local ResetSpeedButton = Tab1:Button({
+    Title = "Restaurar velocidade padrão",
+    Desc = "Retorna a velocidade para 16 (padrão do Roblox)",
+    Callback = function()
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.WalkSpeed = value
+            LocalPlayer.Character.Humanoid.WalkSpeed = 16
+            print("Velocidade restaurada para 16!")
+        else
+            warn("Personagem ou Humanoid não encontrado!")
         end
     end,
 })
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
-Tab1:Slider({
-    Title = "definir o tamanho do salto do jogador",
-    Step = 1,
-    Value = { Min = 1, Max = 300, Default = 70 },
-    Callback = function(value)
+local JumpInput = Tab1:Input({
+    Title = "Definir o tamanho do salto do jogador",
+    Desc = "Insira o salto (mínimo 1, sem limite máximo)",
+    Value = "70", -- Valor padrão como string
+    PlaceholderText = "Digite um número maior que 1...",
+    ClearTextOnFocus = false,
+    Callback = function(Text)
+        local value = tonumber(Text) -- Converte o texto para número
+        if value then
+            -- Garante que o valor seja pelo menos 1
+            value = math.max(value, 1)
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.JumpPower = value
+                print("Tamanho do salto definido para: " .. value)
+            else
+                warn("Personagem ou Humanoid não encontrado!")
+            end
+        else
+            warn("Por favor, insira um número válido!")
+        end
+    end
+})
+
+local ResetJumpButton = Tab1:Button({
+    Title = "Restaurar salto padrão",
+    Desc = "Retorna o salto para 50 (padrão do Roblox)",
+    Callback = function()
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.JumpPower = value
+            LocalPlayer.Character.Humanoid.JumpPower = 50
+            print("Tamanho do salto restaurado para 50!")
+        else
+            warn("Personagem ou Humanoid não encontrado!")
         end
     end,
 })
@@ -874,7 +924,7 @@ Tab5:Dropdown({
     Multi = false,
     AllowNone = true,
     Values = {
-        "novas musica adds", "104240235018198", "111668097052966", "93786060174790", "74812784884330", "musica brasil", "77501611905348", "126887144190812", "88033569921555", "132436320685732", "105832154444494", "", "90323407842935", "132245626038510",
+        "novas musica adds", "90844637105538", "102333419023382", "102333419023382", "104240235018198", "111668097052966", "93786060174790", "74812784884330", "musica brasil", "77501611905348", "126887144190812", "88033569921555", "132436320685732", "105832154444494", "", "90323407842935", "132245626038510",
 "111995323199676","115016589376700", "118740708757685", "139435437308948",
 "109189438638906", "138415155024226", "105126065014034", "102919095332206", "132245626038510", "97765714111493",
 "100788814736643", "72720721570850", "138487820505005", "87968531262747", "106317184644394",
@@ -1042,7 +1092,7 @@ Tab5:Dropdown({
     Multi = false,
     AllowNone = true,
     Values = {
-        "novas musica adds", "104240235018198", "111668097052966", "93786060174790", "74812784884330", "musica brasil", "77501611905348", "126887144190812", "88033569921555", "132436320685732", "105832154444494", "", "90323407842935", "132245626038510",
+        "novas musica adds", "90844637105538", "102333419023382", "102333419023382", "104240235018198", "111668097052966", "93786060174790", "74812784884330", "musica brasil", "77501611905348", "126887144190812", "88033569921555", "132436320685732", "105832154444494", "", "90323407842935", "132245626038510",
 "111995323199676","115016589376700", "118740708757685", "139435437308948",
 "109189438638906", "138415155024226", "105126065014034", "102919095332206", "132245626038510", "97765714111493",
 "100788814736643", "72720721570850", "138487820505005", "87968531262747", "106317184644394",
@@ -1136,104 +1186,127 @@ Tab6:Toggle({
         loopAtivo = state
         if loopAtivo then
             print("Loop ativado!")
-            while loopAtivo do
-                if InputID then
-                    fireServer("1Gu1nSound1s", {Workspace, InputID, 1})
-                    local globalSound = Instance.new("Sound", Workspace)
-                    globalSound.SoundId = "rbxassetid://" .. InputID
-                    globalSound.Looped = false
-                    globalSound:Play()
-                    task.wait(3)
-                    globalSound:Destroy()
-                else
-                    warn("Nenhum ID válido foi inserido!")
+            spawn(function()
+                while loopAtivo do
+                    if InputID then
+                        fireServer("1Gu1nSound1s", {Workspace, InputID, 1})
+                        local globalSound = Instance.new("Sound", Workspace)
+                        globalSound.SoundId = "rbxassetid://" .. InputID
+                        globalSound.Looped = false
+                        globalSound:Play()
+                        task.wait(1.5)
+                        globalSound:Destroy()
+                    else
+                        warn("Nenhum ID válido foi inserido!")
+                        task.wait(1.5)
+                    end
                 end
-            end
+            end)
         else
             print("Loop desativado!")
         end
     end,
 })
 
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
+-- Sistema de Som com Dropdown (Tab6)
 local musicOptions = {
-    -- Sons antigos
-    {name = "pankapakan", id = 122547522269143},
-    {name = "gritomedo", id = 113029085566978},
-    {name = "metal", id = 71251935617451},
-    {name = "araara", id = 18388861760},
-    {name = "tiro", id = 104223019424522},
-    {name = "jumpscar", id = 91784486966761},
-    {name = "gemido", id = 106835463235574},
-    {name = "sometourado", id = 123592956882621},
-    {name = "gritodoido", id = 7807987190},
-    {name = "off", id = 1778829098},
-    {name = "Hahahah", id = 90096947219465},
-    {name = "Carropeid", id = 88883922248256},
-    {name = "Error", id = 101446887200514},
-    {name = "Estouradoespad", id = 136179020015211},
-    {name = "Chernobyl1", id = 134433437151072},
-    {name = "Chernobyl5", id = 101927395686044},
-    {name = "Radioxiado", id = 8028069841},
-    {name = "Nukesiren", id = 9067330158},
-    {name = "Sirenhead", id = 5681392074},
-    {name = "Alertescola", id = 6607047008},
-    {name = "Memealert", id = 8379374771},
-    {name = "Alerta3S", id = 402404861},
-    -- Sons novos que você enviou
-    {name = "tomagerk", id = 132603645477541},
-    {name = "ifood", id = 133843750864059},
-    {name = "coringa", id = 84663543883498},
-    {name = "shoope", id = 8747441609},
-    {name = "quenojo", id = 103440368630269},
-    {name = "sai dai lava prato", id = 101232400175829},
-    {name = "se e loko numconpeça", id = 78442476709262},
-    {name = "gritoestourado", id = 7520729342},
-    {name = "nuclear siren", id = 675587093},
-    {name = "rojao apito", id = 6549021381},
-    {name = "mita sequer que eu too uma", id = 94889439372168},
-    {name = "gemido estranho", id = 131219411501419},
-    {name = "gemido kawai", id = 100409245129170}
+    ["Memes"] = {
+        {name = "pankapakan", id = 122547522269143},
+        {name = "araara", id = 18388861760},
+        {name = "jumpscar", id = 91784486966761},
+        {name = "gemido", id = 106835463235574},
+        {name = "gritodoido", id = 7807987190},
+        {name = "Hahahah", id = 90096947219465},
+        {name = "Error", id = 101446887200514},
+        {name = "tomagerk", id = 132603645477541},
+        {name = "Tomagerk v2", id = 100446887985203},
+        {name = "ifood", id = 133843750864059},
+        {name = "coringa", id = 84663543883498},
+        {name = "shoope", id = 8747441609},
+        {name = "quenojo", id = 103440368630269},
+        {name = "sai dai lava prato", id = 101232400175829},
+        {name = "se e loko numconpeça", id = 78442476709262},
+        {name = "mita sequer que eu too uma", id = 94889439372168},
+        {name = "gritoestourado", id = 7520729342},
+        {name = "gemido estranho", id = 131219411501419},
+        {name = "gemido kawai", id = 100409245129170},
+        {name = "Discord sus", id = 122662798976905},
+        {name = "Kazuma kazuma", id = 127954653962405},
+        {name = "Hoje vou ser tua mulher e tu", id = 90844637105538},
+        {name = "Gemido ultra rápido", id = 128863565301778},
+        {name = "Deita aqui eu mandei vc deitar sirens", id = 100291188941582},
+        {name = "Aí papi", id = 126284366884644},
+        {name = "Good boy", id = 112399901996574},
+        {name = "gemidao v2", id = 112179417472137},
+    },
+    ["Efeitos"] = {
+        {name = "metal", id = 71251935617451},
+        {name = "tiro", id = 104223019424522},
+        {name = "sometourado", id = 123592956882621},
+        {name = "off", id = 1778829098},
+        {name = "Carropeid", id = 88883922248256},
+        {name = "Estouradoespad", id = 136179020015211},
+        {name = "rojao apito", id = 6549021381},
+        {name = "Woooo", id = 117521059248354},
+        {name = "sla", id = 116672405522828},
+        {name = "Estourado wItb", id = 137478052262430},
+        {name = "Golden efect", id = 77773293292155},
+        {name = "busss", id = 139841197791567},
+        {name = "poc poc", id = 102333419023382},
+        {name = "Haki sound", id = 91390250645812},
+        {name = "Alaku bommm", id = 110796593805268},
+    },
+    ["Alarmes/terror"] = {
+        {name = "Chernobyl1", id = 134433437151072},
+        {name = "Chernobyl5", id = 101927395686044},
+        {name = "Radioxiado", id = 8028069841},
+        {name = "Nukesiren", id = 9067330158},
+        {name = "Sirenhead", id = 5681392074},
+        {name = "Alertescola", id = 6607047008},
+        {name = "Memealert", id = 8379374771},
+        {name = "Alerta3S", id = 402404861},
+        {name = "nuclear siren", id = 675587093},
+        {name = "gritomedo", id = 113029085566978},
+    }
 }
 
--- Cria uma tabela com apenas os nomes para o dropdown
 local musicNames = {}
-for _, music in ipairs(musicOptions) do
-    table.insert(musicNames, music.name)
+local categoryMap = {}
+for category, sounds in pairs(musicOptions) do
+    for _, music in ipairs(sounds) do
+        table.insert(musicNames, music.name)
+        categoryMap[music.name] = {id = music.id, category = category}
+    end
 end
 
 local selectedSoundID = nil
+local currentVolume = 1
+local currentPitch = 1
+
+local function playSound(soundId, volume, pitch)
+    fireServer("1Gu1nSound1s", {Workspace, soundId, volume})
+    local globalSound = Instance.new("Sound")
+    globalSound.Parent = Workspace
+    globalSound.SoundId = "rbxassetid://" .. soundId
+    globalSound.Volume = volume
+    globalSound.Pitch = pitch
+    globalSound.Looped = false
+    globalSound:Play()
+    task.wait(3)
+    globalSound:Destroy()
+end
 
 local MusicDropdown = Tab6:Dropdown({
     Title = "Selecione uma música",
     Desc = "Escolha o som para tocar no servidor",
-    Value = "pankapakan", -- Primeiro som antigo como padrão
+    Value = "pankapakan",
     Multi = false,
     AllowNone = true,
     Values = musicNames,
     Callback = function(selectedSound)
-        local selectedID
-        for _, music in ipairs(musicOptions) do
-            if music.name == selectedSound then
-                selectedID = music.id
-                break
-            end
-        end
-
-        if selectedID then
-            selectedSoundID = selectedID
-            fireServer("1Gu1nSound1s", {Workspace, selectedID, 1})
-            local globalSound = Instance.new("Sound")
-            globalSound.Parent = Workspace
-            globalSound.SoundId = "rbxassetid://" .. selectedID
-            globalSound.Looped = false
-            globalSound:Play()
-            task.wait(3)
-            globalSound:Destroy()
+        if selectedSound and categoryMap[selectedSound] then
+            selectedSoundID = categoryMap[selectedSound].id
+            playSound(selectedSoundID, currentVolume, currentPitch)
         else
             warn("Nenhum som selecionado ou ID não encontrado!")
             selectedSoundID = nil
@@ -1244,34 +1317,52 @@ local MusicDropdown = Tab6:Dropdown({
 local dropdownLoopActive = false
 Tab6:Toggle({
     Title = "Loop",
-    Desc = "Ativa o loop do som selecionado acima",
+    Desc = "Ativa o loop do som selecionado",
     Value = false,
     Callback = function(state)
         dropdownLoopActive = state
         if state then
             spawn(function()
-                print("Loop do Dropdown ativado!")
+                print("Loop ativado!")
                 while dropdownLoopActive do
                     if selectedSoundID then
-                        fireServer("1Gu1nSound1s", {Workspace, selectedSoundID, 1})
-                        local globalSound = Instance.new("Sound", Workspace)
-                        globalSound.SoundId = "rbxassetid://" .. selectedSoundID
-                        globalSound.Looped = false
-                        globalSound:Play()
-                        task.wait(3)
-                        globalSound:Destroy()
+                        playSound(selectedSoundID, currentVolume, currentPitch)
+                        task.wait(1.5)
                     else
-                        warn("Nenhum som selecionado no dropdown!")
-                        task.wait(1)
+                        warn("Nenhum som selecionado!")
+                        task.wait(1.5)
                     end
                 end
             end)
         else
-            print("Loop do Dropdown desativado!")
+            print("Loop desativado!")
         end
     end,
 })
 
+Tab6:Slider({
+    Title = "Volume",
+    Desc = "Ajuste o volume do som (0-2)",
+    Min = 0,
+    Max = 2,
+    Default = 1,
+    Step = 0.1,
+    Callback = function(value)
+        currentVolume = value
+    end,
+})
+
+Tab6:Slider({
+    Title = "Pitch",
+    Desc = "Ajuste a velocidade/altura do som (0.5-2)",
+    Min = 0.5,
+    Max = 2,
+    Default = 1,
+    Step = 0.1,
+    Callback = function(value)
+        currentPitch = value
+    end,
+})
 ----------------------------------------------------------------------------------------------------------------------------------------------
                                                -- === Tab 7: Scripts === --
 ----------------------------------------------------------------------------------------------------------------------------------------------
