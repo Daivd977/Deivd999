@@ -1,7 +1,5 @@
 -- brookhaven script teste funcionando beta
 
--- mandrake maldito seu bostinhaaaaas
-
 -- === Configurações Iniciais === --
 local AllowedUsers = {
     "rtrt967",
@@ -67,21 +65,6 @@ else
     warn("Erro ao definir o nome: " .. tostring(errorName))
 end
 -----------------------------------------------------------------------------------------------------------------------------------
-
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas-- mandrake maldito seu b
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
                                     -- === Inicialização da Interface === --
 -----------------------------------------------------------------------------------------------------------------------------------
 
@@ -90,7 +73,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.5",
+    Title = "Lolyta Hub 2.7",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -148,78 +131,6 @@ Tab1:Button({
     end,
 })
 
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas-- mandrake maldito seu b
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
-
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas-- mandrake maldito seu b
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
-                                   -- mandrake maldito seu bos
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas-- mandrake maldito seu b
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
-                                   -- mandrake maldito seu bos
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas-- mandrake maldito seu b
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
-                                   -- mandrake maldito seu bo
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas-- mandrake maldito seu b
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
--- mandrake maldito seu bostinhaaaaas
-                                   
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -434,15 +345,11 @@ Tab1:Button({
     end,
 })
 
-
-
-
 ----------------------------------------------------------------------------------------------------------------------------------------------
 
 local SpeedInput = Tab1:Input({
     Title = "Definir a velocidade do jogador",
     Desc = "Insira a velocidade (mínimo 1, sem limite máximo)",
-
     Value = "70", -- Valor padrão como string
     PlaceholderText = "Digite um número maior que 1...",
     ClearTextOnFocus = false,
