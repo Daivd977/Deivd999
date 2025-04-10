@@ -199,35 +199,42 @@ Tab1:Toggle({
     Value = false,
     Callback = function(state)
         local connections = {} -- Tabela para armazenar as conexões dos eventos
+        local espEnabled = state -- Estado do ESP para controle
+
         local function createESP(player)
-            if player == LocalPlayer then return end
-            local character = player.Character or player.CharacterAdded:Wait()
-            local head = character:WaitForChild("Head")
-            -- Remove ESP existente, se houver
-            if head:FindFirstChild("BillboardGui") then
-                head.BillboardGui:Destroy()
+            if player == game.Players.LocalPlayer then return end
+            if not espEnabled then return end -- Evita criar ESP se desativado
+            local character = player.Character
+            if character then
+                local head = character:WaitForChild("Head", 5)
+                if head then
+                    -- Remove ESP existente, se houver
+                    if head:FindFirstChild("BillboardGui") then
+                        head.BillboardGui:Destroy()
+                    end
+                    local billboard = Instance.new("BillboardGui")
+                    billboard.Parent = head
+                    billboard.Adornee = head
+                    billboard.Size = UDim2.new(0, 200, 0, 50)
+                    billboard.StudsOffset = Vector3.new(0, 3, 0)
+                    billboard.AlwaysOnTop = true
+                    local textLabel = Instance.new("TextLabel")
+                    textLabel.Parent = billboard
+                    textLabel.Size = UDim2.new(1, 0, 1, 0)
+                    textLabel.BackgroundTransparency = 1
+                    textLabel.TextColor3 = Color3.new(1, 1, 1)
+                    textLabel.TextStrokeTransparency = 0.5
+                    textLabel.Font = Enum.Font.SourceSansBold
+                    textLabel.TextSize = 14
+                    textLabel.Text = player.Name .. " | " .. player.AccountAge .. " dias"
+                end
             end
-            local billboard = Instance.new("BillboardGui")
-            billboard.Parent = head
-            billboard.Adornee = head
-            billboard.Size = UDim2.new(0, 200, 0, 50)
-            billboard.StudsOffset = Vector3.new(0, 3, 0)
-            billboard.AlwaysOnTop = true
-            local textLabel = Instance.new("TextLabel")
-            textLabel.Parent = billboard
-            textLabel.Size = UDim2.new(1, 0, 1, 0)
-            textLabel.BackgroundTransparency = 1
-            textLabel.TextColor3 = Color3.new(1, 1, 1)
-            textLabel.TextStrokeTransparency = 0.5
-            textLabel.Font = Enum.Font.SourceSansBold
-            textLabel.TextSize = 14
-            textLabel.Text = player.Name .. " | " .. player.AccountAge .. " dias"
         end
 
         local function removeESP(player)
-            if player.Character and player.Character:FindFirstChild("Head") then
-                local head = player.Character.Head
-                if head:FindFirstChild("BillboardGui") then
+            if player.Character then
+                local head = player.Character:FindFirstChild("Head")
+                if head and head:FindFirstChild("BillboardGui") then
                     head.BillboardGui:Destroy()
                 end
             end
@@ -235,28 +242,31 @@ Tab1:Toggle({
 
         if state then
             -- Adiciona ESP para jogadores existentes
-            for _, player in pairs(Players:GetPlayers()) do
+            for _, player in pairs(game.Players:GetPlayers()) do
                 createESP(player)
             end
             -- Conecta evento para novos jogadores
-            local playerAddedConnection = Players.PlayerAdded:Connect(function(player)
-                local charAddedConnection
-                charAddedConnection = player.CharacterAdded:Connect(function()
+            local playerAddedConnection = game.Players.PlayerAdded:Connect(function(player)
+                if not espEnabled then return end -- Evita criar ESP se desativado
+                createESP(player)
+                local charAddedConnection = player.CharacterAdded:Connect(function()
+                    if not espEnabled then return end -- Evita criar ESP se desativado
                     createESP(player)
                 end)
-                table.insert(connections, charAddedConnection) -- Armazena conexão do CharacterAdded
+                table.insert(connections, charAddedConnection)
             end)
-            table.insert(connections, playerAddedConnection) -- Armazena conexão do PlayerAdded
+            table.insert(connections, playerAddedConnection)
         else
             -- Remove ESP de todos os jogadores
-            for _, player in pairs(Players:GetPlayers()) do
+            for _, player in pairs(game.Players:GetPlayers()) do
                 removeESP(player)
             end
             -- Desconecta todos os eventos
-            for _, connection in pairs(connections) do
+            for _, connection in ipairs(connections) do
                 connection:Disconnect()
             end
             connections = {} -- Limpa a tabela de conexões
+            espEnabled = false -- Garante que o estado está desativado
         end
     end,
 })
