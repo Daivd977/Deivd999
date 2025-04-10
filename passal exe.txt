@@ -73,7 +73,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.7,5",
+    Title = "Lolyta Hub 2.7",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -325,23 +325,42 @@ local function setNoclip(state)
             Duration = 5
         })
     else
-        -- Desativa o noclip e restaura as colisões
+        -- Desativa o noclip e restaura as propriedades do personagem
         for _, connection in pairs(noclipConnections) do
             connection:Disconnect()
         end
         noclipConnections = {}
 
-        -- Restaura as propriedades originais do personagem
+        -- Restaura as colisões e corrige a física
         for _, part in pairs(character:GetDescendants()) do
             if part:IsA("BasePart") then
                 part.CanCollide = true -- Reativa colisões
-                part.Velocity = Vector3.new(0, 0, 0) -- Zera a velocidade para evitar "flutuação"
+                part.Velocity = Vector3.new(0, 0, 0) -- Zera a velocidade
+                part.RotVelocity = Vector3.new(0, 0, 0) -- Zera a rotação
             end
         end
 
-        -- Garante que o Humanoid esteja em estado normal
+        -- Restaura o estado do Humanoid e a posição
         if humanoid then
-            humanoid:ChangeState(Enum.HumanoidStateType.Running) -- Força estado normal
+            humanoid:ChangeState(Enum.HumanoidStateType.GettingUp) -- Força o personagem a "se levantar"
+            task.wait(0.1) -- Pequeno atraso para o estado se aplicar
+            humanoid.WalkSpeed = 16 -- Restaura a velocidade padrão
+            humanoid.JumpPower = 50 -- Restaura o pulo padrão
+            humanoid.PlatformStand = false -- Desativa PlatformStand, se ativo
+        end
+
+        -- Corrige a posição para evitar ficar preso
+        if rootPart then
+            local rayOrigin = rootPart.Position
+            local rayDirection = Vector3.new(0, -10, 0) -- Raycast para baixo
+            local raycastParams = RaycastParams.new()
+            raycastParams.FilterDescendantsInstances = {character}
+            raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+            local raycastResult = workspace:Raycast(rayOrigin, rayDirection, raycastParams)
+
+            if raycastResult then
+                rootPart.CFrame = CFrame.new(raycastResult.Position + Vector3.new(0, 3, 0)) -- Coloca o personagem acima do chão
+            end
         end
 
         game.StarterGui:SetCore("SendNotification", {
@@ -1253,12 +1272,15 @@ Tab6:Toggle({
                         globalSound.SoundId = "rbxassetid://" .. InputID
                         globalSound.Looped = false
                         globalSound:Play()
-                        task.wait(1) -- Alterado para 1 segundo
-                        globalSound:Destroy()
+                        -- Não espera o áudio terminar, apenas cria e toca
+                        task.spawn(function() -- Usa task.spawn para destruir após 3 segundos sem interferir no loop
+                            task.wait(3)
+                            globalSound:Destroy()
+                        end)
                     else
                         warn("Nenhum ID válido foi inserido!")
-                        task.wait(1)
                     end
+                    task.wait(1) -- Intervalo de 1 segundo entre cada início de som
                 end
             end)
         else
@@ -1351,8 +1373,11 @@ local function playSound(soundId, volume, pitch)
     globalSound.Pitch = pitch
     globalSound.Looped = false
     globalSound:Play()
-    task.wait(3)
-    globalSound:Destroy()
+    -- Usa task.spawn para destruir após 3 segundos sem bloquear o loop
+    task.spawn(function()
+        task.wait(3)
+        globalSound:Destroy()
+    end)
 end
 
 local MusicDropdown = Tab6:Dropdown({
@@ -1398,11 +1423,11 @@ Tab6:Toggle({
                 while dropdownLoopActive do
                     if selectedSoundID then
                         playSound(selectedSoundID, currentVolume, currentPitch)
-                        task.wait(1) -- Alterado para 1 segundo
+                        -- Não espera o áudio terminar, apenas cria e toca
                     else
                         warn("Nenhum som selecionado!")
-                        task.wait(1)
                     end
+                    task.wait(1) -- Intervalo de 1 segundo entre cada início de som
                 end
             end)
         else
@@ -1410,6 +1435,7 @@ Tab6:Toggle({
         end
     end,
 })
+
 ----------------------------------------------------------------------------------------------------------------------------------------------
                                                -- === Tab 7: Scripts === --
 ----------------------------------------------------------------------------------------------------------------------------------------------
