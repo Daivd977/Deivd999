@@ -73,7 +73,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.7",
+    Title = "Lolyta Hub 2.7,5",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -100,7 +100,7 @@ Window:EditOpenButton({
 
 
 -- === Abas da Interface === --
-local Tab1 = Window:Tab({ Title = "Main", Icon = "" })
+local Tab1 = Window:Tab({ Title = "Main", Icon = "house-plus" })
 local Tab2 = Window:Tab({ Title = "Casa", Icon = "house" })
 local Tab3 = Window:Tab({ Title = "Carro", Icon = "car" })
 local Tab4 = Window:Tab({ Title = "RGB Color", Icon = "palette" }) -- Nova aba RGB Color
@@ -198,16 +198,23 @@ Tab1:Toggle({
     Desc = "Para visualizar jogadores",
     Value = false,
     Callback = function(state)
+        local connections = {} -- Tabela para armazenar as conexões dos eventos
         local function createESP(player)
             if player == LocalPlayer then return end
             local character = player.Character or player.CharacterAdded:Wait()
             local head = character:WaitForChild("Head")
-            local billboard = Instance.new("BillboardGui", head)
+            -- Remove ESP existente, se houver
+            if head:FindFirstChild("BillboardGui") then
+                head.BillboardGui:Destroy()
+            end
+            local billboard = Instance.new("BillboardGui")
+            billboard.Parent = head
             billboard.Adornee = head
             billboard.Size = UDim2.new(0, 200, 0, 50)
             billboard.StudsOffset = Vector3.new(0, 3, 0)
             billboard.AlwaysOnTop = true
-            local textLabel = Instance.new("TextLabel", billboard)
+            local textLabel = Instance.new("TextLabel")
+            textLabel.Parent = billboard
             textLabel.Size = UDim2.new(1, 0, 1, 0)
             textLabel.BackgroundTransparency = 1
             textLabel.TextColor3 = Color3.new(1, 1, 1)
@@ -217,23 +224,42 @@ Tab1:Toggle({
             textLabel.Text = player.Name .. " | " .. player.AccountAge .. " dias"
         end
 
-        if state then
-            for _, player in pairs(Players:GetPlayers()) do
-                createESP(player)
-            end
-            Players.PlayerAdded:Connect(function(player)
-                player.CharacterAdded:Connect(function() createESP(player) end)
-            end)
-        else
-            for _, player in pairs(Players:GetPlayers()) do
-                if player.Character and player.Character.Head:FindFirstChild("BillboardGui") then
-                    player.Character.Head.BillboardGui:Destroy()
+        local function removeESP(player)
+            if player.Character and player.Character:FindFirstChild("Head") then
+                local head = player.Character.Head
+                if head:FindFirstChild("BillboardGui") then
+                    head.BillboardGui:Destroy()
                 end
             end
         end
+
+        if state then
+            -- Adiciona ESP para jogadores existentes
+            for _, player in pairs(Players:GetPlayers()) do
+                createESP(player)
+            end
+            -- Conecta evento para novos jogadores
+            local playerAddedConnection = Players.PlayerAdded:Connect(function(player)
+                local charAddedConnection
+                charAddedConnection = player.CharacterAdded:Connect(function()
+                    createESP(player)
+                end)
+                table.insert(connections, charAddedConnection) -- Armazena conexão do CharacterAdded
+            end)
+            table.insert(connections, playerAddedConnection) -- Armazena conexão do PlayerAdded
+        else
+            -- Remove ESP de todos os jogadores
+            for _, player in pairs(Players:GetPlayers()) do
+                removeESP(player)
+            end
+            -- Desconecta todos os eventos
+            for _, connection in pairs(connections) do
+                connection:Disconnect()
+            end
+            connections = {} -- Limpa a tabela de conexões
+        end
     end,
 })
-
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -248,10 +274,22 @@ local noclipConnections = {}
 local function setNoclip(state)
     local player = game.Players.LocalPlayer
     local character = player.Character
-    if not character then
+    if not character or not character:FindFirstChild("HumanoidRootPart") then
         game.StarterGui:SetCore("SendNotification", {
             Title = "Erro",
             Text = "Personagem não encontrado!",
+            Duration = 5
+        })
+        return
+    end
+
+    local humanoid = character:FindFirstChild("Humanoid")
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+
+    if not humanoid or not rootPart then
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Erro",
+            Text = "Componentes do personagem não encontrados!",
             Duration = 5
         })
         return
@@ -267,9 +305,9 @@ local function setNoclip(state)
             end
         end
 
-        -- Loop para manter o noclip ativo (caso o servidor tente reverter)
+        -- Loop para manter o noclip ativo e evitar reversão pelo servidor
         local connection = game:GetService("RunService").Heartbeat:Connect(function()
-            if not noclipEnabled or not character then
+            if not noclipEnabled or not character or not character.Parent then
                 connection:Disconnect()
                 return
             end
@@ -287,16 +325,23 @@ local function setNoclip(state)
             Duration = 5
         })
     else
-        -- Desativa o noclip e reativa as colisões
+        -- Desativa o noclip e restaura as colisões
         for _, connection in pairs(noclipConnections) do
             connection:Disconnect()
         end
         noclipConnections = {}
 
+        -- Restaura as propriedades originais do personagem
         for _, part in pairs(character:GetDescendants()) do
             if part:IsA("BasePart") then
-                part.CanCollide = true
+                part.CanCollide = true -- Reativa colisões
+                part.Velocity = Vector3.new(0, 0, 0) -- Zera a velocidade para evitar "flutuação"
             end
+        end
+
+        -- Garante que o Humanoid esteja em estado normal
+        if humanoid then
+            humanoid:ChangeState(Enum.HumanoidStateType.Running) -- Força estado normal
         end
 
         game.StarterGui:SetCore("SendNotification", {
@@ -319,6 +364,17 @@ Tab1:Toggle({
         setNoclip(value)
     end,
 })
+
+-- Reconecta o noclip ao respawn do personagem
+game.Players.LocalPlayer.CharacterAdded:Connect(function(character)
+    if noclipEnabled then
+        task.wait(0.1) -- Pequeno atraso para garantir que o personagem esteja totalmente carregado
+        setNoclip(true) -- Reaplica o noclip se estava ativado
+    end
+end)
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+
 
 -- Botão para executar o script de fly
 Tab1:Button({
@@ -544,6 +600,8 @@ Tab2:Button({
 
 ------------------------------------------------------------------------------------------------------------------------------------------------
 
+Tab2:Paragraph({ Title = "pegar permisao de casas!", Desc = "" })
+
 Tab2:Dropdown({
     Title = "pegar permissão das casas",
     Desc = "",
@@ -729,6 +787,7 @@ Tab2:Button({
                                           -- === Tab 3: Carro === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
+Tab3:Paragraph({ Title = "essa aba esta dezzativada so vai ter funçoes quando eu descobrir funçao para essa aba fico feliz por usar Lolya hub ;)", Desc = "" })
 
 -----------------------------------------------------------------------------------------------------
                                           -- === Tab 4: RGB Color === --
@@ -852,7 +911,7 @@ local vibrantColors = {
 
 Tab4:Toggle({
     Title = "car RGB",
-    Desc = "precisa do premium (atençao pode dar kick)",
+    Desc = "precisa do premium (atençao pode dar kick!!!! nao recomendo usar!!!)",
     Value = false,
     Callback = function(state)
         print("Toggle 'RGB Premium' alterado para: " .. tostring(state)) -- Debug
@@ -1194,11 +1253,11 @@ Tab6:Toggle({
                         globalSound.SoundId = "rbxassetid://" .. InputID
                         globalSound.Looped = false
                         globalSound:Play()
-                        task.wait(1.5)
+                        task.wait(1) -- Alterado para 1 segundo
                         globalSound:Destroy()
                     else
                         warn("Nenhum ID válido foi inserido!")
-                        task.wait(1.5)
+                        task.wait(1)
                     end
                 end
             end)
@@ -1306,10 +1365,22 @@ local MusicDropdown = Tab6:Dropdown({
     Callback = function(selectedSound)
         if selectedSound and categoryMap[selectedSound] then
             selectedSoundID = categoryMap[selectedSound].id
-            playSound(selectedSoundID, currentVolume, currentPitch)
+            print("Som selecionado: " .. selectedSound .. " (ID: " .. selectedSoundID .. ")")
         else
             warn("Nenhum som selecionado ou ID não encontrado!")
             selectedSoundID = nil
+        end
+    end,
+})
+
+Tab6:Button({
+    Title = "Tocar Som Selecionado",
+    Desc = "Clique para tocar o som do dropdown",
+    Callback = function()
+        if selectedSoundID then
+            playSound(selectedSoundID, currentVolume, currentPitch)
+        else
+            warn("Nenhum som selecionado no dropdown!")
         end
     end,
 })
@@ -1322,45 +1393,21 @@ Tab6:Toggle({
     Callback = function(state)
         dropdownLoopActive = state
         if state then
+            print("Loop ativado!")
             spawn(function()
-                print("Loop ativado!")
                 while dropdownLoopActive do
                     if selectedSoundID then
                         playSound(selectedSoundID, currentVolume, currentPitch)
-                        task.wait(1.5)
+                        task.wait(1) -- Alterado para 1 segundo
                     else
                         warn("Nenhum som selecionado!")
-                        task.wait(1.5)
+                        task.wait(1)
                     end
                 end
             end)
         else
             print("Loop desativado!")
         end
-    end,
-})
-
-Tab6:Slider({
-    Title = "Volume",
-    Desc = "Ajuste o volume do som (0-2)",
-    Min = 0,
-    Max = 2,
-    Default = 1,
-    Step = 0.1,
-    Callback = function(value)
-        currentVolume = value
-    end,
-})
-
-Tab6:Slider({
-    Title = "Pitch",
-    Desc = "Ajuste a velocidade/altura do som (0.5-2)",
-    Min = 0.5,
-    Max = 2,
-    Default = 1,
-    Step = 0.1,
-    Callback = function(value)
-        currentPitch = value
     end,
 })
 ----------------------------------------------------------------------------------------------------------------------------------------------
