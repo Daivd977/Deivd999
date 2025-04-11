@@ -73,7 +73,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.7",
+    Title = "Lolyta Hub 2.8",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -869,7 +869,7 @@ Tab3:Toggle({
             end
             -- Define o PrimaryPart se não estiver definido
             if not car.PrimaryPart then
-                local body = car:FindFirstChild("Body") or car:FindFirstChild("Chassis")
+                local body = car:FindFirstChild("Body", true) or car:FindFirstChild("Chassis", true)
                 if body and body:IsA("BasePart") then
                     car.PrimaryPart = body
                 else
@@ -940,10 +940,10 @@ Tab3:Toggle({
 
                     print("Processando carro: " .. car.Name)
 
-                    -- Verifica se o carro tem um VehicleSeat
-                    local vehicleSeat = car:FindFirstChild("VehicleSeat")
-                    if vehicleSeat and vehicleSeat:IsA("VehicleSeat") then
-                        print("VehicleSeat encontrado no carro: " .. car.Name)
+                    -- Procura o VehicleSeat recursivamente dentro do carro
+                    local vehicleSeat = car:FindFirstChildWhichIsA("VehicleSeat", true)
+                    if vehicleSeat then
+                        print("VehicleSeat encontrado no carro: " .. car.Name .. " em " .. vehicleSeat:GetFullName())
                         -- Verifica se o assento está vazio
                         if vehicleSeat.Occupant == nil then
                             print("Assento está vazio, tentando sentar...")
