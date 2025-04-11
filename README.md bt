@@ -830,40 +830,86 @@ Tab3:Toggle({
 
         -- Função para teleportar o jogador para um assento
         local function teleportToSeat(seat, car)
-            if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("Humanoid") then return false end
+            if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("Humanoid") then
+                warn("Personagem ou Humanoid não encontrado!")
+                return false
+            end
             local humanoid = LocalPlayer.Character.Humanoid
-            humanoid.Sit = false -- Garante que o jogador não está sentado
-            task.wait(0.1) -- Pequeno atraso para evitar conflitos
-            seat:Sit(humanoid) -- Tenta sentar no assento
+            local rootPart = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if not rootPart then
+                warn("HumanoidRootPart não encontrado!")
+                return false
+            end
+
+            -- Força o jogador a não estar sentado antes de tentar
+            humanoid.Sit = false
+            task.wait(0.1)
+
+            -- Teleporta o jogador para perto do assento antes de sentar
+            rootPart.CFrame = seat.CFrame + Vector3.new(0, 5, 0) -- Coloca o jogador acima do assento
+            task.wait(0.1)
+
+            -- Tenta sentar no assento
+            seat:Sit(humanoid)
             task.wait(0.5) -- Espera para confirmar que sentou
-            return humanoid.SeatPart == seat -- Retorna true se o jogador realmente sentou
+            local success = humanoid.SeatPart == seat
+            if success then
+                print("Sentou no assento do carro: " .. car.Name)
+            else
+                warn("Falha ao sentar no assento do carro: " .. car.Name)
+            end
+            return success
         end
 
         -- Função para teleportar o carro e o jogador para o void
         local function teleportToVoid(car)
-            if not car or not car.PrimaryPart then return end
-            local voidPosition = Vector3.new(0, -1000, 0) -- Posição no "void" (bem abaixo do mapa)
-            car:SetPrimaryPartCFrame(CFrame.new(voidPosition)) -- Teleporta o carro para o void
+            if not car then
+                warn("Carro não encontrado para teleportar ao void!")
+                return
+            end
+            -- Define o PrimaryPart se não estiver definido
+            if not car.PrimaryPart then
+                local body = car:FindFirstChild("Body") or car:FindFirstChild("Chassis")
+                if body and body:IsA("BasePart") then
+                    car.PrimaryPart = body
+                else
+                    warn("Carro " .. car.Name .. " não tem PrimaryPart ou Body/Chassis para teleportar!")
+                    return
+                end
+            end
+            local voidPosition = Vector3.new(0, -1000, 0) -- Posição no "void"
+            car:SetPrimaryPartCFrame(CFrame.new(voidPosition))
+            print("Carro " .. car.Name .. " teleportado para o void!")
             task.wait(0.5) -- Espera para garantir que o teleporte ocorreu
         end
 
         -- Função para forçar o jogador a sair do carro e voltar à posição original
         local function exitCarAndReturn()
-            if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("Humanoid") then return end
+            if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("Humanoid") then
+                warn("Personagem ou Humanoid não encontrado para sair do carro!")
+                return
+            end
             local humanoid = LocalPlayer.Character.Humanoid
             if humanoid.SeatPart then
                 humanoid.Sit = false -- Força o jogador a sair do assento
+                print("Jogador saiu do assento!")
             end
             task.wait(0.1) -- Pequeno atraso para garantir que saiu
-            LocalPlayer.Character:PivotTo(CFrame.new(originalPosition)) -- Volta para a posição original
+            if originalPosition then
+                LocalPlayer.Character:PivotTo(CFrame.new(originalPosition))
+                print("Jogador retornou à posição original: " .. tostring(originalPosition))
+            else
+                warn("Posição original não definida para retorno!")
+            end
         end
 
         if state then
             -- Salva a posição original do jogador antes de começar
             if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                 originalPosition = LocalPlayer.Character.HumanoidRootPart.Position
+                print("Posição original salva: " .. tostring(originalPosition))
             else
-                warn("Não foi possível encontrar o personagem do jogador!")
+                warn("Não foi possível encontrar o personagem do jogador para salvar a posição!")
                 return
             end
 
@@ -876,16 +922,31 @@ Tab3:Toggle({
                     return
                 end
 
-                -- Cria uma lista de carros
-                local cars = vehiclesFolder:GetChildren()
+                -- Cria uma lista de carros (filtra apenas os que terminam com "Car")
+                local cars = {}
+                for _, car in ipairs(vehiclesFolder:GetChildren()) do
+                    if car.Name:match("Car$") then -- Verifica se o nome termina com "Car"
+                        table.insert(cars, car)
+                    end
+                end
+                print("Carros encontrados: " .. #cars)
+
+                -- Processa cada carro
                 for _, car in ipairs(cars) do
-                    if not teleportActive then break end -- Para o loop se o toggle for desativado
+                    if not teleportActive then
+                        print("Toggle desativado, parando o loop!")
+                        break
+                    end
+
+                    print("Processando carro: " .. car.Name)
 
                     -- Verifica se o carro tem um VehicleSeat
                     local vehicleSeat = car:FindFirstChild("VehicleSeat")
                     if vehicleSeat and vehicleSeat:IsA("VehicleSeat") then
+                        print("VehicleSeat encontrado no carro: " .. car.Name)
                         -- Verifica se o assento está vazio
                         if vehicleSeat.Occupant == nil then
+                            print("Assento está vazio, tentando sentar...")
                             -- Tenta teleportar para o assento
                             local success = teleportToSeat(vehicleSeat, car)
                             if success then
@@ -893,21 +954,27 @@ Tab3:Toggle({
                                 teleportToVoid(car)
                                 -- Força o jogador a sair do carro e voltar à posição original
                                 exitCarAndReturn()
-                                task.wait(1) -- Pequeno intervalo antes de passar para o próximo carro
+                                task.wait(1) -- Intervalo antes de passar para o próximo carro
+                            else
+                                warn("Não conseguiu sentar no assento do carro: " .. car.Name)
                             end
+                        else
+                            print("Assento ocupado no carro: " .. car.Name .. ", passando para o próximo...")
                         end
+                    else
+                        warn("VehicleSeat não encontrado no carro: " .. car.Name)
                     end
                 end
 
                 -- Desativa o toggle automaticamente quando terminar
                 if teleportActive then
                     teleportActive = false
-                    -- Aqui você pode adicionar uma notificação, se a biblioteca suportar
                     print("Todos os carros foram processados!")
                 end
             end)
         else
             teleportActive = false -- Para o loop quando o toggle é desativado
+            print("Toggle desativado manualmente!")
         end
     end,
 })
