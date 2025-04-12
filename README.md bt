@@ -74,7 +74,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.999",
+    Title = "Lolyta Hub 2.7",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -2137,12 +2137,12 @@ Players.PlayerRemoving:Connect(function() updateDropdown(DropdownFollow) end)
 -- Botão para iniciar o acompanhamento
 Tab10:Button({
     Title = "Seguir com Sofá",
-    Desc = "Segue o jogador selecionado enquanto dá backflips",
+    Desc = "Segue o jogador selecionado enquanto gira rápido",
     Callback = function()
         local LocalPlayer = Players.LocalPlayer
         local originalPosition -- Para armazenar a posição original
         local followActive = true -- Estado do acompanhamento
-        local rotationSpeed = 150 -- Velocidade de rotação (backflips rápidos)
+        local rotationSpeed = 100 -- Velocidade de rotação (giro rápido em todas as direções)
 
         -- Salva a posição original do jogador antes de começar
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
@@ -2207,13 +2207,30 @@ Tab10:Button({
             return false
         end
 
-        -- Função para teleportar o jogador local e o sofá para o void
-        local function teleportToVoid()
+        -- Função para despawnar o sofá da mão do jogador
+        local function unequipCouch()
+            if not LocalPlayer.Character then return end
+            for _, tool in ipairs(LocalPlayer.Character:GetChildren()) do
+                if tool:IsA("Tool") and tool.Name == "Couch" then
+                    tool.Parent = nil -- Remove o sofá da mão
+                    print("Sofá removido da mão do jogador!")
+                    break
+                end
+            end
+        end
+
+        -- Função para teleportar o jogador local, o jogador selecionado e o sofá para o void
+        local function teleportToVoid(targetPlayer)
             if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                 warn("Personagem local não encontrado para teleportar ao void!")
                 return
             end
+            if not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                warn("Personagem do jogador selecionado não encontrado para teleportar ao void!")
+                return
+            end
             local localRootPart = LocalPlayer.Character.HumanoidRootPart
+            local targetRootPart = targetPlayer.Character.HumanoidRootPart
 
             -- Encontra o sofá no Workspace
             local couch = Workspace:FindFirstChild("Couch")
@@ -2235,10 +2252,28 @@ Tab10:Button({
             end
 
             local voidPosition = Vector3.new(0, -1000, 0) -- Posição no "void"
-            couch:SetPrimaryPartCFrame(CFrame.new(voidPosition))
-            localRootPart.CFrame = CFrame.new(voidPosition + Vector3.new(0, 5, 0)) -- Teleporta o jogador local junto
+            couch:SetPrimaryPartCFrame(CFrame.new(voidPosition)) -- Teleporta o sofá
+            localRootPart.CFrame = CFrame.new(voidPosition + Vector3.new(0, 5, 0)) -- Teleporta o jogador local
+            targetRootPart.CFrame = CFrame.new(voidPosition + Vector3.new(0, 5, 5)) -- Teleporta o jogador selecionado
             print("Teleportado para o void!")
-            task.wait(0.5) -- Pequeno atraso para garantir o teleporte
+        end
+
+        -- Função para teleportar os jogadores de volta à posição original
+        local function returnToOriginalPosition(targetPlayer)
+            if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                warn("Personagem local não encontrado para retornar à posição original!")
+                return
+            end
+            if not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                warn("Personagem do jogador selecionado não encontrado para retornar à posição original!")
+                return
+            end
+            local localRootPart = LocalPlayer.Character.HumanoidRootPart
+            local targetRootPart = targetPlayer.Character.HumanoidRootPart
+
+            localRootPart.CFrame = CFrame.new(originalPosition) -- Retorna o jogador local
+            targetRootPart.CFrame = CFrame.new(originalPosition + Vector3.new(0, 0, 5)) -- Retorna o jogador selecionado
+            print("Retornou à posição original: " .. tostring(originalPosition))
         end
 
         -- Verifica se o jogador já está sentado no sofá
@@ -2252,6 +2287,7 @@ Tab10:Button({
         end
 
         -- Inicia o loop para seguir e girar
+        local rotationActive = true -- Controla a rotação
         spawn(function()
             while followActive do
                 if not targetPlayer or not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
@@ -2270,29 +2306,41 @@ Tab10:Button({
                 local localRootPart = localCharacter.HumanoidRootPart
                 local targetRootPart = targetPlayer.Character.HumanoidRootPart
 
-                -- Aplica rotação (backflips) diretamente no CFrame
-                local deltaTime = RunService.Heartbeat:Wait()
-                local rotationAngle = math.rad(rotationSpeed * deltaTime)
-                local currentCFrame = localRootPart.CFrame
-                local newRotation = CFrame.Angles(rotationAngle, 0, 0) -- Gira no eixo X (backflips)
-
-                -- Segue o jogador selecionado
-                local offset = Vector3.new(0, 2, -5) -- Fica um pouco acima e atrás do jogador
-                local targetPosition = targetRootPart.Position + offset
-                local lookAt = targetRootPart.Position -- Olha para o jogador
-                localRootPart.CFrame = CFrame.new(targetPosition, lookAt) * newRotation
+                -- Aplica rotação rápida em todas as direções
+                if rotationActive then
+                    local deltaTime = RunService.Heartbeat:Wait()
+                    local rotationAngle = math.rad(rotationSpeed * deltaTime)
+                    local currentCFrame = localRootPart.CFrame
+                    local newRotation = CFrame.Angles(rotationAngle, rotationAngle, rotationAngle) -- Gira em X, Y e Z
+                    -- Segue o jogador selecionado
+                    local offset = Vector3.new(0, 2, -5) -- Fica um pouco acima e atrás do jogador
+                    local targetPosition = targetRootPart.Position + offset
+                    local lookAt = targetRootPart.Position -- Olha para o jogador
+                    localRootPart.CFrame = CFrame.new(targetPosition, lookAt) * newRotation
+                else
+                    -- Se a rotação está desativada, apenas segue o jogador
+                    local offset = Vector3.new(0, 2, -5)
+                    local targetPosition = targetRootPart.Position + offset
+                    local lookAt = targetRootPart.Position
+                    localRootPart.CFrame = CFrame.new(targetPosition, lookAt)
+                end
 
                 -- Verifica se o jogador sentou no sofá
                 if isPlayerSeatedInCouch(targetPlayer) then
-                    print("Jogador sentado no sofá, teleportando para o void!")
-                    teleportToVoid()
-                    despawnCouch() -- Remove o sofá do inventário
+                    print("Jogador sentado no sofá, iniciando sequência!")
+                    -- Para a rotação
+                    rotationActive = false
+                    print("Rotação parada!")
+                    -- Teleporta para o void
+                    teleportToVoid(targetPlayer)
+                    -- Remove o sofá da mão e do inventário
+                    unequipCouch()
+                    despawnCouch()
                     print("Sofá despawnado!")
-                    -- Volta à posição original
-                    if LocalPlayer.Character and originalPosition then
-                        LocalPlayer.Character:PivotTo(CFrame.new(originalPosition))
-                        print("Retornou à posição original: " .. tostring(originalPosition))
-                    end
+                    -- Espera 1 segundo
+                    task.wait(1)
+                    -- Retorna à posição original
+                    returnToOriginalPosition(targetPlayer)
                     followActive = false
                     break
                 end
