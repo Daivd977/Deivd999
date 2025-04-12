@@ -2167,3 +2167,96 @@ end)
 -- Atualiza Dropdown quando novos jogadores entram ou saem
 Players.PlayerAdded:Connect(function() updateDropdown(DropdownTeleport) end)
 Players.PlayerRemoving:Connect(function() updateDropdown(DropdownTeleport) end)
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local selectedPlayer = nil
+local isFollowing = false
+
+-- Função para pegar os nomes dos jogadores
+local function getPlayerNames()
+    local playerNames = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        table.insert(playerNames, player.Name)
+    end
+    return playerNames
+end
+
+-- Função para atualizar o dropdown
+local function updateDropdown(dropdown)
+    dropdown:Refresh(getPlayerNames())
+end
+
+-- Dropdown para selecionar jogador
+local DropdownTeleport = Tab10:Dropdown({
+    Title = "Selecionar Jogador",
+    Desc = "Escolha um jogador para puxar até você",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = getPlayerNames(),
+    Callback = function(selectedPlayerName)
+        selectedPlayer = Players:FindFirstChild(selectedPlayerName)
+        print("Jogador selecionado: " .. selectedPlayerName)
+    end
+})
+
+updateDropdown(DropdownTeleport)
+
+-- Botão para iniciar o movimento de seguir o jogador
+local ButtonFollow = Tab10:Button({
+    Title = "Começar",
+    Desc = "Clique para começar a seguir o jogador",
+    Callback = function()
+        if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            isFollowing = true
+            print("Seguindo " .. selectedPlayer.Name)
+        end
+    end
+})
+
+-- Botão para parar o movimento
+local ButtonStop = Tab10:Button({
+    Title = "Parar",
+    Desc = "Clique para interromper o movimento",
+    Callback = function()
+        isFollowing = false
+        print("Parado")
+    end
+})
+
+-- Função para seguir e girar absurdamente rápido
+RunService.RenderStepped:Connect(function()
+    if isFollowing and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local targetPosition = selectedPlayer.Character.HumanoidRootPart.Position
+        LocalPlayer.Character:SetPrimaryPartCFrame(
+            CFrame.new(targetPosition) 
+            * CFrame.Angles(math.rad(workspace.DistributedGameTime * 3000), math.rad(workspace.DistributedGameTime * 5000), math.rad(workspace.DistributedGameTime * 7000))
+        ) -- Giro ainda mais rápido!
+    end
+end)
+
+-- Detecta quando o jogador sentado e o puxa para você
+RunService.Heartbeat:Connect(function()
+    if isFollowing and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("Humanoid") then
+        if selectedPlayer.Character.Humanoid.Sit then
+            -- Teleportar o jogador selecionado para a posição do LocalPlayer
+            selectedPlayer.Character:SetPrimaryPartCFrame(LocalPlayer.Character.HumanoidRootPart.CFrame)
+
+            -- Remover todos os itens do inventário do jogador selecionado
+            for _, item in pairs(selectedPlayer.Backpack:GetChildren()) do
+                item:Destroy()
+            end
+            
+            print("Jogador sentado! Puxando até sua posição...")
+        end
+    end
+end)
+
+-- Atualiza Dropdown quando novos jogadores entram ou saem
+Players.PlayerAdded:Connect(function() updateDropdown(DropdownTeleport) end)
+Players.PlayerRemoving:Connect(function() updateDropdown(DropdownTeleport) end)
