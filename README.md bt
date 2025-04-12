@@ -2072,69 +2072,77 @@ local TeleportButton = Tab9:Button({
                                           -- === Tab 10: troll === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
-local players = game:GetService("Players")
-local localPlayer = players.LocalPlayer
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
 local selectedPlayer = nil
-local runService = game:GetService("RunService")
 
--- Criando o dropdown para selecionar o jogador
+-- Função para pegar os nomes dos jogadores
+local function getPlayerNames()
+    local playerNames = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        table.insert(playerNames, player.Name)
+    end
+    return playerNames
+end
 
-local Dropdown = Tab10:Dropdown({
-    Title = "Selecionar Player",
+-- Função para atualizar o dropdown
+local function updateDropdown(dropdown)
+    dropdown:Refresh(getPlayerNames())
+end
+
+-- Dropdown para selecionar jogador
+local DropdownTeleport = Tab10:Dropdown({
+    Title = "Selecionar Jogador",
     Desc = "Escolha um jogador para seguir",
     Value = "",
     Multi = false,
     AllowNone = true,
-    Values = {},
-    Callback = function(value)
-        selectedPlayer = players:FindFirstChild(value) -- Define o jogador selecionado
+    Values = getPlayerNames(),
+    Callback = function(selectedPlayerName)
+        selectedPlayer = Players:FindFirstChild(selectedPlayerName)
+        print("Jogador selecionado: " .. selectedPlayerName)
     end
 })
 
--- Criando o botão para iniciar o teleporte
-local Button = Tab10:Button({
+updateDropdown(DropdownTeleport)
+
+-- Botão para teleportar ao jogador selecionado
+local ButtonTeleport = Tab10:Button({
     Title = "Teleportar",
-    Desc = "Clique para ir até o jogador selecionado",
+    Desc = "Clique para ir até o jogador",
     Callback = function()
         if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            localPlayer.Character:SetPrimaryPartCFrame(selectedPlayer.Character.HumanoidRootPart.CFrame)
+            LocalPlayer.Character:SetPrimaryPartCFrame(selectedPlayer.Character.HumanoidRootPart.CFrame)
+            print("Teletransportado para " .. selectedPlayer.Name)
         end
     end
 })
 
--- Atualiza a lista de jogadores no Dropdown
-local function updateDropdown()
-    local playerNames = {}
-    for _, player in pairs(players:GetPlayers()) do
-        if player ~= localPlayer then
-            table.insert(playerNames, player.Name)
-        end
-    end
-    Dropdown.Values = playerNames -- Atualiza valores no Dropdown
-end
-
--- Função para seguir o jogador e girar constantemente
-runService.RenderStepped:Connect(function()
+-- Função para seguir e girar ao redor do jogador selecionado
+RunService.RenderStepped:Connect(function()
     if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
         local targetPosition = selectedPlayer.Character.HumanoidRootPart.Position
-        localPlayer.Character:SetPrimaryPartCFrame(CFrame.new(targetPosition + Vector3.new(0, 0, -3)) * CFrame.Angles(0, math.rad(workspace.DistributedGameTime * 100), 0))
+        LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(targetPosition + Vector3.new(0, 0, -3)) * CFrame.Angles(0, math.rad(workspace.DistributedGameTime * 100), 0))
     end
 end)
 
--- Detecta quando o jogador selecionado se sentar e teleportar você para o Void
-game:GetService("RunService").Heartbeat:Connect(function()
+-- Detecta quando o jogador sentado e executa ações
+RunService.Heartbeat:Connect(function()
     if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("Humanoid") then
         if selectedPlayer.Character.Humanoid.Sit then
             -- Teleportar o jogador local para o Void
-            localPlayer.Character:SetPrimaryPartCFrame(CFrame.new(0, -500, 0))
+            LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(0, -500, 0))
 
             -- Remover todos os itens do inventário
-            for _, item in pairs(localPlayer.Backpack:GetChildren()) do
+            for _, item in pairs(LocalPlayer.Backpack:GetChildren()) do
                 item:Destroy()
             end
+            print("Jogador selecionado sentou, teleportando ao Void!")
         end
     end
 end)
 
--- Atualiza a lista de jogadores no início
-updateDropdown()
+-- Atualiza Dropdown quando novos jogadores entram ou saem
+Players.PlayerAdded:Connect(function() updateDropdown(DropdownTeleport) end)
+Players.PlayerRemoving:Connect(function() updateDropdown(DropdownTeleport) end)
