@@ -2072,287 +2072,69 @@ local TeleportButton = Tab9:Button({
                                           -- === Tab 10: troll === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
+local players = game:GetService("Players")
+local localPlayer = players.LocalPlayer
+local selectedPlayer = nil
+local runService = game:GetService("RunService")
 
--- Função para obter a lista de nomes dos jogadores
-local function getPlayerNames()
-    local names = {}
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= Players.LocalPlayer then -- Exclui o jogador local
-            table.insert(names, player.Name)
-        end
-    end
-    return names
-end
+-- Criando o dropdown para selecionar o jogador
 
--- Função para atualizar o dropdown dinamicamente
-local function updateDropdown(dropdown)
-    local playerNames = getPlayerNames()
-    dropdown.Values = playerNames
-    if not table.find(playerNames, dropdown.Value) then
-        dropdown.Value = "" -- Reseta a seleção se o jogador selecionado não estiver mais na lista
-    end
-end
-
--- Função para invocar o servidor e despawnar o sofá
-local function despawnCouch()
-    invokeServer("1Too1l", {"PickingTools", "Couch"})
-end
-
--- Função para mostrar uma notificação
-local function showNotification(message)
-    pcall(function()
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Notificação",
-            Text = message,
-            Duration = 5,
-        })
-    end)
-end
-
--- Cria o dropdown para selecionar jogadores
-local DropdownFollow = Tab10:Dropdown({
-    Title = "Selecionar Jogador",
-    Desc = "Selecione o jogador para seguir",
+local Dropdown = Tab10:Dropdown({
+    Title = "Selecionar Player",
+    Desc = "Escolha um jogador para seguir",
     Value = "",
     Multi = false,
     AllowNone = true,
-    Values = getPlayerNames(), -- Preenche inicialmente com os nomes dos jogadores
-    Callback = function(selectedPlayerName)
-        if selectedPlayerName and selectedPlayerName ~= "" then
-            print("Jogador selecionado: " .. selectedPlayerName)
-        else
-            print("Nenhum jogador selecionado!")
-        end
-    end,
+    Values = {},
+    Callback = function(value)
+        selectedPlayer = players:FindFirstChild(value) -- Define o jogador selecionado
+    end
 })
 
--- Atualiza o dropdown quando jogadores entram ou saem
-updateDropdown(DropdownFollow)
-Players.PlayerAdded:Connect(function() updateDropdown(DropdownFollow) end)
-Players.PlayerRemoving:Connect(function() updateDropdown(DropdownFollow) end)
-
--- Botão para iniciar o acompanhamento
-Tab10:Button({
-    Title = "Seguir com Sofá",
-    Desc = "Segue o jogador selecionado enquanto gira rápido",
+-- Criando o botão para iniciar o teleporte
+local Button = Tab10:Button({
+    Title = "Teleportar",
+    Desc = "Clique para ir até o jogador selecionado",
     Callback = function()
-        local LocalPlayer = Players.LocalPlayer
-        local originalPosition -- Para armazenar a posição original
-        local followActive = true -- Estado do acompanhamento
-        local rotationSpeed = 100 -- Velocidade de rotação (giro rápido em todas as direções)
-
-        -- Salva a posição original do jogador antes de começar
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            originalPosition = LocalPlayer.Character.HumanoidRootPart.Position
-            print("Posição original salva: " .. tostring(originalPosition))
-        else
-            warn("Não foi possível encontrar o personagem do jogador para salvar a posição!")
-            showNotification("Erro: Personagem não encontrado!")
-            return
+        if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            localPlayer.Character:SetPrimaryPartCFrame(selectedPlayer.Character.HumanoidRootPart.CFrame)
         end
-
-        -- Verifica se há um jogador selecionado
-        local selectedPlayerName = DropdownFollow.Value
-        local targetPlayer = selectedPlayerName and selectedPlayerName ~= "" and Players:FindFirstChild(selectedPlayerName) or nil
-        if not targetPlayer then
-            showNotification("Selecione um jogador primeiro!")
-            return
-        end
-
-        -- Verifica se o jogador local está segurando o sofá
-        local hasCouch = false
-        local localCharacter = LocalPlayer.Character
-        if localCharacter then
-            for _, tool in ipairs(localCharacter:GetChildren()) do
-                if tool:IsA("Tool") and tool.Name == "Couch" then
-                    hasCouch = true
-                    print("Sofá detectado na mão do jogador!")
-                    break
-                end
-            end
-        end
-        if not hasCouch then
-            showNotification("Equipe o sofá manualmente antes de usar este botão!")
-            return
-        end
-
-        -- Desativa o movimento do Humanoid para evitar que o jogador "saia voando"
-        local humanoid = localCharacter:FindFirstChild("Humanoid")
-        if humanoid then
-            humanoid.PlatformStand = true -- Impede o Humanoid de se mover
-            print("Movimento do Humanoid desativado para seguir o jogador!")
-        end
-
-        -- Função para detectar se o jogador está sentado no sofá
-        local function isPlayerSeatedInCouch(player)
-            if not player.Character or not player.Character:FindFirstChild("Humanoid") then
-                print("Personagem ou Humanoid do jogador selecionado não encontrado!")
-                return false
-            end
-            local humanoid = player.Character.Humanoid
-            if humanoid.Sit then
-                local seat = humanoid.SeatPart
-                if seat and seat.Parent and seat.Parent.Name == "Couch" then
-                    print("Jogador está sentado no sofá!")
-                    return true
-                else
-                    print("Jogador está sentado, mas não no sofá! Seat.Parent: " .. (seat and seat.Parent and seat.Parent.Name or "desconhecido"))
-                end
-            else
-                print("Jogador não está sentado.")
-            end
-            return false
-        end
-
-        -- Função para despawnar o sofá da mão do jogador
-        local function unequipCouch()
-            if not LocalPlayer.Character then return end
-            for _, tool in ipairs(LocalPlayer.Character:GetChildren()) do
-                if tool:IsA("Tool") and tool.Name == "Couch" then
-                    tool.Parent = nil -- Remove o sofá da mão
-                    print("Sofá removido da mão do jogador!")
-                    break
-                end
-            end
-        end
-
-        -- Função para teleportar o jogador local, o jogador selecionado e o sofá para o void
-        local function teleportToVoid(targetPlayer)
-            if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                warn("Personagem local não encontrado para teleportar ao void!")
-                return
-            end
-            if not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                warn("Personagem do jogador selecionado não encontrado para teleportar ao void!")
-                return
-            end
-            local localRootPart = LocalPlayer.Character.HumanoidRootPart
-            local targetRootPart = targetPlayer.Character.HumanoidRootPart
-
-            -- Encontra o sofá no Workspace
-            local couch = Workspace:FindFirstChild("Couch")
-            if not couch then
-                warn("Sofá não encontrado no Workspace para teleportar!")
-                return
-            end
-
-            -- Define o PrimaryPart do sofá se não estiver definido
-            if not couch.PrimaryPart then
-                local body = couch:FindFirstChild("Body", true) or couch:FindFirstChild("Part", true)
-                if body and body:IsA("BasePart") then
-                    couch.PrimaryPart = body
-                    print("PrimaryPart do sofá definido como: " .. body.Name)
-                else
-                    warn("Sofá não tem PrimaryPart ou Body/Part para teleportar!")
-                    return
-                end
-            end
-
-            local voidPosition = Vector3.new(0, -1000, 0) -- Posição no "void"
-            couch:SetPrimaryPartCFrame(CFrame.new(voidPosition)) -- Teleporta o sofá
-            localRootPart.CFrame = CFrame.new(voidPosition + Vector3.new(0, 5, 0)) -- Teleporta o jogador local
-            targetRootPart.CFrame = CFrame.new(voidPosition + Vector3.new(0, 5, 5)) -- Teleporta o jogador selecionado
-            print("Teleportado para o void!")
-        end
-
-        -- Função para teleportar os jogadores de volta à posição original
-        local function returnToOriginalPosition(targetPlayer)
-            if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                warn("Personagem local não encontrado para retornar à posição original!")
-                return
-            end
-            if not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                warn("Personagem do jogador selecionado não encontrado para retornar à posição original!")
-                return
-            end
-            local localRootPart = LocalPlayer.Character.HumanoidRootPart
-            local targetRootPart = targetPlayer.Character.HumanoidRootPart
-
-            localRootPart.CFrame = CFrame.new(originalPosition) -- Retorna o jogador local
-            targetRootPart.CFrame = CFrame.new(originalPosition + Vector3.new(0, 0, 5)) -- Retorna o jogador selecionado
-            print("Retornou à posição original: " .. tostring(originalPosition))
-        end
-
-        -- Verifica se o jogador já está sentado no sofá
-        if isPlayerSeatedInCouch(targetPlayer) then
-            showNotification("O player está sentado!")
-            if humanoid then
-                humanoid.PlatformStand = false -- Reativa o movimento do Humanoid
-                print("Movimento do Humanoid reativado!")
-            end
-            return
-        end
-
-        -- Inicia o loop para seguir e girar
-        local rotationActive = true -- Controla a rotação
-        spawn(function()
-            while followActive do
-                if not targetPlayer or not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    print("Jogador selecionado não encontrado, parando...")
-                    followActive = false
-                    break
-                end
-
-                if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    print("Personagem local não encontrado, parando...")
-                    followActive = false
-                    break
-                end
-
-                local localCharacter = LocalPlayer.Character
-                local localRootPart = localCharacter.HumanoidRootPart
-                local targetRootPart = targetPlayer.Character.HumanoidRootPart
-
-                -- Aplica rotação rápida em todas as direções
-                if rotationActive then
-                    local deltaTime = RunService.Heartbeat:Wait()
-                    local rotationAngle = math.rad(rotationSpeed * deltaTime)
-                    local currentCFrame = localRootPart.CFrame
-                    local newRotation = CFrame.Angles(rotationAngle, rotationAngle, rotationAngle) -- Gira em X, Y e Z
-                    -- Segue o jogador selecionado
-                    local offset = Vector3.new(0, 2, -5) -- Fica um pouco acima e atrás do jogador
-                    local targetPosition = targetRootPart.Position + offset
-                    local lookAt = targetRootPart.Position -- Olha para o jogador
-                    localRootPart.CFrame = CFrame.new(targetPosition, lookAt) * newRotation
-                else
-                    -- Se a rotação está desativada, apenas segue o jogador
-                    local offset = Vector3.new(0, 2, -5)
-                    local targetPosition = targetRootPart.Position + offset
-                    local lookAt = targetRootPart.Position
-                    localRootPart.CFrame = CFrame.new(targetPosition, lookAt)
-                end
-
-                -- Verifica se o jogador sentou no sofá
-                if isPlayerSeatedInCouch(targetPlayer) then
-                    print("Jogador sentado no sofá, iniciando sequência!")
-                    -- Para a rotação
-                    rotationActive = false
-                    print("Rotação parada!")
-                    -- Teleporta para o void
-                    teleportToVoid(targetPlayer)
-                    -- Remove o sofá da mão e do inventário
-                    unequipCouch()
-                    despawnCouch()
-                    print("Sofá despawnado!")
-                    -- Espera 1 segundo
-                    task.wait(1)
-                    -- Retorna à posição original
-                    returnToOriginalPosition(targetPlayer)
-                    followActive = false
-                    break
-                end
-
-                task.wait() -- Usa o Heartbeat para suavizar o movimento
-            end
-
-            -- Reativa o movimento do Humanoid ao final
-            if humanoid then
-                humanoid.PlatformStand = false
-                print("Movimento do Humanoid reativado!")
-            end
-        end)
-    end,
+    end
 })
+
+-- Atualiza a lista de jogadores no Dropdown
+local function updateDropdown()
+    local playerNames = {}
+    for _, player in pairs(players:GetPlayers()) do
+        if player ~= localPlayer then
+            table.insert(playerNames, player.Name)
+        end
+    end
+    Dropdown.Values = playerNames -- Atualiza valores no Dropdown
+end
+
+-- Função para seguir o jogador e girar constantemente
+runService.RenderStepped:Connect(function()
+    if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local targetPosition = selectedPlayer.Character.HumanoidRootPart.Position
+        localPlayer.Character:SetPrimaryPartCFrame(CFrame.new(targetPosition + Vector3.new(0, 0, -3)) * CFrame.Angles(0, math.rad(workspace.DistributedGameTime * 100), 0))
+    end
+end)
+
+-- Detecta quando o jogador selecionado se sentar e teleportar você para o Void
+game:GetService("RunService").Heartbeat:Connect(function()
+    if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("Humanoid") then
+        if selectedPlayer.Character.Humanoid.Sit then
+            -- Teleportar o jogador local para o Void
+            localPlayer.Character:SetPrimaryPartCFrame(CFrame.new(0, -500, 0))
+
+            -- Remover todos os itens do inventário
+            for _, item in pairs(localPlayer.Backpack:GetChildren()) do
+                item:Destroy()
+            end
+        end
+    end
+end)
+
+-- Atualiza a lista de jogadores no início
+updateDropdown()
