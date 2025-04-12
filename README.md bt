@@ -2071,6 +2071,94 @@ local TeleportButton = Tab9:Button({
 ---------------------------------------------------------------------------------------------------------------------------------
                                           -- === Tab 10: troll === --
 ---------------------------------------------------------------------------------------------------------------------------------
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+-- Local player
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+
+-- Variable to control the "No Void Death" feature
+local noVoidDeathEnabled = false
+local voidCheckConnection = nil
+
+-- Function to handle "No Void Death"
+local function handleNoVoidDeath()
+    if voidCheckConnection then
+        voidCheckConnection:Disconnect()
+        voidCheckConnection = nil
+    end
+
+    local character = LocalPlayer.Character
+    if not character then return end
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
+
+    if noVoidDeathEnabled then
+        -- Desativa a morte por queda no void
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false) -- Impede que o Humanoid morra automaticamente
+        voidCheckConnection = humanoid.StateChanged:Connect(function(oldState, newState)
+            if newState == Enum.HumanoidStateType.Dead then
+                -- Impede a morte se o toggle estiver ativado
+                if noVoidDeathEnabled then
+                    humanoid:ChangeState(Enum.HumanoidStateType.Running) -- Força o estado para "Running"
+                    humanoid.Health = humanoid.MaxHealth -- Restaura a vida
+                    print("Void death prevented!")
+                end
+            end
+        end)
+
+        -- Monitora a posição Y para evitar reset do jogo
+        voidCheckConnection = RunService.Heartbeat:Connect(function()
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+            if hrp and hrp.Position.Y < -500 then -- Limite típico do void no Roblox
+                if noVoidDeathEnabled then
+                    -- Mantém o jogador vivo, mas não teleporta
+                    humanoid.WalkSpeed = 16 -- Garante que o jogador possa se mover
+                    humanoid.JumpPower = 50 -- Garante que o jogador possa pular
+                    humanoid.Health = humanoid.MaxHealth -- Garante que o jogador não morra
+                end
+            end
+        end)
+    else
+        -- Restaura o comportamento padrão (permite morrer no void)
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, true)
+    end
+end
+
+-- Toggle for "No Void Death"
+local NoVoidDeathToggle = Tab10:Toggle({
+    Title = "No Void Death",
+    Desc = "Prevents death in the void (as if the void doesn't exist)",
+    Default = false,
+    Callback = function(state)
+        noVoidDeathEnabled = state
+        print("No Void Death " .. (state and "Enabled" or "Disabled"))
+        handleNoVoidDeath()
+    end
+})
+
+-- Handle character respawn
+LocalPlayer.CharacterAdded:Connect(function(newCharacter)
+    Character = newCharacter
+    handleNoVoidDeath() -- Reativa a verificação do void no novo personagem
+end)
+
+-- Inicializa a verificação para o personagem atual
+handleNoVoidDeath()
+
+Tab10:Paragraph({ Title = "ativa o void protection para nao morrer no void ", Desc = "antes de usar faça isso!!!" })
+
+Tab10:Button({
+    Title = "Pegar sofá",
+    Desc = "para usar as opçoes a baixo",
+    Callback = function()
+        invokeServer("1Too1l", {"PickingTools", "Couch"})
+    end,
+})
+
+Tab10:Paragraph({ Title = "pegue o sofa antes de usar e equipa na mao o sofa", Desc = "antes de usar faça isso" })
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -2100,7 +2188,7 @@ end
 -- Dropdown para selecionar jogador
 local DropdownTeleport = Tab10:Dropdown({
     Title = "Selecionar Jogador",
-    Desc = "Escolha um jogador para seguir",
+    Desc = "Escolha um jogador para matar com o sofa",
     Value = "",
     Multi = false,
     AllowNone = true,
@@ -2114,8 +2202,8 @@ updateDropdown(DropdownTeleport)
 
 -- Botão para iniciar o movimento de seguir o jogador
 local ButtonFollow = Tab10:Button({
-    Title = "Começar a Seguir",
-    Desc = "Clique para começar a seguir o jogador",
+    Title = "Começar a matar com o sofa",
+    Desc = "Clique para começar a matar o jogador",
     Callback = function()
         if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
             isFollowing = true
@@ -2126,8 +2214,8 @@ local ButtonFollow = Tab10:Button({
 
 -- Botão para parar o movimento manualmente
 local ButtonStop = Tab10:Button({
-    Title = "Parar",
-    Desc = "Clique para interromper o movimento",
+    Title = "Parar de matar bug ou ant sit",
+    Desc = "caso bugue ou o player esta usando ant seat use isto",
     Callback = function()
         isFollowing = false
     end
@@ -2185,6 +2273,9 @@ Players.PlayerRemoving:Connect(function() updateDropdown(DropdownTeleport) end)
 
 -------------------------------------------------------------------------------------------------------------------------------------------
 
+Tab10:Paragraph({ Title = "pegue o sofa antes de usar e equipa na mao o sofa", Desc = " ates de usar faça isso" })
+
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -2239,8 +2330,8 @@ local ButtonFollow = Tab10:Button({
 
 -- Botão para parar o movimento manualmente
 local ButtonStop = Tab10:Button({
-    Title = "Parar",
-    Desc = "Clique para interromper o movimento",
+    Title = "Parar bug ou aant seat",
+    Desc = "caso bugue ou o player esta usando ant seat use isto",
     Callback = function()
         isFollowing = false
     end
