@@ -74,7 +74,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.999",
+    Title = "Lolyta Hub 2.7",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -2077,18 +2077,20 @@ local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local selectedPlayer = nil
 local isFollowing = false
-local originalPosition = nil -- Armazena a posição inicial
+local originalPosition = nil -- Para armazenar a posição antes de seguir
 
 -- Função para pegar os nomes dos jogadores
 local function getPlayerNames()
     local playerNames = {}
     for _, player in ipairs(Players:GetPlayers()) do
-        table.insert(playerNames, player.Name)
+        if player ~= LocalPlayer then
+            table.insert(playerNames, player.Name)
+        end
     end
     return playerNames
 end
 
--- Função para atualizar o dropdown
+-- Atualiza o dropdown
 local function updateDropdown(dropdown)
     dropdown:Refresh(getPlayerNames())
 end
@@ -2103,13 +2105,12 @@ local DropdownTeleport = Tab10:Dropdown({
     Values = getPlayerNames(),
     Callback = function(selectedPlayerName)
         selectedPlayer = Players:FindFirstChild(selectedPlayerName)
-        print("Jogador selecionado: " .. selectedPlayerName)
     end
 })
 
 updateDropdown(DropdownTeleport)
 
--- Botão para iniciar o movimento de seguir o jogador
+-- Botão para começar a seguir
 local ButtonFollow = Tab10:Button({
     Title = "Começar a Seguir",
     Desc = "Clique para começar a seguir o jogador",
@@ -2117,7 +2118,6 @@ local ButtonFollow = Tab10:Button({
         if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
             isFollowing = true
             originalPosition = LocalPlayer.Character.HumanoidRootPart.Position -- Salva posição inicial
-            print("Seguindo " .. selectedPlayer.Name)
         end
     end
 })
@@ -2128,66 +2128,69 @@ local ButtonStop = Tab10:Button({
     Desc = "Clique para interromper o movimento",
     Callback = function()
         isFollowing = false
-        print("Parado")
     end
 })
 
--- Função para seguir e girar **absurdamente rápido** (incluindo backflips)
+-- Seguir e girar rapidamente ao redor do jogador
 RunService.RenderStepped:Connect(function()
     if isFollowing and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
         local targetPosition = selectedPlayer.Character.HumanoidRootPart.Position
         LocalPlayer.Character:SetPrimaryPartCFrame(
-            CFrame.new(targetPosition) 
-            * CFrame.Angles(math.rad(workspace.DistributedGameTime * 2000), math.rad(workspace.DistributedGameTime * 3000), math.rad(workspace.DistributedGameTime * 4000))
-        ) -- Giro extremamente rápido (Backflips incluídos)
+            CFrame.new(targetPosition) * CFrame.Angles(
+                math.rad(workspace.DistributedGameTime * 5000),
+                math.rad(workspace.DistributedGameTime * 7000),
+                math.rad(workspace.DistributedGameTime * 9000)
+            )
+        )
     end
 end)
 
--- Detecta quando o jogador selecionado se senta e executa ações
+-- Detectar quando o jogador sentado e teleportar para o Void
 RunService.Heartbeat:Connect(function()
     if isFollowing and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("Humanoid") then
         if selectedPlayer.Character.Humanoid.Sit then
-            -- Teleportar o jogador local para o Void
+            -- Teleportar para o Void
             LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(0, -500, 0))
 
-            -- Remover todos os itens do inventário
-            for _, item in pairs(LocalPlayer.Backpack:GetChildren()) do
-                item:Destroy()
-            end
-            print("Jogador sentado! Teleportando para o Void...")
+            -- Parar de girar
+            isFollowing = false
 
-            -- Voltar para a posição original
-            wait(2) -- Pequena pausa antes de voltar
+            -- Executar o comando
+            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer("PickingTools", "Couch")
+
+            -- Esperar 1 segundo antes de voltar
+            wait(1)
             LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(originalPosition))
-            print("Voltando para a posição original")
         end
     end
 end)
 
--- Atualiza Dropdown quando novos jogadores entram ou saem
 Players.PlayerAdded:Connect(function() updateDropdown(DropdownTeleport) end)
 Players.PlayerRemoving:Connect(function() updateDropdown(DropdownTeleport) end)
 
 -------------------------------------------------------------------------------------------------------------------------------------------
 
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
+
 local selectedPlayer = nil
 local isFollowing = false
-local originalPosition = nil -- Para armazenar a posição antes de começar a seguir
+local originalPosition = nil -- Guarda a posição original antes de seguir
 
 -- Função para pegar os nomes dos jogadores
 local function getPlayerNames()
     local playerNames = {}
     for _, player in ipairs(Players:GetPlayers()) do
-        table.insert(playerNames, player.Name)
+        if player ~= LocalPlayer then
+            table.insert(playerNames, player.Name)
+        end
     end
     return playerNames
 end
 
--- Função para atualizar o dropdown
+-- Atualiza o dropdown
 local function updateDropdown(dropdown)
     dropdown:Refresh(getPlayerNames())
 end
@@ -2202,7 +2205,6 @@ local DropdownTeleport = Tab10:Dropdown({
     Values = getPlayerNames(),
     Callback = function(selectedPlayerName)
         selectedPlayer = Players:FindFirstChild(selectedPlayerName)
-        print("Jogador selecionado: " .. selectedPlayerName)
     end
 })
 
@@ -2216,7 +2218,6 @@ local ButtonFollow = Tab10:Button({
         if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
             isFollowing = true
             originalPosition = LocalPlayer.Character.HumanoidRootPart.Position -- Salva posição inicial
-            print("Seguindo " .. selectedPlayer.Name)
         end
     end
 })
@@ -2227,39 +2228,42 @@ local ButtonStop = Tab10:Button({
     Desc = "Clique para interromper o movimento",
     Callback = function()
         isFollowing = false
-        print("Parado")
     end
 })
 
--- Função para seguir e girar rapidamente ao redor do jogador selecionado
+-- Seguir e girar absurdamente rápido enquanto o jogador não tiver sentado
 RunService.RenderStepped:Connect(function()
     if isFollowing and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
         local targetPosition = selectedPlayer.Character.HumanoidRootPart.Position
         LocalPlayer.Character:SetPrimaryPartCFrame(
-            CFrame.new(targetPosition) 
-            * CFrame.Angles(math.rad(workspace.DistributedGameTime * 3000), math.rad(workspace.DistributedGameTime * 5000), math.rad(workspace.DistributedGameTime * 7000))
-        ) -- Giro rápido enquanto segue
+            CFrame.new(targetPosition) * CFrame.Angles(
+                math.rad(workspace.DistributedGameTime * 12000),
+                math.rad(workspace.DistributedGameTime * 15000),
+                math.rad(workspace.DistributedGameTime * 18000)
+            )
+        )
     end
 end)
 
--- Detecta quando o jogador selecionado se senta e interrompe tudo
+-- Detecta quando o jogador selecionado se senta e executa o teleporte + parada + comando
 RunService.Heartbeat:Connect(function()
     if isFollowing and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("Humanoid") then
         if selectedPlayer.Character.Humanoid.Sit then
-            print("Jogador sentado! Teleportando de volta à posição inicial...")
+            print("Jogador sentado! Teleportando para a posição original...")
 
-            -- Teleportar o jogador local para a posição original antes de começar a seguir
-            LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(originalPosition))
-
-            -- Parar de girar e seguir
+            -- Parar de girar e seguir o jogador
             isFollowing = false
 
-            -- Remover todos os itens do inventário
-            for _, item in pairs(LocalPlayer.Backpack:GetChildren()) do
-                item:Destroy()
-            end
-            
-            print("Movimento interrompido e inventário esvaziado!")
+            -- Teleportar de volta para a posição original
+            LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(originalPosition))
+
+            -- Garantir que o personagem fique em pé
+            LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+
+            -- Executar o comando
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer("PickingTools", "Couch")
+
+            print("Movimento interrompido, comando executado e personagem de volta à posição original!")
         end
     end
 end)
@@ -2267,217 +2271,3 @@ end)
 -- Atualiza Dropdown quando novos jogadores entram ou saem
 Players.PlayerAdded:Connect(function() updateDropdown(DropdownTeleport) end)
 Players.PlayerRemoving:Connect(function() updateDropdown(DropdownTeleport) end)
-
--------------------------------------------------------------------------------------------------------------------------------------------
-
-
--- Services
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
-
--- Local player
-local LocalPlayer = Players.LocalPlayer
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-
--- Variables to control the boat and spinning
-local boat = nil
-local spinConnection = nil
-local isSpinning = false
-
--- Função para pegar os nomes dos jogadores
-local function getPlayerNames()
-    local playerNames = {}
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then -- Exclui o próprio jogador
-            table.insert(playerNames, player.Name)
-        end
-    end
-    return playerNames
-end
-
--- Função para atualizar o dropdown
-local function updateDropdown(dropdown)
-    dropdown:Refresh(getPlayerNames())
-end
-
--- Dropdown to select players
-local DropdownFling = Tab10:Dropdown({
-    Title = "Selecionar Jogador (Fling)",
-    Desc = "Selecione o jogador para dar fling com o barco",
-    Value = "",
-    Multi = false,
-    AllowNone = true,
-    Values = getPlayerNames(),
-    Callback = function(selectedPlayerName)
-        print("Jogador selecionado para fling: " .. selectedPlayerName)
-    end,
-})
-
--- Atualiza o dropdown quando jogadores entram ou saem
-updateDropdown(DropdownFling)
-Players.PlayerAdded:Connect(function() updateDropdown(DropdownFling) end)
-Players.PlayerRemoving:Connect(function() updateDropdown(DropdownFling) end)
-
--- Function to teleport the local player to the specified position
-local function teleportToPosition(position)
-    if HumanoidRootPart then
-        HumanoidRootPart.CFrame = CFrame.new(position)
-    end
-end
-
--- Function to spawn the boat
-local function spawnBoat()
-    local args = {
-        [1] = "PickingBoat",
-        [2] = "MilitaryBoatFree"
-    }
-    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
-end
-
--- Function to find the boat in the workspace
-local function findBoat()
-    for _, vehicle in pairs(Workspace.Vehicles:GetChildren()) do
-        if vehicle.Name == "MilitaryBoatFree" and vehicle:FindFirstChild("Owner") and vehicle.Owner.Value == LocalPlayer then
-            return vehicle
-        end
-    end
-    return nil
-end
-
--- Function to teleport the boat to the target player
-local function teleportBoatToPlayer(targetPlayer)
-    if not boat then return end
-    local targetCharacter = targetPlayer.Character
-    if targetCharacter then
-        local targetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
-        if targetHRP then
-            boat:SetPrimaryPartCFrame(targetHRP.CFrame + Vector3.new(0, 5, 0)) -- Posiciona o barco acima do jogador
-        end
-    end
-end
-
--- Function to disable boat collision
-local function disableBoatCollision()
-    if not boat then return end
-    for _, part in pairs(boat:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = false
-        end
-    end
-end
-
--- Function to make the boat spin (backflip)
-local function spinBoat()
-    if not boat or not boat.PrimaryPart then return end
-    isSpinning = true
-    local spinSpeed = 10 -- Velocidade de rotação (muito rápida)
-    local bodyGyro = Instance.new("BodyGyro")
-    bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-    bodyGyro.P = 10000
-    bodyGyro.Parent = boat.PrimaryPart
-
-    spinConnection = RunService.Heartbeat:Connect(function(deltaTime)
-        if not isSpinning or not boat or not boat.PrimaryPart then
-            bodyGyro:Destroy()
-            spinConnection:Disconnect()
-            return
-        end
-        bodyGyro.CFrame = bodyGyro.CFrame * CFrame.Angles(math.rad(spinSpeed * 360 * deltaTime), 0, 0) -- Backflip (eixo X)
-    end)
-end
-
--- Function to stop the boat spinning
-local function stopBoat()
-    isSpinning = false
-    if spinConnection then
-        spinConnection:Disconnect()
-        spinConnection = nil
-    end
-    if boat and boat.PrimaryPart then
-        local bodyGyro = boat.PrimaryPart:FindFirstChildOfClass("BodyGyro")
-        if bodyGyro then
-            bodyGyro:Destroy()
-        end
-    end
-end
-
--- Button to start the fling
-local FlingButton = Tab10:Button({
-    Title = "Fling Player",
-    Desc = "Fling the selected player with a spinning boat",
-    Callback = function()
-        local selectedPlayerName = DropdownFling.Value
-        if not selectedPlayerName or selectedPlayerName == "" then
-            warn("No player selected!")
-            return
-        end
-
-        local targetPlayer = Players:FindFirstChild(selectedPlayerName)
-        if not targetPlayer then
-            warn("Player not found!")
-            return
-        end
-
-        -- Step 1: Teleport to the specified position
-        local targetPosition = Vector3.new(-1611.96, 5.59, -13.41)
-        teleportToPosition(targetPosition)
-
-        -- Step 2: Spawn the boat with a 1-second delay
-        spawnBoat()
-        wait(1) -- Delay de 1 segundo para o barco spawnar
-
-        -- Step 3: Find the boat
-        boat = findBoat()
-        if not boat then
-            warn("Boat not found!")
-            return
-        end
-
-        -- Step 4: Teleport to the VehicleSeat with a 1-second delay
-        local vehicleSeat = boat:FindFirstChild("VehicleSeat", true)
-        if vehicleSeat then
-            wait(1) -- Delay de 1 segundo antes de tentar sentar
-            local humanoid = Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                -- Certifica-se de que o humanoid está livre para sentar
-                humanoid.Sit = false
-                wait(0.1) -- Pequeno delay para garantir que o humanoid está pronto
-                vehicleSeat:Sit(humanoid)
-                -- Verifica se o jogador realmente sentou
-                wait(0.5)
-                if humanoid.SeatPart ~= vehicleSeat then
-                    warn("Failed to sit in VehicleSeat, retrying...")
-                    vehicleSeat:Sit(humanoid)
-                end
-            else
-                warn("Humanoid not found!")
-                return
-            end
-        else
-            warn("VehicleSeat not found!")
-            return
-        end
-
-        -- Step 5: Teleport the boat to the selected player
-        teleportBoatToPlayer(targetPlayer)
-
-        -- Step 6: Disable boat collision
-        disableBoatCollision()
-
-        -- Step 7: Make the boat spin (backflip)
-        spinBoat()
-    end
-})
-
--- Button to stop the fling
-local StopButton = Tab10:Button({
-    Title = "Stop Fling",
-    Desc = "Stop the boat spinning",
-    Callback = function()
-        stopBoat()
-    end
-})
