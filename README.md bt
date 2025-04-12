@@ -74,7 +74,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.8",
+    Title = "Lolyta Hub 2.7",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -2074,6 +2074,7 @@ local TeleportButton = Tab9:Button({
 
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
 
 -- Função para obter a lista de nomes dos jogadores
 local function getPlayerNames()
@@ -2100,17 +2101,29 @@ local function getCouch()
     invokeServer("1Too1l", {"PickingTools", "Couch"})
 end
 
+-- Função para mostrar uma notificação
+local function showNotification(message)
+    -- Usa o sistema de notificações do Roblox (ajuste se sua biblioteca tiver um método específico)
+    pcall(function()
+        game.StarterGui:SetCore("SendNotification", {
+            Title = "Notificação",
+            Text = message,
+            Duration = 5,
+        })
+    end)
+end
+
 -- Cria o dropdown para selecionar jogadores
 local DropdownFollow = Tab10:Dropdown({
-    Title = "Selecionar Jogador (Seguir)",
-    Desc = "Selecione o jogador para seguir com o sofá",
+    Title = "Selecionar Jogador",
+    Desc = "Selecione o jogador para seguir",
     Value = "",
     Multi = false,
     AllowNone = true,
     Values = getPlayerNames(), -- Preenche inicialmente com os nomes dos jogadores
     Callback = function(selectedPlayerName)
         if selectedPlayerName and selectedPlayerName ~= "" then
-            print("Jogador selecionado para seguir: " .. selectedPlayerName)
+            print("Jogador selecionado: " .. selectedPlayerName)
         else
             print("Nenhum jogador selecionado!")
         end
@@ -2122,15 +2135,67 @@ updateDropdown(DropdownFollow)
 Players.PlayerAdded:Connect(function() updateDropdown(DropdownFollow) end)
 Players.PlayerRemoving:Connect(function() updateDropdown(DropdownFollow) end)
 
--- Toggle para pegar o sofá e executar as ações
-Tab10:Toggle({
+-- Botão para iniciar o acompanhamento
+Tab10:Button({
     Title = "Seguir com Sofá",
-    Desc = "Pega o sofá e age quando o jogador selecionado sentar",
-    Value = false,
-    Callback = function(state)
+    Desc = "Segue o jogador selecionado com o sofá",
+    Callback = function()
         local LocalPlayer = Players.LocalPlayer
         local originalPosition -- Para armazenar a posição original
-        local followActive = state -- Estado do toggle
+        local followActive = true -- Estado do acompanhamento
+        local rotationSpeed = 50 -- Velocidade de rotação (backflips rápidos)
+        local bodyGyro -- Para fazer o jogador local girar
+
+        -- Salva a posição original do jogador antes de começar
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            originalPosition = LocalPlayer.Character.HumanoidRootPart.Position
+            print("Posição original salva: " .. tostring(originalPosition))
+        else
+            warn("Não foi possível encontrar o personagem do jogador para salvar a posição!")
+            showNotification("Erro: Personagem não encontrado!")
+            return
+        end
+
+        -- Verifica se há um jogador selecionado
+        local selectedPlayerName = DropdownFollow.Value
+        local targetPlayer = selectedPlayerName and selectedPlayerName ~= "" and Players:FindFirstChild(selectedPlayerName) or nil
+        if not targetPlayer then
+            showNotification("Selecione um jogador primeiro!")
+            return
+        end
+
+        -- Pega e equipa o sofá
+        getCouch()
+        print("Sofá pego!")
+        task.wait(0.1) -- Pequeno delay para garantir que o sofá seja equipado
+
+        -- Função para fazer o jogador local girar (backflips)
+        local function startSpinning(character)
+            if not character then return end
+            local rootPart = character:FindFirstChild("HumanoidRootPart")
+            if not rootPart then return end
+
+            -- Remove BodyGyro anterior, se existir
+            if rootPart:FindFirstChild("SpinGyro") then
+                rootPart.SpinGyro:Destroy()
+            end
+
+            bodyGyro = Instance.new("BodyGyro")
+            bodyGyro.Name = "SpinGyro"
+            bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+            bodyGyro.P = 10000
+            bodyGyro.Parent = rootPart
+        end
+
+        -- Função para parar de girar
+        local function stopSpinning(character)
+            if not character then return end
+            local rootPart = character:FindFirstChild("HumanoidRootPart")
+            if not rootPart then return end
+            if rootPart:FindFirstChild("SpinGyro") then
+                rootPart.SpinGyro:Destroy()
+            end
+        end
 
         -- Função para detectar se o jogador está sentado no sofá
         local function isPlayerSeatedInCouch(player)
@@ -2178,67 +2243,66 @@ Tab10:Toggle({
             task.wait(0.5) -- Pequeno atraso para garantir o teleporte
         end
 
-        if state then
-            -- Salva a posição original do jogador antes de começar
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                originalPosition = LocalPlayer.Character.HumanoidRootPart.Position
-                print("Posição original salva: " .. tostring(originalPosition))
-            else
-                warn("Não foi possível encontrar o personagem do jogador para salvar a posição!")
-                return
-            end
-
-            -- Pega o sofá
-            getCouch()
-            print("Sofá pego!")
-
-            -- Inicia o loop para verificar se o jogador sentou
-            spawn(function()
-                while followActive do
-                    -- Verifica se há um jogador selecionado
-                    local selectedPlayerName = DropdownFollow.Value
-                    local targetPlayer = selectedPlayerName and selectedPlayerName ~= "" and Players:FindFirstChild(selectedPlayerName) or nil
-
-                    if not targetPlayer or not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                        print("Jogador selecionado não encontrado, aguardando...")
-                        task.wait(1)
-                        continue
-                    end
-
-                    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                        print("Personagem local não encontrado, aguardando...")
-                        task.wait(1)
-                        continue
-                    end
-
-                    -- Verifica se o jogador está sentado no sofá
-                    if isPlayerSeatedInCouch(targetPlayer) then
-                        print("Jogador sentado no sofá, teleportando para o void!")
-                        -- Teleporta para o void
-                        teleportToVoid()
-                        -- Remove o sofá do inventário
-                        getCouch()
-                        print("Sofá removido do inventário!")
-                        -- Volta à posição original
-                        if LocalPlayer.Character and originalPosition then
-                            LocalPlayer.Character:PivotTo(CFrame.new(originalPosition))
-                            print("Retornou à posição original: " .. tostring(originalPosition))
-                        end
-                        -- Para o loop após a ação
-                        followActive = false
-                        break
-                    end
-
-                    task.wait(0.1) -- Intervalo para verificar novamente
-                end
-            end)
-        else
-            -- Para o loop ao desativar o toggle
-            followActive = false
-            if LocalPlayer.Character and originalPosition then
-                LocalPlayer.Character:PivotTo(CFrame.new(originalPosition))
-                print("Toggle desativado, retornou à posição original: " .. tostring(originalPosition))
-            end
+        -- Verifica se o jogador já está sentado no sofá
+        if isPlayerSeatedInCouch(targetPlayer) then
+            showNotification("O player está sentado!")
+            stopSpinning(LocalPlayer.Character)
+            return
         end
+
+        -- Inicia o loop para seguir e girar
+        spawn(function()
+            while followActive do
+                if not targetPlayer or not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    print("Jogador selecionado não encontrado, parando...")
+                    followActive = false
+                    break
+                end
+
+                if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    print("Personagem local não encontrado, parando...")
+                    followActive = false
+                    break
+                end
+
+                local localCharacter = LocalPlayer.Character
+                local localRootPart = localCharacter.HumanoidRootPart
+                local targetRootPart = targetPlayer.Character.HumanoidRootPart
+
+                -- Inicia a rotação (backflips)
+                startSpinning(localCharacter)
+                if bodyGyro then
+                    bodyGyro.CFrame = bodyGyro.CFrame * CFrame.Angles(
+                        math.rad(rotationSpeed * RunService.Heartbeat:Wait()), -- Gira no eixo X (backflips)
+                        0,
+                        0
+                    )
+                end
+
+                -- Segue o jogador selecionado
+                local targetPosition = targetRootPart.Position + Vector3.new(0, 2, 0) -- Fica um pouco acima do jogador
+                localRootPart.CFrame = CFrame.new(targetPosition, targetRootPart.Position)
+
+                -- Verifica se o jogador sentou no sofá
+                if isPlayerSeatedInCouch(targetPlayer) then
+                    print("Jogador sentado no sofá, teleportando para o void!")
+                    teleportToVoid()
+                    getCouch() -- Remove o sofá do inventário
+                    print("Sofá despawnado!")
+                    -- Volta à posição original
+                    if LocalPlayer.Character and originalPosition then
+                        LocalPlayer.Character:PivotTo(CFrame.new(originalPosition))
+                        print("Retornou à posição original: " .. tostring(originalPosition))
+                    end
+                    followActive = false
+                    break
+                end
+
+                task.wait() -- Usa o Heartbeat para suavizar o movimento
+            end
+
+            -- Para de girar ao final
+            stopSpinning(LocalPlayer.Character)
+        end)
     end,
-}) 
+})
