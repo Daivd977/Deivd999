@@ -2074,7 +2074,6 @@ local TeleportButton = Tab9:Button({
 
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
 
 -- Função para obter a lista de nomes dos jogadores
 local function getPlayerNames()
@@ -2096,7 +2095,7 @@ local function updateDropdown(dropdown)
     end
 end
 
--- Função para invocar o servidor e pegar o sofá
+-- Função para invocar o servidor e pegar/remover o sofá
 local function getCouch()
     invokeServer("1Too1l", {"PickingTools", "Couch"})
 end
@@ -2123,51 +2122,15 @@ updateDropdown(DropdownFollow)
 Players.PlayerAdded:Connect(function() updateDropdown(DropdownFollow) end)
 Players.PlayerRemoving:Connect(function() updateDropdown(DropdownFollow) end)
 
--- Toggle para seguir o jogador e executar as ações
+-- Toggle para pegar o sofá e executar as ações
 Tab10:Toggle({
     Title = "Seguir com Sofá",
-    Desc = "Pega o sofá e segue o jogador selecionado",
+    Desc = "Pega o sofá e age quando o jogador selecionado sentar",
     Value = false,
     Callback = function(state)
         local LocalPlayer = Players.LocalPlayer
         local originalPosition -- Para armazenar a posição original
         local followActive = state -- Estado do toggle
-        local rotationSpeed = 50 -- Velocidade inicial de rotação (radianos por segundo)
-        local fasterRotationSpeed = 100 -- Velocidade de rotação quando o jogador senta
-        local currentRotationSpeed = rotationSpeed
-        local upDownSpeed = 2 -- Velocidade de movimento para cima e para baixo
-        local upDownDistance = 2 -- Distância do movimento para cima e para baixo
-        local followDistanceMultiplier = 5 -- Multiplicador para distância à frente com base na velocidade
-        local bodyVelocity -- Para fazer o jogador selecionado voar
-        local bodyGyro -- Para fazer o jogador local girar
-
-        -- Função para fazer o jogador local girar
-        local function startSpinning(character)
-            if not character then return end
-            local rootPart = character:FindFirstChild("HumanoidRootPart")
-            if not rootPart then return end
-
-            -- Remove BodyGyro anterior, se existir
-            if rootPart:FindFirstChild("SpinGyro") then
-                rootPart.SpinGyro:Destroy()
-            end
-
-            bodyGyro = Instance.new("BodyGyro")
-            bodyGyro.Name = "SpinGyro"
-            bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-            bodyGyro.P = 10000
-            bodyGyro.Parent = rootPart
-        end
-
-        -- Função para parar de girar
-        local function stopSpinning(character)
-            if not character then return end
-            local rootPart = character:FindFirstChild("HumanoidRootPart")
-            if not rootPart then return end
-            if rootPart:FindFirstChild("SpinGyro") then
-                rootPart.SpinGyro:Destroy()
-            end
-        end
 
         -- Função para detectar se o jogador está sentado no sofá
         local function isPlayerSeatedInCouch(player)
@@ -2182,21 +2145,37 @@ Tab10:Toggle({
             return false
         end
 
-        -- Função para fazer o jogador voar muito longe
-        local function makePlayerFly(player)
-            if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
-            local rootPart = player.Character.HumanoidRootPart
+        -- Função para teleportar o jogador local e o sofá para o void
+        local function teleportToVoid()
+            if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                warn("Personagem local não encontrado para teleportar ao void!")
+                return
+            end
+            local localRootPart = LocalPlayer.Character.HumanoidRootPart
 
-            -- Remove BodyVelocity anterior, se existir
-            if rootPart:FindFirstChild("FlyVelocity") then
-                rootPart.FlyVelocity:Destroy()
+            -- Encontra o sofá no Workspace
+            local couch = Workspace:FindFirstChild("Couch")
+            if not couch then
+                warn("Sofá não encontrado no Workspace!")
+                return
             end
 
-            bodyVelocity = Instance.new("BodyVelocity")
-            bodyVelocity.Name = "FlyVelocity"
-            bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-            bodyVelocity.Velocity = Vector3.new(0, 500, 0) -- Faz o jogador voar para cima rapidamente
-            bodyVelocity.Parent = rootPart
+            -- Define o PrimaryPart do sofá se não estiver definido
+            if not couch.PrimaryPart then
+                local body = couch:FindFirstChild("Body", true) or couch:FindFirstChild("Part", true)
+                if body and body:IsA("BasePart") then
+                    couch.PrimaryPart = body
+                else
+                    warn("Sofá não tem PrimaryPart ou Body/Part para teleportar!")
+                    return
+                end
+            end
+
+            local voidPosition = Vector3.new(0, -1000, 0) -- Posição no "void"
+            couch:SetPrimaryPartCFrame(CFrame.new(voidPosition))
+            localRootPart.CFrame = CFrame.new(voidPosition + Vector3.new(0, 5, 0)) -- Teleporta o jogador local junto
+            print("Teleportado para o void!")
+            task.wait(0.5) -- Pequeno atraso para garantir o teleporte
         end
 
         if state then
@@ -2213,7 +2192,7 @@ Tab10:Toggle({
             getCouch()
             print("Sofá pego!")
 
-            -- Inicia o loop de seguir e girar
+            -- Inicia o loop para verificar se o jogador sentou
             spawn(function()
                 while followActive do
                     -- Verifica se há um jogador selecionado
@@ -2232,78 +2211,34 @@ Tab10:Toggle({
                         continue
                     end
 
-                    local localCharacter = LocalPlayer.Character
-                    local localRootPart = localCharacter.HumanoidRootPart
-                    local targetRootPart = targetPlayer.Character.HumanoidRootPart
-                    local targetHumanoid = targetPlayer.Character.Humanoid
-
-                    -- Inicia a rotação
-                    startSpinning(localCharacter)
-
-                    -- Atualiza a velocidade de rotação
-                    if bodyGyro then
-                        bodyGyro.CFrame = bodyGyro.CFrame * CFrame.Angles(
-                            math.rad(currentRotationSpeed * RunService.Heartbeat:Wait()),
-                            math.rad(currentRotationSpeed * RunService.Heartbeat:Wait()),
-                            math.rad(currentRotationSpeed * RunService.Heartbeat:Wait())
-                        )
-                    end
-
                     -- Verifica se o jogador está sentado no sofá
                     if isPlayerSeatedInCouch(targetPlayer) then
-                        print("Jogador sentado no sofá, girando mais rápido!")
-                        currentRotationSpeed = fasterRotationSpeed
-                        -- Remove o sofá do inventário e pega novamente
+                        print("Jogador sentado no sofá, teleportando para o void!")
+                        -- Teleporta para o void
+                        teleportToVoid()
+                        -- Remove o sofá do inventário
                         getCouch()
-                        task.wait(0.1)
-                        getCouch()
-                        -- Faz o jogador voar
-                        makePlayerFly(targetPlayer)
-                    else
-                        currentRotationSpeed = rotationSpeed
+                        print("Sofá removido do inventário!")
+                        -- Volta à posição original
+                        if LocalPlayer.Character and originalPosition then
+                            LocalPlayer.Character:PivotTo(CFrame.new(originalPosition))
+                            print("Retornou à posição original: " .. tostring(originalPosition))
+                        end
+                        -- Para o loop após a ação
+                        followActive = false
+                        break
                     end
 
-                    -- Calcula a velocidade do jogador selecionado
-                    local targetVelocity = targetRootPart.Velocity.Magnitude
-                    local followDistance = targetVelocity * followDistanceMultiplier
-
-                    -- Se o jogador estiver se movendo, segue ele
-                    if targetVelocity > 1 then -- Considera que o jogador está se movendo
-                        local direction = (targetRootPart.Position - localRootPart.Position).Unit
-                        local targetPosition = targetRootPart.Position + direction * followDistance
-                        localRootPart.CFrame = CFrame.new(targetPosition, targetRootPart.Position)
-                    else
-                        -- Se o jogador estiver parado, sobe e desce
-                        local upDownOffset = math.sin(tick() * upDownSpeed) * upDownDistance
-                        local targetPosition = targetRootPart.Position + Vector3.new(0, upDownOffset, 0)
-                        localRootPart.CFrame = CFrame.new(targetPosition, targetRootPart.Position)
-                    end
-
-                    task.wait() -- Usa o Heartbeat para suavizar o movimento
-                end
-
-                -- Quando o loop termina, para de girar e volta à posição original
-                stopSpinning(LocalPlayer.Character)
-                if LocalPlayer.Character and originalPosition then
-                    LocalPlayer.Character:PivotTo(CFrame.new(originalPosition))
-                    print("Retornou à posição original: " .. tostring(originalPosition))
+                    task.wait(0.1) -- Intervalo para verificar novamente
                 end
             end)
         else
-            -- Para tudo ao desativar o toggle
+            -- Para o loop ao desativar o toggle
             followActive = false
-            stopSpinning(LocalPlayer.Character)
             if LocalPlayer.Character and originalPosition then
                 LocalPlayer.Character:PivotTo(CFrame.new(originalPosition))
                 print("Toggle desativado, retornou à posição original: " .. tostring(originalPosition))
             end
         end
     end,
-})
-
--- Reaplica o comportamento após o jogador selecionado renascer
-Players.PlayerAdded:Connect(function(player)
-    if DropdownFollow.Value == player.Name then
-        print("Jogador selecionado renasceu, continuando a seguir...")
-    end
-end)
+}) 
