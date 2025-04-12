@@ -3,9 +3,10 @@
 -- === Configurações Iniciais === --
 local AllowedUsers = {
     "rtrt967",
-    "kaio_lg1",-- Seu nome do Roblox    Tataizin_021
+    "kaio_lg1",-- Seu nome do Roblox pzinrlk929   Tataizin_021
     "sasah_7x",   -- Outro usuário permitido
     "QUEROBOVO",
+    "pzinrlk929",
     "Tataizin_021",-- Adicione mais nomes aqui, por exemplo:
     -- "outro_usuario",
     -- "amigo123",
@@ -73,7 +74,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.8",
+    Title = "Lolyta Hub 2.7",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -92,7 +93,7 @@ local Window = WindUI:CreateWindow({
 
 Window:EditOpenButton({
     Title = "Lolyta",
-    Icon = "car",
+    Icon = "align-justify",
     CornerRadius = UDim.new(0, 10),
     StrokeThickness = 3,
     Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29"))
@@ -108,6 +109,8 @@ local Tab5 = Window:Tab({ Title = "Troll Musica", Icon = "music" })
 local Tab6 = Window:Tab({ Title = "Music All", Icon = "audio-lines" })
 local Tab7 = Window:Tab({ Title = "Scripts", Icon = "layers" })
 local Tab8 = Window:Tab({ Title = "Players", Icon = "user" })
+local Tab9 = Window:Tab({ Title = "teleports", Icon = "map-pin" })
+local Tab10 = Window:Tab({ Title = "troll", Icon = "skull" })
 
 
 -- === Funções Auxiliares === --
@@ -827,6 +830,28 @@ Tab3:Toggle({
         local LocalPlayer = Players.LocalPlayer
         local originalPosition -- Para armazenar a posição original do jogador
         local teleportActive = state -- Estado do toggle
+        local fallDamageDisabled = false -- Para controlar se a morte por queda está desativada
+
+        -- Função para desativar/reativar a morte por queda
+        local function toggleFallDamage(disable)
+            if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("Humanoid") then return end
+            local humanoid = LocalPlayer.Character.Humanoid
+            if disable then
+                -- Desativa a morte por queda
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, true)
+                humanoid.PlatformStand = false
+                fallDamageDisabled = true
+                print("Morte por queda desativada!")
+            else
+                -- Reativa a morte por queda
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, true)
+                fallDamageDisabled = false
+                print("Morte por queda reativada!")
+            end
+        end
 
         -- Função para teleportar o jogador para um assento
         local function teleportToSeat(seat, car)
@@ -913,6 +938,9 @@ Tab3:Toggle({
                 return
             end
 
+            -- Desativa a morte por queda
+            toggleFallDamage(true)
+
             -- Inicia o loop para processar os carros
             spawn(function()
                 -- Obtém todos os carros em Workspace.Vehicles
@@ -970,14 +998,36 @@ Tab3:Toggle({
                 if teleportActive then
                     teleportActive = false
                     print("Todos os carros foram processados!")
+                    -- Reativa a morte por queda ao terminar
+                    toggleFallDamage(false)
                 end
             end)
         else
             teleportActive = false -- Para o loop quando o toggle é desativado
             print("Toggle desativado manualmente!")
+            -- Reativa a morte por queda ao desativar o toggle
+            toggleFallDamage(false)
         end
     end,
 })
+
+-- Garante que a morte por queda seja reativada/desativada ao recarregar o personagem
+local fallDamageDisabled = false
+Players.LocalPlayer.CharacterAdded:Connect(function(character)
+    if fallDamageDisabled then
+        local humanoid = character:WaitForChild("Humanoid")
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, true)
+        humanoid.PlatformStand = false
+        print("Morte por queda desativada após respawn!")
+    else
+        local humanoid = character:WaitForChild("Humanoid")
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, true)
+        print("Morte por queda reativada após respawn!")
+    end
+end)
 -----------------------------------------------------------------------------------------------------
                                           -- === Tab 4: RGB Color === --
 ---------------------------------------------------------------------------------------------------------------------------------
@@ -1945,3 +1995,244 @@ Tab8:Button({
         if selectedPlayerName ~= "" then teleportPlayerCar(selectedPlayerName) end
     end,
 })
+
+--para baixo tab teleports para cima tab players
+
+---------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 9: teleports === --
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+
+-- para baixo tab troll para cima tab teleports
+
+---------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 10: troll === --
+---------------------------------------------------------------------------------------------------------------------------------
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+
+-- Função para invocar o servidor e pegar o sofá
+local function getCouch()
+    invokeServer("1Too1l", {"PickingTools", "Couch"})
+end
+
+-- Cria o dropdown para selecionar jogadores
+local playerNames = {}
+local selectedPlayer = nil
+
+-- Atualiza a lista de jogadores
+local function updatePlayerList()
+    playerNames = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= Players.LocalPlayer then -- Exclui o jogador local
+            table.insert(playerNames, player.Name)
+        end
+    end
+end
+
+updatePlayerList() -- Inicializa a lista de jogadores
+
+Tab10:Dropdown({
+    Title = "Selecionar Jogador",
+    Desc = "Escolha um jogador para seguir",
+    Options = playerNames,
+    Value = nil, -- Valor padrão (nenhum selecionado)
+    Callback = function(selected)
+        if selected then
+            selectedPlayer = Players:FindFirstChild(selected)
+            print("Jogador selecionado: " .. selected)
+        else
+            selectedPlayer = nil
+            print("Nenhum jogador selecionado!")
+        end
+    end,
+})
+
+-- Atualiza a lista de jogadores quando alguém entra ou sai do servidor
+Players.PlayerAdded:Connect(updatePlayerList)
+Players.PlayerRemoving:Connect(updatePlayerList)
+
+-- Toggle para seguir o jogador e executar as ações
+Tab10:Toggle({
+    Title = "Seguir com Sofá",
+    Desc = "Pega o sofá e segue o jogador selecionado",
+    Value = false,
+    Callback = function(state)
+        local LocalPlayer = Players.LocalPlayer
+        local originalPosition -- Para armazenar a posição original
+        local followActive = state -- Estado do toggle
+        local rotationSpeed = 50 -- Velocidade inicial de rotação (radianos por segundo)
+        local fasterRotationSpeed = 100 -- Velocidade de rotação quando o jogador senta
+        local currentRotationSpeed = rotationSpeed
+        local upDownSpeed = 2 -- Velocidade de movimento para cima e para baixo
+        local upDownDistance = 2 -- Distância do movimento para cima e para baixo
+        local followDistanceMultiplier = 5 -- Multiplicador para distância à frente com base na velocidade
+        local bodyVelocity -- Para fazer o jogador selecionado voar
+        local bodyGyro -- Para fazer o jogador local girar
+
+        -- Função para fazer o jogador local girar
+        local function startSpinning(character)
+            if not character then return end
+            local rootPart = character:FindFirstChild("HumanoidRootPart")
+            if not rootPart then return end
+
+            -- Remove BodyGyro anterior, se existir
+            if rootPart:FindFirstChild("SpinGyro") then
+                rootPart.SpinGyro:Destroy()
+            end
+
+            bodyGyro = Instance.new("BodyGyro")
+            bodyGyro.Name = "SpinGyro"
+            bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+            bodyGyro.P = 10000
+            bodyGyro.Parent = rootPart
+        end
+
+        -- Função para parar de girar
+        local function stopSpinning(character)
+            if not character then return end
+            local rootPart = character:FindFirstChild("HumanoidRootPart")
+            if not rootPart then return end
+            if rootPart:FindFirstChild("SpinGyro") then
+                rootPart.SpinGyro:Destroy()
+            end
+        end
+
+        -- Função para detectar se o jogador está sentado no sofá
+        local function isPlayerSeatedInCouch(player)
+            if not player.Character or not player.Character:FindFirstChild("Humanoid") then return false end
+            local humanoid = player.Character.Humanoid
+            if humanoid.Sit then
+                local seat = humanoid.SeatPart
+                if seat and seat.Parent and seat.Parent.Name == "Couch" then -- Verifica se o assento é um sofá
+                    return true
+                end
+            end
+            return false
+        end
+
+        -- Função para fazer o jogador voar muito longe
+        local function makePlayerFly(player)
+            if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
+            local rootPart = player.Character.HumanoidRootPart
+
+            -- Remove BodyVelocity anterior, se existir
+            if rootPart:FindFirstChild("FlyVelocity") then
+                rootPart.FlyVelocity:Destroy()
+            end
+
+            bodyVelocity = Instance.new("BodyVelocity")
+            bodyVelocity.Name = "FlyVelocity"
+            bodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+            bodyVelocity.Velocity = Vector3.new(0, 500, 0) -- Faz o jogador voar para cima rapidamente
+            bodyVelocity.Parent = rootPart
+        end
+
+        if state then
+            -- Salva a posição original do jogador antes de começar
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                originalPosition = LocalPlayer.Character.HumanoidRootPart.Position
+                print("Posição original salva: " .. tostring(originalPosition))
+            else
+                warn("Não foi possível encontrar o personagem do jogador para salvar a posição!")
+                return
+            end
+
+            -- Pega o sofá
+            getCouch()
+            print("Sofá pego!")
+
+            -- Inicia o loop de seguir e girar
+            spawn(function()
+                while followActive do
+                    if not selectedPlayer or not selectedPlayer.Character or not selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                        print("Jogador selecionado não encontrado, aguardando...")
+                        task.wait(1)
+                        continue
+                    end
+
+                    if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                        print("Personagem local não encontrado, aguardando...")
+                        task.wait(1)
+                        continue
+                    end
+
+                    local localCharacter = LocalPlayer.Character
+                    local localRootPart = localCharacter.HumanoidRootPart
+                    local targetRootPart = selectedPlayer.Character.HumanoidRootPart
+                    local targetHumanoid = selectedPlayer.Character.Humanoid
+
+                    -- Inicia a rotação
+                    startSpinning(localCharacter)
+
+                    -- Atualiza a velocidade de rotação
+                    if bodyGyro then
+                        bodyGyro.CFrame = bodyGyro.CFrame * CFrame.Angles(
+                            math.rad(currentRotationSpeed * RunService.Heartbeat:Wait()),
+                            math.rad(currentRotationSpeed * RunService.Heartbeat:Wait()),
+                            math.rad(currentRotationSpeed * RunService.Heartbeat:Wait())
+                        )
+                    end
+
+                    -- Verifica se o jogador está sentado no sofá
+                    if isPlayerSeatedInCouch(selectedPlayer) then
+                        print("Jogador sentado no sofá, girando mais rápido!")
+                        currentRotationSpeed = fasterRotationSpeed
+                        -- Remove o sofá do inventário e pega novamente
+                        getCouch()
+                        task.wait(0.1)
+                        getCouch()
+                        -- Faz o jogador voar
+                        makePlayerFly(selectedPlayer)
+                    else
+                        currentRotationSpeed = rotationSpeed
+                    end
+
+                    -- Calcula a velocidade do jogador selecionado
+                    local targetVelocity = targetRootPart.Velocity.Magnitude
+                    local followDistance = targetVelocity * followDistanceMultiplier
+
+                    -- Se o jogador estiver se movendo, segue ele
+                    if targetVelocity > 1 then -- Considera que o jogador está se movendo
+                        local direction = (targetRootPart.Position - localRootPart.Position).Unit
+                        local targetPosition = targetRootPart.Position + direction * followDistance
+                        localRootPart.CFrame = CFrame.new(targetPosition, targetRootPart.Position)
+                    else
+                        -- Se o jogador estiver parado, sobe e desce
+                        local upDownOffset = math.sin(tick() * upDownSpeed) * upDownDistance
+                        local targetPosition = targetRootPart.Position + Vector3.new(0, upDownOffset, 0)
+                        localRootPart.CFrame = CFrame.new(targetPosition, targetRootPart.Position)
+                    end
+
+                    task.wait() -- Usa o Heartbeat para suavizar o movimento
+                end
+
+                -- Quando o loop termina, para de girar e volta à posição original
+                stopSpinning(LocalPlayer.Character)
+                if LocalPlayer.Character and originalPosition then
+                    LocalPlayer.Character:PivotTo(CFrame.new(originalPosition))
+                    print("Retornou à posição original: " .. tostring(originalPosition))
+                end
+            end)
+        else
+            -- Para tudo ao desativar o toggle
+            followActive = false
+            stopSpinning(LocalPlayer.Character)
+            if LocalPlayer.Character and originalPosition then
+                LocalPlayer.Character:PivotTo(CFrame.new(originalPosition))
+                print("Toggle desativado, retornou à posição original: " .. tostring(originalPosition))
+            end
+        end
+    end,
+})
+
+-- Reaplica o comportamento após o jogador selecionado renascer
+Players.PlayerAdded:Connect(function(player)
+    if selectedPlayer and player == selectedPlayer then
+        print("Jogador selecionado renasceu, continuando a seguir...")
+    end
+end)
+
