@@ -74,7 +74,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.7",
+    Title = "Lolyta Hub 2.8",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -2074,110 +2074,12 @@ local TeleportButton = Tab9:Button({
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
-local selectedPlayer = nil
-local isFollowing = false
-local originalPosition = nil -- Para armazenar a posição antes de seguir
-
--- Função para pegar os nomes dos jogadores
-local function getPlayerNames()
-    local playerNames = {}
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            table.insert(playerNames, player.Name)
-        end
-    end
-    return playerNames
-end
-
--- Atualiza o dropdown
-local function updateDropdown(dropdown)
-    dropdown:Refresh(getPlayerNames())
-end
-
--- Dropdown para selecionar jogador
-local DropdownTeleport = Tab10:Dropdown({
-    Title = "Selecionar Jogador",
-    Desc = "Escolha um jogador para seguir",
-    Value = "",
-    Multi = false,
-    AllowNone = true,
-    Values = getPlayerNames(),
-    Callback = function(selectedPlayerName)
-        selectedPlayer = Players:FindFirstChild(selectedPlayerName)
-    end
-})
-
-updateDropdown(DropdownTeleport)
-
--- Botão para começar a seguir
-local ButtonFollow = Tab10:Button({
-    Title = "Começar a Seguir",
-    Desc = "Clique para começar a seguir o jogador",
-    Callback = function()
-        if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            isFollowing = true
-            originalPosition = LocalPlayer.Character.HumanoidRootPart.Position -- Salva posição inicial
-        end
-    end
-})
-
--- Botão para parar o movimento
-local ButtonStop = Tab10:Button({
-    Title = "Parar",
-    Desc = "Clique para interromper o movimento",
-    Callback = function()
-        isFollowing = false
-    end
-})
-
--- Seguir e girar rapidamente ao redor do jogador
-RunService.RenderStepped:Connect(function()
-    if isFollowing and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        local targetPosition = selectedPlayer.Character.HumanoidRootPart.Position
-        LocalPlayer.Character:SetPrimaryPartCFrame(
-            CFrame.new(targetPosition) * CFrame.Angles(
-                math.rad(workspace.DistributedGameTime * 5000),
-                math.rad(workspace.DistributedGameTime * 7000),
-                math.rad(workspace.DistributedGameTime * 9000)
-            )
-        )
-    end
-end)
-
--- Detectar quando o jogador sentado e teleportar para o Void
-RunService.Heartbeat:Connect(function()
-    if isFollowing and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("Humanoid") then
-        if selectedPlayer.Character.Humanoid.Sit then
-            -- Teleportar para o Void
-            LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(0, -500, 0))
-
-            -- Parar de girar
-            isFollowing = false
-
-            -- Executar o comando
-            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer("PickingTools", "Couch")
-
-            -- Esperar 1 segundo antes de voltar
-            wait(1)
-            LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(originalPosition))
-        end
-    end
-end)
-
-Players.PlayerAdded:Connect(function() updateDropdown(DropdownTeleport) end)
-Players.PlayerRemoving:Connect(function() updateDropdown(DropdownTeleport) end)
-
--------------------------------------------------------------------------------------------------------------------------------------------
-
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 
 local selectedPlayer = nil
 local isFollowing = false
-local originalPosition = nil -- Guarda a posição original antes de seguir
+local originalPosition = nil -- Guarda a posição antes de seguir
 
 -- Função para pegar os nomes dos jogadores
 local function getPlayerNames()
@@ -2231,7 +2133,7 @@ local ButtonStop = Tab10:Button({
     end
 })
 
--- Seguir e girar absurdamente rápido enquanto o jogador não tiver sentado
+-- Seguir e girar rapidamente ao redor do jogador enquanto não sentar
 RunService.RenderStepped:Connect(function()
     if isFollowing and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
         local targetPosition = selectedPlayer.Character.HumanoidRootPart.Position
@@ -2245,7 +2147,119 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Detecta quando o jogador selecionado se senta e executa o teleporte + parada + comando
+-- Detecta quando o jogador selecionado se senta e executa o teleporte + comando + retorno
+RunService.Heartbeat:Connect(function()
+    if isFollowing and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("Humanoid") then
+        if selectedPlayer.Character.Humanoid.Sit then
+            print("Jogador sentado! Teleportando para o Void...")
+
+            -- Teleportar para o Void
+            LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(0, -500, 0))
+
+            -- Parar de girar e parar de seguir o jogador
+            isFollowing = false
+
+            -- Esperar exatamente **1 segundo** antes de executar o comando
+            wait(1)
+
+            -- Executar o comando para pegar a "Couch"
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer("PickingTools", "Couch")
+
+            print("Comando executado! Voltando à posição original...")
+
+            -- Esperar 1 segundo antes de retornar
+            wait(1)
+
+            -- Teleportar de volta para a posição original e garantir que fique em pé
+            LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(originalPosition))
+            LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+
+            print("Movimento interrompido, personagem voltou à posição original em pé!")
+        end
+    end
+end)
+
+-- Atualiza Dropdown quando novos jogadores entram ou saem
+Players.PlayerAdded:Connect(function() updateDropdown(DropdownTeleport) end)
+Players.PlayerRemoving:Connect(function() updateDropdown(DropdownTeleport) end)
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+
+local selectedPlayer = nil
+local isFollowing = false
+local originalPosition = nil -- Guarda a posição antes de seguir
+
+-- Função para pegar os nomes dos jogadores
+local function getPlayerNames()
+    local playerNames = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            table.insert(playerNames, player.Name)
+        end
+    end
+    return playerNames
+end
+
+-- Atualiza o dropdown
+local function updateDropdown(dropdown)
+    dropdown:Refresh(getPlayerNames())
+end
+
+-- Dropdown para selecionar jogador
+local DropdownTeleport = Tab10:Dropdown({
+    Title = "Selecionar Jogador",
+    Desc = "Escolha um jogador para puxar até você",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = getPlayerNames(),
+    Callback = function(selectedPlayerName)
+        selectedPlayer = Players:FindFirstChild(selectedPlayerName)
+    end
+})
+
+updateDropdown(DropdownTeleport)
+
+-- Botão para iniciar o movimento de puxar o jogador
+local ButtonFollow = Tab10:Button({
+    Title = "Começar a Puxar",
+    Desc = "Clique para começar a puxar o jogador",
+    Callback = function()
+        if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            isFollowing = true
+            originalPosition = LocalPlayer.Character.HumanoidRootPart.Position -- Salva posição inicial
+        end
+    end
+})
+
+-- Botão para parar o movimento manualmente
+local ButtonStop = Tab10:Button({
+    Title = "Parar",
+    Desc = "Clique para interromper o movimento",
+    Callback = function()
+        isFollowing = false
+    end
+})
+
+-- Puxar e girar absurdamente rápido enquanto o jogador não sentar
+RunService.RenderStepped:Connect(function()
+    if isFollowing and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local targetPosition = selectedPlayer.Character.HumanoidRootPart.Position
+        LocalPlayer.Character:SetPrimaryPartCFrame(
+            CFrame.new(targetPosition) * CFrame.Angles(
+                math.rad(workspace.DistributedGameTime * 12000),
+                math.rad(workspace.DistributedGameTime * 15000),
+                math.rad(workspace.DistributedGameTime * 18000)
+            )
+        )
+    end
+end)
+
+-- Detecta quando o jogador selecionado se senta e executa o teleporte + comando + retorno
 RunService.Heartbeat:Connect(function()
     if isFollowing and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("Humanoid") then
         if selectedPlayer.Character.Humanoid.Sit then
@@ -2260,10 +2274,13 @@ RunService.Heartbeat:Connect(function()
             -- Garantir que o personagem fique em pé
             LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
 
-            -- Executar o comando
+            -- Esperar exatamente **1 segundo** antes de executar o comando
+            wait(1)
+
+            -- Executar o comando para pegar a "Couch"
             ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer("PickingTools", "Couch")
 
-            print("Movimento interrompido, comando executado e personagem de volta à posição original!")
+            print("Comando executado! Personagem voltou à posição original!")
         end
     end
 end)
