@@ -1804,56 +1804,120 @@ Tab8:Button({
     end,
 })
 
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+local isSpectating = false
+local spectatedPlayer = nil
+local characterConnection = nil
+
+-- Função para espectar um jogador
 local function spectatePlayer(playerName)
+    -- Para qualquer conexão anterior
+    if characterConnection then
+        characterConnection:Disconnect()
+        characterConnection = nil
+    end
+
     local targetPlayer = Players:FindFirstChild(playerName)
-    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Humanoid") then
-        Workspace.CurrentCamera.CameraSubject = targetPlayer.Character.Humanoid
+    if targetPlayer then
+        spectatedPlayer = targetPlayer
+        isSpectating = true
         print("Espectando jogador: " .. targetPlayer.Name)
+
+        -- Função para atualizar a câmera para o personagem atual ou novo
+        local function updateCamera()
+            if isSpectating and spectatedPlayer and spectatedPlayer.Character and spectatedPlayer.Character:FindFirstChild("Humanoid") then
+                Workspace.CurrentCamera.CameraSubject = spectatedPlayer.Character.Humanoid
+            end
+        end
+
+        -- Atualiza a câmera imediatamente
+        updateCamera()
+
+        -- Monitora quando o jogador ganha um novo personagem (após morte/reset)
+        characterConnection = spectatedPlayer.CharacterAdded:Connect(function()
+            updateCamera()
+        end)
     else
         print("Jogador não encontrado.")
+        isSpectating = false
+        spectatedPlayer = nil
     end
 end
 
+-- Função para parar de espectar
 local function stopSpectating()
+    if characterConnection then
+        characterConnection:Disconnect()
+        characterConnection = nil
+    end
+
+    isSpectating = false
+    spectatedPlayer = nil
+
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         Workspace.CurrentCamera.CameraSubject = LocalPlayer.Character.Humanoid
         print("Parando de espectar. Voltando à visão do jogador local.")
+    else
+        Workspace.CurrentCamera.CameraSubject = nil
+        print("Nenhum personagem local encontrado. Câmera redefinida.")
     end
 end
 
+-- Configuração do Dropdown
 local DropdownSpectate = Tab8:Dropdown({
     Title = "Selecionar Jogador (Espectar)",
     Desc = "Selecione o jogador para espectar",
     Value = "",
     Multi = false,
     AllowNone = true,
-    Values = getPlayerNames(), -- Usando a função diretamente
+    Values = getPlayerNames(),
     Callback = function(selectedPlayerName)
-        print("Jogador selecionado para espectar: " .. selectedPlayerName)
+        if selectedPlayerName == "" or selectedPlayerName == nil then
+            print("Nenhum jogador selecionado.")
+        else
+            print("Jogador selecionado para espectar: " .. selectedPlayerName)
+        end
     end,
 })
 
-updateDropdown(DropdownSpectate)
-Players.PlayerAdded:Connect(function() updateDropdown(DropdownSpectate) end)
-Players.PlayerRemoving:Connect(function() updateDropdown(DropdownSpectate) end)
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-Tab8:Toggle({
-    Title = "Espectar Jogador",
-    Desc = "Ativar/Desativar espectar o jogador selecionado",
-    Value = false,
+-- Configuração do Toggle
+local SpectateToggle = Tab8:Toggle({
+    Title = "Ativar Espectador",
+    Desc = "Ativa ou desativa o modo espectador",
+    Default = false,
     Callback = function(state)
         if state then
-            spectatePlayer(DropdownSpectate.Value)
+            local selectedPlayerName = DropdownSpectate.Value
+            if selectedPlayerName and selectedPlayerName ~= "" then
+                spectatePlayer(selectedPlayerName)
+            else
+                print("Selecione um jogador antes de ativar o modo espectador.")
+                SpectateToggle:SetValue(false) -- Desativa o toggle se nenhum jogador estiver selecionado
+            end
         else
             stopSpectating()
         end
     end,
 })
+
+-- Atualiza o dropdown quando jogadores entram ou saem
+updateDropdown(DropdownSpectate)
+Players.PlayerAdded:Connect(function() updateDropdown(DropdownSpectate) end)
+Players.PlayerRemoving:Connect(function(player) 
+    updateDropdown(DropdownSpectate)
+    -- Se o jogador espectado sair, para de espectar
+    if spectatedPlayer and spectatedPlayer == player then
+        stopSpectating()
+        SpectateToggle:SetValue(false)
+        DropdownSpectate:SetValue("")
+    end
+end)
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 -- Sistema de Teletransporte de Ônibus com Backflips
 local selectedPlayerName = ""
@@ -2072,129 +2136,16 @@ local TeleportButton = Tab9:Button({
                                           -- === Tab 10: troll === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
--- Services
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
--- Local player
-local LocalPlayer = Players.LocalPlayer
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-
--- Variable to control the "No Void Death" feature
-local noVoidDeathEnabled = false
-local voidCheckConnection = nil
-local stateCheckConnection = nil
-
--- Function to handle "No Void Death"
-local function handleNoVoidDeath()
-    -- Desconecta verificações anteriores, se existirem
-    if voidCheckConnection then
-        voidCheckConnection:Disconnect()
-        voidCheckConnection = nil
-    end
-    if stateCheckConnection then
-        stateCheckConnection:Disconnect()
-        stateCheckConnection = nil
-    end
-
-    local character = LocalPlayer.Character
-    if not character then return end
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if not humanoid then return end
-    local hrp = character:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-
-    if noVoidDeathEnabled then
-        -- Desativa a morte por queda
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false) -- Impede estado de queda que pode levar à morte
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false) -- Impede ragdoll, que pode ser usado para matar
-
-        -- Monitora o estado do Humanoid para impedir a morte
-        stateCheckConnection = humanoid.StateChanged:Connect(function(oldState, newState)
-            if noVoidDeathEnabled then
-                if newState == Enum.HumanoidStateType.Dead then
-                    humanoid:ChangeState(Enum.HumanoidStateType.Running)
-                    humanoid.Health = humanoid.MaxHealth
-                    print("Prevented death state!")
-                end
-            end
-        end)
-
-        -- Monitora a posição Y e impede a morte no void
-        voidCheckConnection = RunService.Heartbeat:Connect(function()
-            if not character or not humanoid or not hrp then return end
-            if noVoidDeathEnabled then
-                -- Verifica se o jogador está no void (Y < -500 é o limite padrão do Roblox)
-                if hrp.Position.Y < -500 then
-                    -- Mantém o jogador vivo
-                    humanoid.Health = humanoid.MaxHealth
-                    humanoid.WalkSpeed = 16
-                    humanoid.JumpPower = 50
-                    humanoid:ChangeState(Enum.HumanoidStateType.Running)
-                end
-            end
-        end)
-
-        -- Impede o jogo de resetar o jogador
-        LocalPlayer.CharacterRemoving:Connect(function()
-            if noVoidDeathEnabled then
-                -- Tenta impedir o reset forçando a recriação do personagem
-                wait(0.1) -- Pequeno delay para evitar loops infinitos
-                LocalPlayer:LoadCharacter()
-            end
-        end)
-    else
-        -- Restaura o comportamento padrão (permite morrer no void)
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, true)
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, true)
-    end
-end
-
--- Toggle for "No Void Death"
-local NoVoidDeathToggle = Tab10:Toggle({
-    Title = "nao morrer no oid",
-    Desc = "Prevents death in the void (as if the void doesn't exist)",
-    Default = false,
-    Callback = function(state)
-        noVoidDeathEnabled = state
-        print("No Void Death " .. (state and "Enabled" or "Disabled"))
-        handleNoVoidDeath()
-    end
-})
-
--- Handle character respawn
-LocalPlayer.CharacterAdded:Connect(function(newCharacter)
-    Character = newCharacter
-    handleNoVoidDeath() -- Reativa a verificação do void no novo personagem
-end)
-
--- Inicializa a verificação para o personagem atual
-handleNoVoidDeath()
-
------------------------------------------------------------------------------------------------------------------------------------
-
-Tab10:Paragraph({ Title = "ativa o void protection para nao morrer no void ", Desc = "antes de usar faça isso!!!" })
-
-Tab10:Button({
-    Title = "Pegar sofá",
-    Desc = "para usar as opçoes a baixo",
-    Callback = function()
-        invokeServer("1Too1l", {"PickingTools", "Couch"})
-    end,
-})
-
-Tab10:Paragraph({ Title = "pegue o sofa antes de usar e equipa na mao o sofa", Desc = "antes de usar faça isso" })
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 
-local selectedPlayer = nil
-local isFollowing = false
-local originalPosition = nil -- Guarda a posição antes de seguir
+-- Variáveis compartilhadas para o modo espectador
+local isSpectating = false
+local spectatedPlayer = nil
+local characterConnection = nil
 
 -- Função para pegar os nomes dos jogadores
 local function getPlayerNames()
@@ -2212,46 +2163,142 @@ local function updateDropdown(dropdown)
     dropdown:Refresh(getPlayerNames())
 end
 
--- Dropdown para selecionar jogador
-local DropdownTeleport = Tab10:Dropdown({
-    Title = "Selecionar Jogador",
-    Desc = "Escolha um jogador para matar com o sofa",
+-- Função para espectar um jogador
+local function spectatePlayer(player)
+    if characterConnection then
+        characterConnection:Disconnect()
+        characterConnection = nil
+    end
+
+    if player and player ~= LocalPlayer then
+        spectatedPlayer = player
+        isSpectating = true
+        print("Espectando jogador: " .. player.Name)
+
+        local function updateCamera()
+            if isSpectating and spectatedPlayer and spectatedPlayer.Character and spectatedPlayer.Character:FindFirstChild("Humanoid") then
+                Workspace.CurrentCamera.CameraSubject = spectatedPlayer.Character.Humanoid
+            end
+        end
+
+        updateCamera()
+        characterConnection = spectatedPlayer.CharacterAdded:Connect(updateCamera)
+    else
+        print("Jogador inválido ou não encontrado.")
+        isSpectating = false
+        spectatedPlayer = nil
+    end
+end
+
+-- Função para parar de espectar
+local function stopSpectating()
+    if characterConnection then
+        characterConnection:Disconnect()
+        characterConnection = nil
+    end
+
+    isSpectating = false
+    spectatedPlayer = nil
+
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        Workspace.CurrentCamera.CameraSubject = LocalPlayer.Character.Humanoid
+        print("Parando de espectar. Voltando à visão do jogador local.")
+    else
+        Workspace.CurrentCamera.CameraSubject = nil
+        print("Nenhum personagem local encontrado. Câmera redefinida.")
+    end
+end
+
+-- Botão System Broochk
+Tab10:Button({
+    Title = "System Broochk",
+    Desc = "Universal",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/H20CalibreYT/SystemBroken/main/script"))()
+    end,
+})
+
+Tab10:Paragraph({ 
+    Title = "Execute o System Broochk e ative o VoidProtection", 
+    Desc = "Faça isso antes de usar as funções abaixo!!!"
+})
+
+-- Botão para pegar o sofá
+Tab10:Button({
+    Title = "Pegar Sofá",
+    Desc = "Pegue o sofá antes de usar as opções abaixo",
+    Callback = function()
+        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer("PickingTools", "Couch")
+    end,
+})
+
+Tab10:Paragraph({ 
+    Title = "Instruções para o Sofá", 
+    Desc = "Pegue o sofá e equipe-o na mão antes de usar as opções abaixo"
+})
+
+-- === Sistema de Matar ===
+local selectedPlayerKill = nil
+local isFollowingKill = false
+local originalPositionKill = nil
+
+-- Dropdown para selecionar jogador (Matar)
+local DropdownKill = Tab10:Dropdown({
+    Title = "Selecionar Jogador (Matar)",
+    Desc = "Escolha um jogador para matar com o sofá",
     Value = "",
     Multi = false,
     AllowNone = true,
     Values = getPlayerNames(),
     Callback = function(selectedPlayerName)
-        selectedPlayer = Players:FindFirstChild(selectedPlayerName)
+        selectedPlayerKill = Players:FindFirstChild(selectedPlayerName)
     end
 })
 
-updateDropdown(DropdownTeleport)
+-- Toggle para visualizar jogador (Matar)
+local SpectateToggleKill = Tab10:Toggle({
+    Title = "Visualizar Jogador (Matar)",
+    Desc = "Ativa/desativa a visualização do jogador selecionado",
+    Default = false,
+    Callback = function(state)
+        if state then
+            if selectedPlayerKill then
+                spectatePlayer(selectedPlayerKill)
+            else
+                print("Selecione um jogador antes de ativar a visualização.")
+                SpectateToggleKill:SetValue(false)
+            end
+        else
+            stopSpectating()
+        end
+    end,
+})
 
--- Botão para iniciar o movimento de seguir o jogador
-local ButtonFollow = Tab10:Button({
-    Title = "Começar a matar com o sofa",
+-- Botão para iniciar o movimento de matar
+local ButtonFollowKill = Tab10:Button({
+    Title = "Começar a Matar com o Sofá",
     Desc = "Clique para começar a matar o jogador",
     Callback = function()
-        if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            isFollowing = true
-            originalPosition = LocalPlayer.Character.HumanoidRootPart.Position -- Salva posição inicial
+        if selectedPlayerKill and selectedPlayerKill.Character and selectedPlayerKill.Character:FindFirstChild("HumanoidRootPart") then
+            isFollowingKill = true
+            originalPositionKill = LocalPlayer.Character.HumanoidRootPart.Position
         end
     end
 })
 
 -- Botão para parar o movimento manualmente
-local ButtonStop = Tab10:Button({
-    Title = "Parar de matar bug ou ant sit",
-    Desc = "caso bugue ou o player esta usando ant seat use isto",
+local ButtonStopKill = Tab10:Button({
+    Title = "Parar (Bug ou Anti-Seat)",
+    Desc = "Use se bugou ou o jogador está usando anti-seat",
     Callback = function()
-        isFollowing = false
+        isFollowingKill = false
     end
 })
 
--- Seguir e girar absurdamente rápido enquanto o jogador não sentar
+-- Lógica de matar
 RunService.RenderStepped:Connect(function()
-    if isFollowing and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        local targetPosition = selectedPlayer.Character.HumanoidRootPart.Position
+    if isFollowingKill and selectedPlayerKill and selectedPlayerKill.Character and selectedPlayerKill.Character:FindFirstChild("HumanoidRootPart") then
+        local targetPosition = selectedPlayerKill.Character.HumanoidRootPart.Position
         LocalPlayer.Character:SetPrimaryPartCFrame(
             CFrame.new(targetPosition) * CFrame.Angles(
                 math.rad(workspace.DistributedGameTime * 12000),
@@ -2262,31 +2309,20 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Detecta quando o jogador selecionado se senta e executa o teleporte para o Void + comando + retorno
 RunService.Heartbeat:Connect(function()
-    if isFollowing and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("Humanoid") then
-        if selectedPlayer.Character.Humanoid.Sit then
+    if isFollowingKill and selectedPlayerKill and selectedPlayerKill.Character and selectedPlayerKill.Character:FindFirstChild("Humanoid") then
+        if selectedPlayerKill.Character.Humanoid.Sit then
             print("Jogador sentado! Teleportando para o Void...")
 
-            -- Teleportar para o Void
             LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(0, -500, 0))
+            isFollowingKill = false
 
-            -- Parar de girar e parar de seguir o jogador
-            isFollowing = false
-
-            -- **Esperar 0.5 segundos no Void antes de executar o comando**
             wait(0.5)
-
-            -- Executar o comando para pegar a "Couch"
             ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer("PickingTools", "Couch")
-
             print("Comando executado! Voltando à posição original...")
 
-            -- **Esperar mais 1 segundo antes de retornar**
             wait(1)
-
-            -- Teleportar de volta para a posição original e garantir que fique em pé
-            LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(originalPosition))
+            LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(originalPositionKill))
             LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
 
             print("Movimento interrompido, personagem voltou à posição original em pé!")
@@ -2294,80 +2330,68 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
--- Atualiza Dropdown quando novos jogadores entram ou saem
-Players.PlayerAdded:Connect(function() updateDropdown(DropdownTeleport) end)
-Players.PlayerRemoving:Connect(function() updateDropdown(DropdownTeleport) end)
+-- === Sistema de Puxar ===
+local selectedPlayerPull = nil
+local isFollowingPull = false
+local originalPositionPull = nil
 
--------------------------------------------------------------------------------------------------------------------------------------------
-
-Tab10:Paragraph({ Title = "pegue o sofa antes de usar e equipa na mao o sofa", Desc = " ates de usar faça isso" })
-
-
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local LocalPlayer = Players.LocalPlayer
-
-local selectedPlayer = nil
-local isFollowing = false
-local originalPosition = nil -- Guarda a posição antes de seguir
-
--- Função para pegar os nomes dos jogadores
-local function getPlayerNames()
-    local playerNames = {}
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            table.insert(playerNames, player.Name)
-        end
-    end
-    return playerNames
-end
-
--- Atualiza o dropdown
-local function updateDropdown(dropdown)
-    dropdown:Refresh(getPlayerNames())
-end
-
--- Dropdown para selecionar jogador
-local DropdownTeleport = Tab10:Dropdown({
-    Title = "Selecionar Jogador",
+-- Dropdown para selecionar jogador (Puxar)
+local DropdownPull = Tab10:Dropdown({
+    Title = "Selecionar Jogador (Puxar)",
     Desc = "Escolha um jogador para puxar até você",
     Value = "",
     Multi = false,
     AllowNone = true,
     Values = getPlayerNames(),
     Callback = function(selectedPlayerName)
-        selectedPlayer = Players:FindFirstChild(selectedPlayerName)
+        selectedPlayerPull = Players:FindFirstChild(selectedPlayerName)
     end
 })
 
-updateDropdown(DropdownTeleport)
+-- Toggle para visualizar jogador (Puxar)
+local SpectateTogglePull = Tab10:Toggle({
+    Title = "Visualizar Jogador (Puxar)",
+    Desc = "Ativa/desativa a visualização do jogador selecionado",
+    Default = false,
+    Callback = function(state)
+        if state then
+            if selectedPlayerPull then
+                spectatePlayer(selectedPlayerPull)
+            else
+                print("Selecione um jogador antes de ativar a visualização.")
+                SpectateTogglePull:SetValue(false)
+            end
+        else
+            stopSpectating()
+        end
+    end,
+})
 
--- Botão para iniciar o movimento de puxar o jogador
-local ButtonFollow = Tab10:Button({
+-- Botão para iniciar o movimento de puxar
+local ButtonFollowPull = Tab10:Button({
     Title = "Começar a Puxar",
     Desc = "Clique para começar a puxar o jogador",
     Callback = function()
-        if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            isFollowing = true
-            originalPosition = LocalPlayer.Character.HumanoidRootPart.Position -- Salva posição inicial
+        if selectedPlayerPull and selectedPlayerPull.Character and selectedPlayerPull.Character:FindFirstChild("HumanoidRootPart") then
+            isFollowingPull = true
+            originalPositionPull = LocalPlayer.Character.HumanoidRootPart.Position
         end
     end
 })
 
 -- Botão para parar o movimento manualmente
-local ButtonStop = Tab10:Button({
-    Title = "Parar bug ou aant seat",
-    Desc = "caso bugue ou o player esta usando ant seat use isto",
+local ButtonStopPull = Tab10:Button({
+    Title = "Parar (Bug ou Anti-Seat)",
+    Desc = "Use se bugou ou o jogador está usando anti-seat",
     Callback = function()
-        isFollowing = false
+        isFollowingPull = false
     end
 })
 
--- Puxar e girar absurdamente rápido enquanto o jogador não sentar
+-- Lógica de puxar
 RunService.RenderStepped:Connect(function()
-    if isFollowing and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        local targetPosition = selectedPlayer.Character.HumanoidRootPart.Position
+    if isFollowingPull and selectedPlayerPull and selectedPlayerPull.Character and selectedPlayerPull.Character:FindFirstChild("HumanoidRootPart") then
+        local targetPosition = selectedPlayerPull.Character.HumanoidRootPart.Position
         LocalPlayer.Character:SetPrimaryPartCFrame(
             CFrame.new(targetPosition) * CFrame.Angles(
                 math.rad(workspace.DistributedGameTime * 12000),
@@ -2378,25 +2402,16 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Detecta quando o jogador selecionado se senta e executa o teleporte + comando + retorno
 RunService.Heartbeat:Connect(function()
-    if isFollowing and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("Humanoid") then
-        if selectedPlayer.Character.Humanoid.Sit then
+    if isFollowingPull and selectedPlayerPull and selectedPlayerPull.Character and selectedPlayerPull.Character:FindFirstChild("Humanoid") then
+        if selectedPlayerPull.Character.Humanoid.Sit then
             print("Jogador sentado! Teleportando para a posição original...")
 
-            -- Parar de girar e seguir o jogador
-            isFollowing = false
-
-            -- Teleportar de volta para a posição original
-            LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(originalPosition))
-
-            -- Garantir que o personagem fique em pé
+            isFollowingPull = false
+            LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(originalPositionPull))
             LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
 
-            -- Esperar exatamente **1 segundo** antes de executar o comando
             wait(1)
-
-            -- Executar o comando para pegar a "Couch"
             ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer("PickingTools", "Couch")
 
             print("Comando executado! Personagem voltou à posição original!")
@@ -2404,6 +2419,19 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
--- Atualiza Dropdown quando novos jogadores entram ou saem
-Players.PlayerAdded:Connect(function() updateDropdown(DropdownTeleport) end)
-Players.PlayerRemoving:Connect(function() updateDropdown(DropdownTeleport) end)
+-- Atualiza os dropdowns e gerencia saída de jogadores
+updateDropdown(DropdownKill)
+updateDropdown(DropdownPull)
+Players.PlayerAdded:Connect(function() 
+    updateDropdown(DropdownKill)
+    updateDropdown(DropdownPull)
+end)
+Players.PlayerRemoving:Connect(function(player) 
+    updateDropdown(DropdownKill)
+    updateDropdown(DropdownPull)
+    if spectatedPlayer == player then
+        stopSpectating()
+        SpectateToggleKill:Set301Value(false)
+        SpectateTogglePull:SetValue(false)
+    end
+end)
