@@ -74,7 +74,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.7",
+    Title = "Lolyta Hub 2.999",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -2176,6 +2176,7 @@ local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local selectedPlayer = nil
 local isFollowing = false
+local originalPosition = nil -- Para armazenar a posição antes de começar a seguir
 
 -- Função para pegar os nomes dos jogadores
 local function getPlayerNames()
@@ -2194,7 +2195,7 @@ end
 -- Dropdown para selecionar jogador
 local DropdownTeleport = Tab10:Dropdown({
     Title = "Selecionar Jogador",
-    Desc = "Escolha um jogador para puxar até você",
+    Desc = "Escolha um jogador para seguir",
     Value = "",
     Multi = false,
     AllowNone = true,
@@ -2209,17 +2210,18 @@ updateDropdown(DropdownTeleport)
 
 -- Botão para iniciar o movimento de seguir o jogador
 local ButtonFollow = Tab10:Button({
-    Title = "Começar",
+    Title = "Começar a Seguir",
     Desc = "Clique para começar a seguir o jogador",
     Callback = function()
         if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
             isFollowing = true
+            originalPosition = LocalPlayer.Character.HumanoidRootPart.Position -- Salva posição inicial
             print("Seguindo " .. selectedPlayer.Name)
         end
     end
 })
 
--- Botão para parar o movimento
+-- Botão para parar o movimento manualmente
 local ButtonStop = Tab10:Button({
     Title = "Parar",
     Desc = "Clique para interromper o movimento",
@@ -2229,30 +2231,35 @@ local ButtonStop = Tab10:Button({
     end
 })
 
--- Função para seguir e girar absurdamente rápido
+-- Função para seguir e girar rapidamente ao redor do jogador selecionado
 RunService.RenderStepped:Connect(function()
     if isFollowing and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
         local targetPosition = selectedPlayer.Character.HumanoidRootPart.Position
         LocalPlayer.Character:SetPrimaryPartCFrame(
             CFrame.new(targetPosition) 
             * CFrame.Angles(math.rad(workspace.DistributedGameTime * 3000), math.rad(workspace.DistributedGameTime * 5000), math.rad(workspace.DistributedGameTime * 7000))
-        ) -- Giro ainda mais rápido!
+        ) -- Giro rápido enquanto segue
     end
 end)
 
--- Detecta quando o jogador sentado e o puxa para você
+-- Detecta quando o jogador selecionado se senta e interrompe tudo
 RunService.Heartbeat:Connect(function()
     if isFollowing and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("Humanoid") then
         if selectedPlayer.Character.Humanoid.Sit then
-            -- Teleportar o jogador selecionado para a posição do LocalPlayer
-            selectedPlayer.Character:SetPrimaryPartCFrame(LocalPlayer.Character.HumanoidRootPart.CFrame)
+            print("Jogador sentado! Teleportando de volta à posição inicial...")
 
-            -- Remover todos os itens do inventário do jogador selecionado
-            for _, item in pairs(selectedPlayer.Backpack:GetChildren()) do
+            -- Teleportar o jogador local para a posição original antes de começar a seguir
+            LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(originalPosition))
+
+            -- Parar de girar e seguir
+            isFollowing = false
+
+            -- Remover todos os itens do inventário
+            for _, item in pairs(LocalPlayer.Backpack:GetChildren()) do
                 item:Destroy()
             end
             
-            print("Jogador sentado! Puxando até sua posição...")
+            print("Movimento interrompido e inventário esvaziado!")
         end
     end
 end)
