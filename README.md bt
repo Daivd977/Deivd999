@@ -2071,6 +2071,7 @@ local TeleportButton = Tab9:Button({
 ---------------------------------------------------------------------------------------------------------------------------------
                                           -- === Tab 10: troll === --
 ---------------------------------------------------------------------------------------------------------------------------------
+
 -- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -2082,54 +2083,78 @@ local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 -- Variable to control the "No Void Death" feature
 local noVoidDeathEnabled = false
 local voidCheckConnection = nil
+local stateCheckConnection = nil
 
 -- Function to handle "No Void Death"
 local function handleNoVoidDeath()
+    -- Desconecta verificações anteriores, se existirem
     if voidCheckConnection then
         voidCheckConnection:Disconnect()
         voidCheckConnection = nil
+    end
+    if stateCheckConnection then
+        stateCheckConnection:Disconnect()
+        stateCheckConnection = nil
     end
 
     local character = LocalPlayer.Character
     if not character then return end
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     if not humanoid then return end
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
 
     if noVoidDeathEnabled then
-        -- Desativa a morte por queda no void
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false) -- Impede que o Humanoid morra automaticamente
-        voidCheckConnection = humanoid.StateChanged:Connect(function(oldState, newState)
-            if newState == Enum.HumanoidStateType.Dead then
-                -- Impede a morte se o toggle estiver ativado
-                if noVoidDeathEnabled then
-                    humanoid:ChangeState(Enum.HumanoidStateType.Running) -- Força o estado para "Running"
-                    humanoid.Health = humanoid.MaxHealth -- Restaura a vida
-                    print("Void death prevented!")
+        -- Desativa a morte por queda
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false) -- Impede estado de queda que pode levar à morte
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false) -- Impede ragdoll, que pode ser usado para matar
+
+        -- Monitora o estado do Humanoid para impedir a morte
+        stateCheckConnection = humanoid.StateChanged:Connect(function(oldState, newState)
+            if noVoidDeathEnabled then
+                if newState == Enum.HumanoidStateType.Dead then
+                    humanoid:ChangeState(Enum.HumanoidStateType.Running)
+                    humanoid.Health = humanoid.MaxHealth
+                    print("Prevented death state!")
                 end
             end
         end)
 
-        -- Monitora a posição Y para evitar reset do jogo
+        -- Monitora a posição Y e impede a morte no void
         voidCheckConnection = RunService.Heartbeat:Connect(function()
-            local hrp = character:FindFirstChild("HumanoidRootPart")
-            if hrp and hrp.Position.Y < -500 then -- Limite típico do void no Roblox
-                if noVoidDeathEnabled then
-                    -- Mantém o jogador vivo, mas não teleporta
-                    humanoid.WalkSpeed = 16 -- Garante que o jogador possa se mover
-                    humanoid.JumpPower = 50 -- Garante que o jogador possa pular
-                    humanoid.Health = humanoid.MaxHealth -- Garante que o jogador não morra
+            if not character or not humanoid or not hrp then return end
+            if noVoidDeathEnabled then
+                -- Verifica se o jogador está no void (Y < -500 é o limite padrão do Roblox)
+                if hrp.Position.Y < -500 then
+                    -- Mantém o jogador vivo
+                    humanoid.Health = humanoid.MaxHealth
+                    humanoid.WalkSpeed = 16
+                    humanoid.JumpPower = 50
+                    humanoid:ChangeState(Enum.HumanoidStateType.Running)
                 end
+            end
+        end)
+
+        -- Impede o jogo de resetar o jogador
+        LocalPlayer.CharacterRemoving:Connect(function()
+            if noVoidDeathEnabled then
+                -- Tenta impedir o reset forçando a recriação do personagem
+                wait(0.1) -- Pequeno delay para evitar loops infinitos
+                LocalPlayer:LoadCharacter()
             end
         end)
     else
         -- Restaura o comportamento padrão (permite morrer no void)
         humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, true)
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, true)
     end
 end
 
 -- Toggle for "No Void Death"
 local NoVoidDeathToggle = Tab10:Toggle({
-    Title = "No Void Death",
+    Title = "nao morrer no oid",
     Desc = "Prevents death in the void (as if the void doesn't exist)",
     Default = false,
     Callback = function(state)
@@ -2147,6 +2172,8 @@ end)
 
 -- Inicializa a verificação para o personagem atual
 handleNoVoidDeath()
+
+-----------------------------------------------------------------------------------------------------------------------------------
 
 Tab10:Paragraph({ Title = "ativa o void protection para nao morrer no void ", Desc = "antes de usar faça isso!!!" })
 
