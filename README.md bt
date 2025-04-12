@@ -2007,7 +2007,7 @@ local player = game.Players.LocalPlayer
 local selectedLocation = "Morro" -- Valor inicial padrão
 
 -- Dropdown com as localizações de Brookhaven
-local Dropdown = Tab10:Dropdown({
+local Dropdown = Tab9:Dropdown({
     Title = "Locais de Brookhaven",
     Desc = "Selecione um local para teleportar",
     Value = "Morro", -- Valor padrão
@@ -2077,7 +2077,7 @@ local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local selectedPlayer = nil
 local isFollowing = false
-local originalPosition = nil -- Para armazenar a posição original antes do teleporte
+local originalPosition = nil -- Armazena a posição inicial
 
 -- Função para pegar os nomes dos jogadores
 local function getPlayerNames()
@@ -2094,7 +2094,7 @@ local function updateDropdown(dropdown)
 end
 
 -- Dropdown para selecionar jogador
-local DropdownTeleport = Tab8:Dropdown({
+local DropdownTeleport = Tab10:Dropdown({
     Title = "Selecionar Jogador",
     Desc = "Escolha um jogador para seguir",
     Value = "",
@@ -2123,7 +2123,7 @@ local ButtonFollow = Tab10:Button({
 })
 
 -- Botão para parar o movimento
-local ButtonStop = Tab8:Button({
+local ButtonStop = Tab10:Button({
     Title = "Parar",
     Desc = "Clique para interromper o movimento",
     Callback = function()
@@ -2132,11 +2132,14 @@ local ButtonStop = Tab8:Button({
     end
 })
 
--- Função para seguir e girar rapidamente ao redor do jogador selecionado
+-- Função para seguir e girar **absurdamente rápido** (incluindo backflips)
 RunService.RenderStepped:Connect(function()
     if isFollowing and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
         local targetPosition = selectedPlayer.Character.HumanoidRootPart.Position
-        LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(targetPosition) * CFrame.Angles(0, math.rad(workspace.DistributedGameTime * 500), 0)) -- Giro rápido
+        LocalPlayer.Character:SetPrimaryPartCFrame(
+            CFrame.new(targetPosition) 
+            * CFrame.Angles(math.rad(workspace.DistributedGameTime * 2000), math.rad(workspace.DistributedGameTime * 3000), math.rad(workspace.DistributedGameTime * 4000))
+        ) -- Giro extremamente rápido (Backflips incluídos)
     end
 end)
 
