@@ -74,7 +74,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.88",
+    Title = "Lolyta Hub 2.7",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -2096,60 +2096,9 @@ local function updateDropdown(dropdown)
     end
 end
 
--- Função para invocar o servidor e pegar/remover o sofá
-local function getCouch()
+-- Função para invocar o servidor e despawnar o sofá
+local function despawnCouch()
     invokeServer("1Too1l", {"PickingTools", "Couch"})
-end
-
--- Função para verificar se o sofá já está no inventário ou equipado
-local function hasCouch()
-    -- Verifica se o sofá está no Workspace (indicando que já foi spawnado)
-    local couchInWorkspace = Workspace:FindFirstChild("Couch")
-    if couchInWorkspace then
-        print("Sofá já está no Workspace!")
-        return true
-    end
-
-    -- Verifica se o jogador local está segurando o sofá
-    local localCharacter = Players.LocalPlayer.Character
-    if localCharacter then
-        for _, tool in ipairs(localCharacter:GetChildren()) do
-            if tool:IsA("Tool") and tool.Name == "Couch" then
-                print("Sofá já está equipado!")
-                return true
-            end
-        end
-    end
-
-    -- Verifica no Backpack do jogador
-    local backpack = Players.LocalPlayer:FindFirstChild("Backpack")
-    if backpack then
-        for _, tool in ipairs(backpack:GetChildren()) do
-            if tool:IsA("Tool") and tool.Name == "Couch" then
-                print("Sofá já está no inventário!")
-                return true
-            end
-        end
-    end
-
-    return false
-end
-
--- Função para equipar o sofá manualmente
-local function equipCouch()
-    local localCharacter = Players.LocalPlayer.Character
-    local backpack = Players.LocalPlayer:FindFirstChild("Backpack")
-    if not localCharacter or not backpack then return false end
-
-    local couchTool = backpack:FindFirstChild("Couch")
-    if couchTool then
-        couchTool.Parent = localCharacter -- Equipa o sofá
-        print("Sofá equipado manualmente!")
-        return true
-    else
-        warn("Sofá não encontrado no inventário para equipar!")
-        return false
-    end
 end
 
 -- Função para mostrar uma notificação
@@ -2188,12 +2137,12 @@ Players.PlayerRemoving:Connect(function() updateDropdown(DropdownFollow) end)
 -- Botão para iniciar o acompanhamento
 Tab10:Button({
     Title = "Seguir com Sofá",
-    Desc = "Segue o jogador selecionado com o sofá",
+    Desc = "Segue o jogador selecionado enquanto dá backflips",
     Callback = function()
         local LocalPlayer = Players.LocalPlayer
         local originalPosition -- Para armazenar a posição original
         local followActive = true -- Estado do acompanhamento
-        local rotationSpeed = 100 -- Velocidade de rotação (backflips rápidos)
+        local rotationSpeed = 150 -- Velocidade de rotação (backflips rápidos)
 
         -- Salva a posição original do jogador antes de começar
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
@@ -2213,19 +2162,20 @@ Tab10:Button({
             return
         end
 
-        -- Verifica se o sofá já está no inventário ou equipado
-        if not hasCouch() then
-            getCouch()
-            print("Sofá pego!")
-            task.wait(0.5) -- Delay para garantir que o sofá seja spawnado
-        else
-            print("Sofá já está no inventário ou equipado, não será pego novamente.")
+        -- Verifica se o jogador local está segurando o sofá
+        local hasCouch = false
+        local localCharacter = LocalPlayer.Character
+        if localCharacter then
+            for _, tool in ipairs(localCharacter:GetChildren()) do
+                if tool:IsA("Tool") and tool.Name == "Couch" then
+                    hasCouch = true
+                    print("Sofá detectado na mão do jogador!")
+                    break
+                end
+            end
         end
-
-        -- Equipa o sofá manualmente
-        local equipped = equipCouch()
-        if not equipped then
-            showNotification("Erro: Não foi possível equipar o sofá!")
+        if not hasCouch then
+            showNotification("Equipe o sofá manualmente antes de usar este botão!")
             return
         end
 
@@ -2241,7 +2191,11 @@ Tab10:Button({
                 if seat and seat.Parent and seat.Parent.Name == "Couch" then
                     print("Jogador está sentado no sofá!")
                     return true
+                else
+                    print("Jogador está sentado, mas não no sofá! Seat.Parent: " .. (seat and seat.Parent and seat.Parent.Name or "desconhecido"))
                 end
+            else
+                print("Jogador não está sentado.")
             end
             return false
         end
@@ -2266,6 +2220,7 @@ Tab10:Button({
                 local body = couch:FindFirstChild("Body", true) or couch:FindFirstChild("Part", true)
                 if body and body:IsA("BasePart") then
                     couch.PrimaryPart = body
+                    print("PrimaryPart do sofá definido como: " .. body.Name)
                 else
                     warn("Sofá não tem PrimaryPart ou Body/Part para teleportar!")
                     return
@@ -2318,7 +2273,7 @@ Tab10:Button({
                 if isPlayerSeatedInCouch(targetPlayer) then
                     print("Jogador sentado no sofá, teleportando para o void!")
                     teleportToVoid()
-                    getCouch() -- Remove o sofá do inventário
+                    despawnCouch() -- Remove o sofá do inventário
                     print("Sofá despawnado!")
                     -- Volta à posição original
                     if LocalPlayer.Character and originalPosition then
