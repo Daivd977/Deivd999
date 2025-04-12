@@ -74,7 +74,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.999",
+    Title = "Lolyta Hub 2.7",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -2267,3 +2267,102 @@ end)
 -- Atualiza Dropdown quando novos jogadores entram ou saem
 Players.PlayerAdded:Connect(function() updateDropdown(DropdownTeleport) end)
 Players.PlayerRemoving:Connect(function() updateDropdown(DropdownTeleport) end)
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+local selectedPlayer = nil
+local isFlinging = false
+
+-- Função para pegar os nomes dos jogadores
+local function getPlayerNames()
+    local playerNames = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            table.insert(playerNames, player.Name)
+        end
+    end
+    return playerNames
+end
+
+-- Função para atualizar o dropdown
+local function updateDropdown(dropdown)
+    dropdown:Refresh(getPlayerNames())
+end
+
+-- Dropdown para selecionar o jogador alvo
+local DropdownPlayer = Tab10:Dropdown({
+    Title = "Selecionar Jogador",
+    Desc = "Escolha quem vai ser flungado com o barco",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = getPlayerNames(),
+    Callback = function(selectedPlayerName)
+        selectedPlayer = Players:FindFirstChild(selectedPlayerName)
+        print("Jogador selecionado: " .. selectedPlayerName)
+    end
+})
+
+updateDropdown(DropdownPlayer)
+
+-- Botão para iniciar o fling
+local ButtonFling = Tab10:Button({
+    Title = "Iniciar Fling",
+    Desc = "Clique para iniciar o fling com o barco",
+    Callback = function()
+        if selectedPlayer then
+            isFlinging = true
+            -- Teleporte para posição inicial
+            LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(-1609.82, -3.97, 6.39))
+            print("Teleportado para posição inicial!")
+
+            -- Executa o comando para obter o barco
+            local args = {
+                [1] = "PickingBoat",
+                [2] = "MilitaryBoatFree"
+            }
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
+            print("Comando para obter o barco executado!")
+
+            -- Teleporte para o assento do motorista
+            local vehicleSeat = Workspace:FindFirstChild("VehicleSeat") -- Certifique-se de que o nome do assento está correto
+            if vehicleSeat then
+                LocalPlayer.Character:SetPrimaryPartCFrame(vehicleSeat.CFrame)
+                print("Teleportado para o assento do motorista!")
+            else
+                print("Assento do motorista não encontrado!")
+                isFlinging = false
+                return
+            end
+
+            -- Teleporta o barco para o jogador selecionado e inicia o fling
+            RunService.RenderStepped:Connect(function()
+                if isFlinging and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    local targetPosition = selectedPlayer.Character.HumanoidRootPart.Position
+                    vehicleSeat.Parent:SetPrimaryPartCFrame(CFrame.new(targetPosition) * CFrame.Angles(math.rad(workspace.DistributedGameTime * 5000), 0, math.rad(workspace.DistributedGameTime * 7000)))
+                    vehicleSeat.Parent.CanCollide = false -- Remove a colisão do barco
+                    print("Barco girando e teleportando para jogador alvo!")
+                end
+            end)
+        end
+    end
+})
+
+-- Botão para parar o fling
+local ButtonStopFling = Tab10:Button({
+    Title = "Parar Fling",
+    Desc = "Interrompa o fling com o barco",
+    Callback = function()
+        isFlinging = false
+        print("Fling parado!")
+    end
+})
+
+-- Atualiza Dropdown quando jogadores entram ou saem
+Players.PlayerAdded:Connect(function() updateDropdown(DropdownPlayer) end)
+Players.PlayerRemoving:Connect(function() updateDropdown(DropdownPlayer) end)
