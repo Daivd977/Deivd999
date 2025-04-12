@@ -74,7 +74,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.7",
+    Title = "Lolyta Hub 2.999",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -2325,6 +2325,9 @@ local ButtonFling = Tab10:Button({
             LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(-1609.82, -3.97, 6.39))
             print("Teleportado para a posição inicial.")
 
+            -- Espera 1 segundo antes de spawnar o barco
+            wait(1)
+
             -- Executa o comando para obter o barco
             local args = {
                 [1] = "PickingBoat",
@@ -2333,12 +2336,14 @@ local ButtonFling = Tab10:Button({
             ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
             print("Comando para obter o barco executado.")
 
-            -- Localizar e teleportar para o VehicleSeat
-            wait(1) -- Tempo para o barco ser carregado
+            -- Espera 0.5 segundo antes de teleportar para o assento do motorista
+            wait(0.5)
+
+            -- Localizar e teleportar para o assento do motorista
             boatModel = Workspace:FindFirstChild("MilitaryBoatFree") -- Substitua pelo nome correto do barco
             if boatModel and boatModel:FindFirstChild("VehicleSeat") then
                 local vehicleSeat = boatModel:FindFirstChild("VehicleSeat")
-                LocalPlayer.Character:SetPrimaryPartCFrame(vehicleSeat.CFrame)
+                LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(-1611.96, 5.59, -13.41))
                 print("Teleportado para o assento do motorista!")
             else
                 print("Barco ou assento do motorista não encontrado!")
@@ -2353,9 +2358,9 @@ local ButtonFling = Tab10:Button({
                     if boatModel then
                         boatModel:SetPrimaryPartCFrame(
                             CFrame.new(targetPosition) * CFrame.Angles(
-                                math.rad(workspace.DistributedGameTime * 7000), -- Rotação absurda no eixo X
-                                math.rad(workspace.DistributedGameTime * 9000), -- Rotação absurda no eixo Y
-                                math.rad(workspace.DistributedGameTime * 11000) -- Rotação absurda no eixo Z
+                                math.rad(workspace.DistributedGameTime * 12000), -- Rotação absurda no eixo X
+                                math.rad(workspace.DistributedGameTime * 15000), -- Rotação absurda no eixo Y
+                                math.rad(workspace.DistributedGameTime * 18000) -- Rotação absurda no eixo Z
                             )
                         )
                         boatModel.PrimaryPart.CanCollide = false -- Remove a colisão do barco
