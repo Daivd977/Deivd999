@@ -74,7 +74,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.7",
+    Title = "Lolyta Hub 2.999",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -2290,31 +2290,31 @@ local isSpinning = false
 
 -- Função para pegar os nomes dos jogadores
 local function getPlayerNames()
- local playerNames = {}
- for _, player in ipairs(Players:GetPlayers()) do
- if player ~= LocalPlayer then -- Exclui o próprio jogador
- table.insert(playerNames, player.Name)
- end
- end
- return playerNames
+    local playerNames = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then -- Exclui o próprio jogador
+            table.insert(playerNames, player.Name)
+        end
+    end
+    return playerNames
 end
 
 -- Função para atualizar o dropdown
 local function updateDropdown(dropdown)
- dropdown:Refresh(getPlayerNames())
+    dropdown:Refresh(getPlayerNames())
 end
 
 -- Dropdown to select players
 local DropdownFling = Tab10:Dropdown({
- Title = "Selecionar Jogador (Fling)",
- Desc = "Selecione o jogador para dar fling com o barco",
- Value = "",
- Multi = false,
- AllowNone = true,
- Values = getPlayerNames(),
- Callback = function(selectedPlayerName)
- print("Jogador selecionado para fling: " .. selectedPlayerName)
- end,
+    Title = "Selecionar Jogador (Fling)",
+    Desc = "Selecione o jogador para dar fling com o barco",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = getPlayerNames(),
+    Callback = function(selectedPlayerName)
+        print("Jogador selecionado para fling: " .. selectedPlayerName)
+    end,
 })
 
 -- Atualiza o dropdown quando jogadores entram ou saem
@@ -2324,144 +2324,160 @@ Players.PlayerRemoving:Connect(function() updateDropdown(DropdownFling) end)
 
 -- Function to teleport the local player to the specified position
 local function teleportToPosition(position)
- if HumanoidRootPart then
- HumanoidRootPart.CFrame = CFrame.new(position)
- end
+    if HumanoidRootPart then
+        HumanoidRootPart.CFrame = CFrame.new(position)
+    end
 end
 
 -- Function to spawn the boat
 local function spawnBoat()
- local args = {
- [1] = "PickingBoat",
- [2] = "MilitaryBoatFree"
- }
- ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
+    local args = {
+        [1] = "PickingBoat",
+        [2] = "MilitaryBoatFree"
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
 end
 
 -- Function to find the boat in the workspace
 local function findBoat()
- for _, vehicle in pairs(Workspace.Vehicles:GetChildren()) do
- if vehicle.Name == "MilitaryBoatFree" and vehicle:FindFirstChild("Owner") and vehicle.Owner.Value == LocalPlayer then
- return vehicle
- end
- end
- return nil
+    for _, vehicle in pairs(Workspace.Vehicles:GetChildren()) do
+        if vehicle.Name == "MilitaryBoatFree" and vehicle:FindFirstChild("Owner") and vehicle.Owner.Value == LocalPlayer then
+            return vehicle
+        end
+    end
+    return nil
 end
 
 -- Function to teleport the boat to the target player
 local function teleportBoatToPlayer(targetPlayer)
- if not boat then return end
- local targetCharacter = targetPlayer.Character
- if targetCharacter then
- local targetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
- if targetHRP then
- boat:SetPrimaryPartCFrame(targetHRP.CFrame + Vector3.new(0, 5, 0)) -- Posiciona o barco acima do jogador
- end
- end
+    if not boat then return end
+    local targetCharacter = targetPlayer.Character
+    if targetCharacter then
+        local targetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
+        if targetHRP then
+            boat:SetPrimaryPartCFrame(targetHRP.CFrame + Vector3.new(0, 5, 0)) -- Posiciona o barco acima do jogador
+        end
+    end
 end
 
 -- Function to disable boat collision
 local function disableBoatCollision()
- if not boat then return end
- for _, part in pairs(boat:GetDescendants()) do
- if part:IsA("BasePart") then
- part.CanCollide = false
- end
- end
+    if not boat then return end
+    for _, part in pairs(boat:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+        end
+    end
 end
 
 -- Function to make the boat spin (backflip)
 local function spinBoat()
- if not boat or not boat.PrimaryPart then return end
- isSpinning = true
- local spinSpeed = 10 -- Velocidade de rotação (muito rápida)
- local bodyGyro = Instance.new("BodyGyro")
- bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
- bodyGyro.P = 10000
- bodyGyro.Parent = boat.PrimaryPart
+    if not boat or not boat.PrimaryPart then return end
+    isSpinning = true
+    local spinSpeed = 10 -- Velocidade de rotação (muito rápida)
+    local bodyGyro = Instance.new("BodyGyro")
+    bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+    bodyGyro.P = 10000
+    bodyGyro.Parent = boat.PrimaryPart
 
- spinConnection = RunService.Heartbeat:Connect(function(deltaTime)
- if not isSpinning or not boat or not boat.PrimaryPart then
- bodyGyro:Destroy()
- spinConnection:Disconnect()
- return
- end
- bodyGyro.CFrame = bodyGyro.CFrame * CFrame.Angles(math.rad(spinSpeed * 360 * deltaTime), 0, 0) -- Backflip (eixo X)
- end)
+    spinConnection = RunService.Heartbeat:Connect(function(deltaTime)
+        if not isSpinning or not boat or not boat.PrimaryPart then
+            bodyGyro:Destroy()
+            spinConnection:Disconnect()
+            return
+        end
+        bodyGyro.CFrame = bodyGyro.CFrame * CFrame.Angles(math.rad(spinSpeed * 360 * deltaTime), 0, 0) -- Backflip (eixo X)
+    end)
 end
 
 -- Function to stop the boat spinning
 local function stopBoat()
- isSpinning = false
- if spinConnection then
- spinConnection:Disconnect()
- spinConnection = nil
- end
- if boat and boat.PrimaryPart then
- local bodyGyro = boat.PrimaryPart:FindFirstChildOfClass("BodyGyro")
- if bodyGyro then
- bodyGyro:Destroy()
- end
- end
+    isSpinning = false
+    if spinConnection then
+        spinConnection:Disconnect()
+        spinConnection = nil
+    end
+    if boat and boat.PrimaryPart then
+        local bodyGyro = boat.PrimaryPart:FindFirstChildOfClass("BodyGyro")
+        if bodyGyro then
+            bodyGyro:Destroy()
+        end
+    end
 end
 
 -- Button to start the fling
 local FlingButton = Tab10:Button({
- Title = "Fling Player",
- Desc = "Fling the selected player with a spinning boat",
- Callback = function()
- local selectedPlayerName = DropdownFling.Value
- if not selectedPlayerName or selectedPlayerName == "" then
- warn("No player selected!")
- return
- end
+    Title = "Fling Player",
+    Desc = "Fling the selected player with a spinning boat",
+    Callback = function()
+        local selectedPlayerName = DropdownFling.Value
+        if not selectedPlayerName or selectedPlayerName == "" then
+            warn("No player selected!")
+            return
+        end
 
- local targetPlayer = Players:FindFirstChild(selectedPlayerName)
- if not targetPlayer then
- warn("Player not found!")
- return 
- end
+        local targetPlayer = Players:FindFirstChild(selectedPlayerName)
+        if not targetPlayer then
+            warn("Player not found!")
+            return
+        end
 
- -- Step 1: Teleport to the specified position
- local targetPosition = Vector3.new(-1611.96, 5.59, -13.41)
- teleportToPosition(targetPosition)
+        -- Step 1: Teleport to the specified position
+        local targetPosition = Vector3.new(-1611.96, 5.59, -13.41)
+        teleportToPosition(targetPosition)
 
- -- Step 2: Spawn the boat
- spawnBoat()
+        -- Step 2: Spawn the boat with a 1-second delay
+        spawnBoat()
+        wait(1) -- Delay de 1 segundo para o barco spawnar
 
- -- Step 3: Wait for the boat to spawn and find it
- wait(1) -- Pequeno delay para garantir que o barco apareça
- boat = findBoat()
- if not boat then
- warn("Boat not found!")
- return
- end
+        -- Step 3: Find the boat
+        boat = findBoat()
+        if not boat then
+            warn("Boat not found!")
+            return
+        end
 
- -- Step 4: Teleport to the VehicleSeat
- local vehicleSeat = boat:FindFirstChild("VehicleSeat", true)
- if vehicleSeat then
- vehicleSeat:Sit(Character:FindFirstChildOfClass("Humanoid"))
- else
- warn("VehicleSeat not found!")
- return
- end
+        -- Step 4: Teleport to the VehicleSeat with a 1-second delay
+        local vehicleSeat = boat:FindFirstChild("VehicleSeat", true)
+        if vehicleSeat then
+            wait(1) -- Delay de 1 segundo antes de tentar sentar
+            local humanoid = Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                -- Certifica-se de que o humanoid está livre para sentar
+                humanoid.Sit = false
+                wait(0.1) -- Pequeno delay para garantir que o humanoid está pronto
+                vehicleSeat:Sit(humanoid)
+                -- Verifica se o jogador realmente sentou
+                wait(0.5)
+                if humanoid.SeatPart ~= vehicleSeat then
+                    warn("Failed to sit in VehicleSeat, retrying...")
+                    vehicleSeat:Sit(humanoid)
+                end
+            else
+                warn("Humanoid not found!")
+                return
+            end
+        else
+            warn("VehicleSeat not found!")
+            return
+        end
 
- -- Step 5: Teleport the boat to the selected player
- teleportBoatToPlayer(targetPlayer)
+        -- Step 5: Teleport the boat to the selected player
+        teleportBoatToPlayer(targetPlayer)
 
- -- Step 6: Disable boat collision
- disableBoatCollision()
+        -- Step 6: Disable boat collision
+        disableBoatCollision()
 
- -- Step 7: Make the boat spin (backflip)
- spinBoat()
- end
+        -- Step 7: Make the boat spin (backflip)
+        spinBoat()
+    end
 })
 
 -- Button to stop the fling
 local StopButton = Tab10:Button({
- Title = "Stop Fling",
- Desc = "Stop the boat spinning",
- Callback = function()
- stopBoat()
- end
+    Title = "Stop Fling",
+    Desc = "Stop the boat spinning",
+    Callback = function()
+        stopBoat()
+    end
 })
