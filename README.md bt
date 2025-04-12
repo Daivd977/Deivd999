@@ -2274,9 +2274,12 @@ Players.PlayerRemoving:Connect(function() updateDropdown(DropdownTeleport) end)
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
+
 local selectedPlayer = nil
 local isFlinging = false
+local boatModel = nil -- Variável para armazenar o barco
 
 -- Função para pegar os nomes dos jogadores
 local function getPlayerNames()
@@ -2297,7 +2300,7 @@ end
 -- Dropdown para selecionar o jogador alvo
 local DropdownPlayer = Tab10:Dropdown({
     Title = "Selecionar Jogador",
-    Desc = "Escolha quem vai ser flungado com o barco",
+    Desc = "Escolha quem será flungado",
     Value = "",
     Multi = false,
     AllowNone = true,
@@ -2317,9 +2320,10 @@ local ButtonFling = Tab10:Button({
     Callback = function()
         if selectedPlayer then
             isFlinging = true
-            -- Teleporte para posição inicial
+
+            -- Teleporta o jogador local para a posição inicial
             LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(-1609.82, -3.97, 6.39))
-            print("Teleportado para posição inicial!")
+            print("Teleportado para a posição inicial.")
 
             -- Executa o comando para obter o barco
             local args = {
@@ -2327,26 +2331,36 @@ local ButtonFling = Tab10:Button({
                 [2] = "MilitaryBoatFree"
             }
             ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
-            print("Comando para obter o barco executado!")
+            print("Comando para obter o barco executado.")
 
-            -- Teleporte para o assento do motorista
-            local vehicleSeat = Workspace:FindFirstChild("VehicleSeat") -- Certifique-se de que o nome do assento está correto
-            if vehicleSeat then
+            -- Localizar e teleportar para o VehicleSeat
+            wait(1) -- Tempo para o barco ser carregado
+            boatModel = Workspace:FindFirstChild("MilitaryBoatFree") -- Substitua pelo nome correto do barco
+            if boatModel and boatModel:FindFirstChild("VehicleSeat") then
+                local vehicleSeat = boatModel:FindFirstChild("VehicleSeat")
                 LocalPlayer.Character:SetPrimaryPartCFrame(vehicleSeat.CFrame)
                 print("Teleportado para o assento do motorista!")
             else
-                print("Assento do motorista não encontrado!")
+                print("Barco ou assento do motorista não encontrado!")
                 isFlinging = false
                 return
             end
 
-            -- Teleporta o barco para o jogador selecionado e inicia o fling
+            -- Girar o barco e teleportar para o jogador selecionado
             RunService.RenderStepped:Connect(function()
-                if isFlinging and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                if isFlinging and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
                     local targetPosition = selectedPlayer.Character.HumanoidRootPart.Position
-                    vehicleSeat.Parent:SetPrimaryPartCFrame(CFrame.new(targetPosition) * CFrame.Angles(math.rad(workspace.DistributedGameTime * 5000), 0, math.rad(workspace.DistributedGameTime * 7000)))
-                    vehicleSeat.Parent.CanCollide = false -- Remove a colisão do barco
-                    print("Barco girando e teleportando para jogador alvo!")
+                    if boatModel then
+                        boatModel:SetPrimaryPartCFrame(
+                            CFrame.new(targetPosition) * CFrame.Angles(
+                                math.rad(workspace.DistributedGameTime * 7000), -- Rotação absurda no eixo X
+                                math.rad(workspace.DistributedGameTime * 9000), -- Rotação absurda no eixo Y
+                                math.rad(workspace.DistributedGameTime * 11000) -- Rotação absurda no eixo Z
+                            )
+                        )
+                        boatModel.PrimaryPart.CanCollide = false -- Remove a colisão do barco
+                        print("Barco girando e teleportando para o jogador alvo.")
+                    end
                 end
             end)
         end
@@ -2359,7 +2373,11 @@ local ButtonStopFling = Tab10:Button({
     Desc = "Interrompa o fling com o barco",
     Callback = function()
         isFlinging = false
-        print("Fling parado!")
+        if boatModel then
+            boatModel:SetPrimaryPartCFrame(CFrame.new(-1609.82, -3.97, 6.39)) -- Retorna o barco para a posição inicial
+            print("Barco retornado à posição inicial.")
+        end
+        print("Fling interrompido.")
     end
 })
 
