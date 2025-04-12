@@ -74,7 +74,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.7",
+    Title = "Lolyta Hub 2.88",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -2101,9 +2101,59 @@ local function getCouch()
     invokeServer("1Too1l", {"PickingTools", "Couch"})
 end
 
+-- Função para verificar se o sofá já está no inventário ou equipado
+local function hasCouch()
+    -- Verifica se o sofá está no Workspace (indicando que já foi spawnado)
+    local couchInWorkspace = Workspace:FindFirstChild("Couch")
+    if couchInWorkspace then
+        print("Sofá já está no Workspace!")
+        return true
+    end
+
+    -- Verifica se o jogador local está segurando o sofá
+    local localCharacter = Players.LocalPlayer.Character
+    if localCharacter then
+        for _, tool in ipairs(localCharacter:GetChildren()) do
+            if tool:IsA("Tool") and tool.Name == "Couch" then
+                print("Sofá já está equipado!")
+                return true
+            end
+        end
+    end
+
+    -- Verifica no Backpack do jogador
+    local backpack = Players.LocalPlayer:FindFirstChild("Backpack")
+    if backpack then
+        for _, tool in ipairs(backpack:GetChildren()) do
+            if tool:IsA("Tool") and tool.Name == "Couch" then
+                print("Sofá já está no inventário!")
+                return true
+            end
+        end
+    end
+
+    return false
+end
+
+-- Função para equipar o sofá manualmente
+local function equipCouch()
+    local localCharacter = Players.LocalPlayer.Character
+    local backpack = Players.LocalPlayer:FindFirstChild("Backpack")
+    if not localCharacter or not backpack then return false end
+
+    local couchTool = backpack:FindFirstChild("Couch")
+    if couchTool then
+        couchTool.Parent = localCharacter -- Equipa o sofá
+        print("Sofá equipado manualmente!")
+        return true
+    else
+        warn("Sofá não encontrado no inventário para equipar!")
+        return false
+    end
+end
+
 -- Função para mostrar uma notificação
 local function showNotification(message)
-    -- Usa o sistema de notificações do Roblox (ajuste se sua biblioteca tiver um método específico)
     pcall(function()
         game.StarterGui:SetCore("SendNotification", {
             Title = "Notificação",
@@ -2143,8 +2193,7 @@ Tab10:Button({
         local LocalPlayer = Players.LocalPlayer
         local originalPosition -- Para armazenar a posição original
         local followActive = true -- Estado do acompanhamento
-        local rotationSpeed = 50 -- Velocidade de rotação (backflips rápidos)
-        local bodyGyro -- Para fazer o jogador local girar
+        local rotationSpeed = 100 -- Velocidade de rotação (backflips rápidos)
 
         -- Salva a posição original do jogador antes de começar
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
@@ -2164,46 +2213,33 @@ Tab10:Button({
             return
         end
 
-        -- Pega e equipa o sofá
-        getCouch()
-        print("Sofá pego!")
-        task.wait(0.1) -- Pequeno delay para garantir que o sofá seja equipado
-
-        -- Função para fazer o jogador local girar (backflips)
-        local function startSpinning(character)
-            if not character then return end
-            local rootPart = character:FindFirstChild("HumanoidRootPart")
-            if not rootPart then return end
-
-            -- Remove BodyGyro anterior, se existir
-            if rootPart:FindFirstChild("SpinGyro") then
-                rootPart.SpinGyro:Destroy()
-            end
-
-            bodyGyro = Instance.new("BodyGyro")
-            bodyGyro.Name = "SpinGyro"
-            bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-            bodyGyro.P = 10000
-            bodyGyro.Parent = rootPart
+        -- Verifica se o sofá já está no inventário ou equipado
+        if not hasCouch() then
+            getCouch()
+            print("Sofá pego!")
+            task.wait(0.5) -- Delay para garantir que o sofá seja spawnado
+        else
+            print("Sofá já está no inventário ou equipado, não será pego novamente.")
         end
 
-        -- Função para parar de girar
-        local function stopSpinning(character)
-            if not character then return end
-            local rootPart = character:FindFirstChild("HumanoidRootPart")
-            if not rootPart then return end
-            if rootPart:FindFirstChild("SpinGyro") then
-                rootPart.SpinGyro:Destroy()
-            end
+        -- Equipa o sofá manualmente
+        local equipped = equipCouch()
+        if not equipped then
+            showNotification("Erro: Não foi possível equipar o sofá!")
+            return
         end
 
         -- Função para detectar se o jogador está sentado no sofá
         local function isPlayerSeatedInCouch(player)
-            if not player.Character or not player.Character:FindFirstChild("Humanoid") then return false end
+            if not player.Character or not player.Character:FindFirstChild("Humanoid") then
+                print("Personagem ou Humanoid do jogador selecionado não encontrado!")
+                return false
+            end
             local humanoid = player.Character.Humanoid
             if humanoid.Sit then
                 local seat = humanoid.SeatPart
-                if seat and seat.Parent and seat.Parent.Name == "Couch" then -- Verifica se o assento é um sofá
+                if seat and seat.Parent and seat.Parent.Name == "Couch" then
+                    print("Jogador está sentado no sofá!")
                     return true
                 end
             end
@@ -2221,7 +2257,7 @@ Tab10:Button({
             -- Encontra o sofá no Workspace
             local couch = Workspace:FindFirstChild("Couch")
             if not couch then
-                warn("Sofá não encontrado no Workspace!")
+                warn("Sofá não encontrado no Workspace para teleportar!")
                 return
             end
 
@@ -2246,7 +2282,6 @@ Tab10:Button({
         -- Verifica se o jogador já está sentado no sofá
         if isPlayerSeatedInCouch(targetPlayer) then
             showNotification("O player está sentado!")
-            stopSpinning(LocalPlayer.Character)
             return
         end
 
@@ -2269,19 +2304,15 @@ Tab10:Button({
                 local localRootPart = localCharacter.HumanoidRootPart
                 local targetRootPart = targetPlayer.Character.HumanoidRootPart
 
-                -- Inicia a rotação (backflips)
-                startSpinning(localCharacter)
-                if bodyGyro then
-                    bodyGyro.CFrame = bodyGyro.CFrame * CFrame.Angles(
-                        math.rad(rotationSpeed * RunService.Heartbeat:Wait()), -- Gira no eixo X (backflips)
-                        0,
-                        0
-                    )
-                end
+                -- Aplica rotação (backflips) diretamente no CFrame
+                local deltaTime = RunService.Heartbeat:Wait()
+                local rotationAngle = math.rad(rotationSpeed * deltaTime)
+                local currentCFrame = localRootPart.CFrame
+                local newRotation = currentCFrame * CFrame.Angles(rotationAngle, 0, 0) -- Gira no eixo X (backflips)
 
                 -- Segue o jogador selecionado
                 local targetPosition = targetRootPart.Position + Vector3.new(0, 2, 0) -- Fica um pouco acima do jogador
-                localRootPart.CFrame = CFrame.new(targetPosition, targetRootPart.Position)
+                localRootPart.CFrame = CFrame.new(targetPosition, targetRootPart.Position) * newRotation
 
                 -- Verifica se o jogador sentou no sofá
                 if isPlayerSeatedInCouch(targetPlayer) then
@@ -2300,9 +2331,6 @@ Tab10:Button({
 
                 task.wait() -- Usa o Heartbeat para suavizar o movimento
             end
-
-            -- Para de girar ao final
-            stopSpinning(LocalPlayer.Character)
         end)
     end,
 })
