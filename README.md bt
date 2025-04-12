@@ -74,7 +74,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.8",
+    Title = "Lolyta Hub 2.7",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -2133,7 +2133,7 @@ local ButtonStop = Tab10:Button({
     end
 })
 
--- Seguir e girar rapidamente ao redor do jogador enquanto não sentar
+-- Seguir e girar absurdamente rápido enquanto o jogador não sentar
 RunService.RenderStepped:Connect(function()
     if isFollowing and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
         local targetPosition = selectedPlayer.Character.HumanoidRootPart.Position
@@ -2147,7 +2147,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Detecta quando o jogador selecionado se senta e executa o teleporte + comando + retorno
+-- Detecta quando o jogador selecionado se senta e executa o teleporte para o Void + comando + retorno
 RunService.Heartbeat:Connect(function()
     if isFollowing and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("Humanoid") then
         if selectedPlayer.Character.Humanoid.Sit then
@@ -2159,15 +2159,15 @@ RunService.Heartbeat:Connect(function()
             -- Parar de girar e parar de seguir o jogador
             isFollowing = false
 
-            -- Esperar exatamente **1 segundo** antes de executar o comando
-            wait(1)
+            -- **Esperar 0.5 segundos no Void antes de executar o comando**
+            wait(0.5)
 
             -- Executar o comando para pegar a "Couch"
             ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer("PickingTools", "Couch")
 
             print("Comando executado! Voltando à posição original...")
 
-            -- Esperar 1 segundo antes de retornar
+            -- **Esperar mais 1 segundo antes de retornar**
             wait(1)
 
             -- Teleportar de volta para a posição original e garantir que fique em pé
@@ -2182,6 +2182,7 @@ end)
 -- Atualiza Dropdown quando novos jogadores entram ou saem
 Players.PlayerAdded:Connect(function() updateDropdown(DropdownTeleport) end)
 Players.PlayerRemoving:Connect(function() updateDropdown(DropdownTeleport) end)
+
 -------------------------------------------------------------------------------------------------------------------------------------------
 
 local Players = game:GetService("Players")
