@@ -74,7 +74,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.7",
+    Title = "Lolyta Hub 2.999",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.0",
@@ -2179,6 +2179,13 @@ Tab10:Button({
             return
         end
 
+        -- Desativa o movimento do Humanoid para evitar que o jogador "saia voando"
+        local humanoid = localCharacter:FindFirstChild("Humanoid")
+        if humanoid then
+            humanoid.PlatformStand = true -- Impede o Humanoid de se mover
+            print("Movimento do Humanoid desativado para seguir o jogador!")
+        end
+
         -- Função para detectar se o jogador está sentado no sofá
         local function isPlayerSeatedInCouch(player)
             if not player.Character or not player.Character:FindFirstChild("Humanoid") then
@@ -2237,6 +2244,10 @@ Tab10:Button({
         -- Verifica se o jogador já está sentado no sofá
         if isPlayerSeatedInCouch(targetPlayer) then
             showNotification("O player está sentado!")
+            if humanoid then
+                humanoid.PlatformStand = false -- Reativa o movimento do Humanoid
+                print("Movimento do Humanoid reativado!")
+            end
             return
         end
 
@@ -2263,11 +2274,13 @@ Tab10:Button({
                 local deltaTime = RunService.Heartbeat:Wait()
                 local rotationAngle = math.rad(rotationSpeed * deltaTime)
                 local currentCFrame = localRootPart.CFrame
-                local newRotation = currentCFrame * CFrame.Angles(rotationAngle, 0, 0) -- Gira no eixo X (backflips)
+                local newRotation = CFrame.Angles(rotationAngle, 0, 0) -- Gira no eixo X (backflips)
 
                 -- Segue o jogador selecionado
-                local targetPosition = targetRootPart.Position + Vector3.new(0, 2, 0) -- Fica um pouco acima do jogador
-                localRootPart.CFrame = CFrame.new(targetPosition, targetRootPart.Position) * newRotation
+                local offset = Vector3.new(0, 2, -5) -- Fica um pouco acima e atrás do jogador
+                local targetPosition = targetRootPart.Position + offset
+                local lookAt = targetRootPart.Position -- Olha para o jogador
+                localRootPart.CFrame = CFrame.new(targetPosition, lookAt) * newRotation
 
                 -- Verifica se o jogador sentou no sofá
                 if isPlayerSeatedInCouch(targetPlayer) then
@@ -2285,6 +2298,12 @@ Tab10:Button({
                 end
 
                 task.wait() -- Usa o Heartbeat para suavizar o movimento
+            end
+
+            -- Reativa o movimento do Humanoid ao final
+            if humanoid then
+                humanoid.PlatformStand = false
+                print("Movimento do Humanoid reativado!")
             end
         end)
     end,
