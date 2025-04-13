@@ -2543,199 +2543,206 @@ end)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
-local LocalPlayer = Players.LocalPlayer
 
+-- Variáveis
 local selectedPlayer = nil
 local soccerBall = nil
 local running = false
-local followConnection, flingConnection, viewConnection
+local connection, flingConnection
 local originalProperties = {}
 local savedPosition = nil
-local visualizando = false
+local spectatorEnabled = false
 
--- DROPDOWN PARA SELECIONAR JOGADOR
+-- Dropdown personalizado
+local playerNames = {}
+for _, p in ipairs(Players:GetPlayers()) do
+    if p ~= player then
+        table.insert(playerNames, p.Name)
+    end
+end
+
 local Dropdown = Tab10:Dropdown({
     Title = "Selecionar Jogador",
-    Desc = "Selecione o jogador para flingar",
+    Desc = "Escolha o jogador para flingar",
     Value = nil,
     Multi = false,
     AllowNone = true,
-    Values = {},
-    Callback = function(name)
-        selectedPlayer = Players:FindFirstChild(name)
-    end,
+    Values = playerNames,
+    Callback = function(nome)
+        selectedPlayer = Players:FindFirstChild(nome)
+        print("Selecionado: ", nome)
+        if spectatorEnabled and selectedPlayer and selectedPlayer.Character then
+            local hrp = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                Camera.CameraSubject = hrp
+            end
+        end
+    end
 })
 
--- Preencher lista de jogadores
-for _, p in ipairs(Players:GetPlayers()) do
-    if p ~= LocalPlayer then
-        table.insert(Dropdown.Values, p.Name)
-    end
-end
-Dropdown:SetValues(Dropdown.Values)
-
--- TOGGLE PARA VISUALIZAR (ESPECTAR) O JOGADOR SELECIONADO
+-- Toggle para visualizar jogador
 local Toggle = Tab10:Toggle({
-    Title = "Visualizar Jogador",
-    Desc = "Câmera segue o jogador selecionado",
+    Title = "Espectar Jogador",
+    Desc = "Ativa a câmera no jogador selecionado",
     Icon = "eye",
     Value = false,
     Callback = function(state)
-        visualizando = state
-        if viewConnection then viewConnection:Disconnect() end
-
-        if state and selectedPlayer then
-            viewConnection = RunService.RenderStepped:Connect(function()
-                if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("Head") then
-                    Camera.CameraSubject = selectedPlayer.Character:FindFirstChild("Head")
-                end
-            end)
+        spectatorEnabled = state
+        if state and selectedPlayer and selectedPlayer.Character then
+            local hrp = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                Camera.CameraSubject = hrp
+            end
         else
-            Camera.CameraSubject = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") or Camera.CameraSubject
+            Camera.CameraSubject = player.Character:FindFirstChild("Humanoid")
         end
     end,
 })
 
--- BOTÃO INICIAR
-local ButtonStart = Tab10:Button({
-    Title = "Iniciar Fling",
-    Desc = "Ativar bola apelona",
-    Callback = function()
-        if not selectedPlayer or not selectedPlayer.Character or not selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            warn("Jogador inválido.")
-            return
+local function startFling()
+    if not selectedPlayer or not selectedPlayer.Character or not selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        return warn("Jogador inválido.")
+    end
+
+    local workspaceCom = workspace:FindFirstChild("WorkspaceCom")
+    if not workspaceCom then return warn("WorkspaceCom ausente.") end
+    local soccerBalls = workspaceCom:FindFirstChild("001_SoccerBalls")
+    if not soccerBalls then return warn("001_SoccerBalls ausente.") end
+
+    soccerBall = soccerBalls:FindFirstChild("Soccer" .. player.Name)
+    if not soccerBall then return warn("Bola Soccer" .. player.Name .. " não encontrada.") end
+
+    originalProperties = {
+        Anchored = soccerBall.Anchored,
+        CanCollide = soccerBall.CanCollide,
+        CanTouch = soccerBall.CanTouch
+    }
+
+    pcall(function() soccerBall:SetNetworkOwner(nil) end)
+    soccerBall.Anchored = false
+    soccerBall.CanCollide = true
+
+    for _, part in ipairs(player.Character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+        end
+    end
+
+    local myHRP = player.Character:FindFirstChild("HumanoidRootPart")
+    if myHRP then
+        savedPosition = myHRP.Position
+    end
+
+    pcall(function()
+        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeDown", 4)
+    end)
+
+    running = true
+    local lastFlingTime = 0
+
+    connection = RunService.Heartbeat:Connect(function()
+        if not running or not selectedPlayer.Character then return end
+        local hrp = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local humanoid = selectedPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+        local myHRP = player.Character:FindFirstChild("HumanoidRootPart")
+        if not hrp or not humanoid or not myHRP then return end
+
+        local moveDirection = humanoid.MoveDirection
+        local magnitude = moveDirection.Magnitude
+        local seated = humanoid.Sit
+
+        local offset = Vector3.new(0, math.sin(tick() * 25) * 1.5, 0) -- vertical entre cabeça e pé
+        local dynamicOffset = Vector3.new(0, 0, 0)
+
+        if seated then
+            local radius = 2.5
+            local speed = 35
+            local angle = tick() * speed
+            local x = math.cos(angle) * radius
+            local z = math.sin(angle) * radius
+            soccerBall.CFrame = CFrame.new(hrp.Position + Vector3.new(x, 1.5, z))
+        elseif magnitude > 0.1 then
+            dynamicOffset = moveDirection.Unit * math.clamp(magnitude * 3, 1, 6)
+            soccerBall.CFrame = CFrame.new(hrp.Position + dynamicOffset + offset)
+        else
+            soccerBall.CFrame = CFrame.new(hrp.Position + offset)
         end
 
-        local workspaceCom = workspace:FindFirstChild("WorkspaceCom")
-        if not workspaceCom then return warn("WorkspaceCom ausente.") end
-        local soccerBalls = workspaceCom:FindFirstChild("001_SoccerBalls")
-        if not soccerBalls then return warn("001_SoccerBalls ausente.") end
+        myHRP.CFrame = CFrame.new(soccerBall.Position + Vector3.new(0, 1, 0))
+    end)
 
-        soccerBall = soccerBalls:FindFirstChild("Soccer" .. LocalPlayer.Name)
-        if not soccerBall then return warn("Bola não encontrada.") end
+    flingConnection = RunService.Heartbeat:Connect(function()
+        if not running then return end
+        local hrp = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
 
-        originalProperties = {
-            Anchored = soccerBall.Anchored,
-            CanCollide = soccerBall.CanCollide,
-            CanTouch = soccerBall.CanTouch
-        }
+        if tick() - lastFlingTime < 0.4 then return end
+        if (soccerBall.Position - hrp.Position).Magnitude > 3 then return end
+        lastFlingTime = tick()
 
-        pcall(function() soccerBall:SetNetworkOwner(nil) end)
-        soccerBall.Anchored = false
-        soccerBall.CanCollide = true
-
-        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+        for _, part in ipairs(selectedPlayer.Character:GetDescendants()) do
             if part:IsA("BasePart") then
                 part.CanCollide = false
             end
         end
 
-        savedPosition = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character.HumanoidRootPart.Position
+        local fling = Instance.new("BodyVelocity")
+        fling.MaxForce = Vector3.new(1e9, 1e9, 1e9)
+        fling.Velocity = Vector3.new(math.random(-1,1), 1, math.random(-1,1)).Unit * 8000 + Vector3.new(0, 6000, 0)
+        fling.Parent = hrp
 
-        pcall(function()
-            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeDown", 4)
-        end)
-
-        running = true
-        local lastFlingTime = 0
-
-        followConnection = RunService.Heartbeat:Connect(function()
-            if not running or not selectedPlayer.Character then return end
-            local hrp = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if not hrp then return end
-
-            local humanoid = selectedPlayer.Character:FindFirstChild("Humanoid")
-            local moveMag = humanoid and humanoid.MoveDirection.Magnitude or 0
-            local sit = humanoid and humanoid.Sit
-
-            local head = selectedPlayer.Character:FindFirstChild("Head")
-            local footY = hrp.Position.Y - 2.5
-            local headY = head and head.Position.Y or hrp.Position.Y + 1
-
-            local yPos = math.clamp(math.sin(tick() * 5) * 1.5 + hrp.Position.Y, footY, headY)
-
-            if sit then
-                local angle = tick() * 25
-                local radius = 2
-                local offset = Vector3.new(math.cos(angle) * radius, 0.5, math.sin(angle) * radius)
-                soccerBall.CFrame = CFrame.new(hrp.Position + offset)
-            elseif moveMag > 0.2 then
-                local forward = hrp.CFrame.LookVector * moveMag * 2
-                soccerBall.CFrame = CFrame.new(hrp.Position + forward + Vector3.new(0, 0.5, 0))
-            else
-                soccerBall.CFrame = CFrame.new(hrp.Position + Vector3.new(0, yPos - hrp.Position.Y, 0))
-            end
-
-            local myHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if myHRP then
-                myHRP.CFrame = CFrame.new(soccerBall.Position + Vector3.new(0, 1, 0))
-            end
-        end)
-
-        flingConnection = RunService.Heartbeat:Connect(function()
-            if not running then return end
-            local hrp = selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if not hrp then return end
-
-            if (soccerBall.Position - hrp.Position).Magnitude < 3 and tick() - lastFlingTime > 0.25 then
-                lastFlingTime = tick()
-
-                for _, part in ipairs(selectedPlayer.Character:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
-                    end
+        task.delay(0.25, function()
+            fling:Destroy()
+            for _, part in ipairs(selectedPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = true
                 end
-
-                local fling = Instance.new("BodyVelocity")
-                fling.MaxForce = Vector3.new(1e9, 1e9, 1e9)
-                fling.Velocity = Vector3.new(0, 5000, 0) + hrp.CFrame.LookVector * 4000
-                fling.Parent = hrp
-
-                task.delay(0.3, function()
-                    fling:Destroy()
-                    for _, part in ipairs(selectedPlayer.Character:GetDescendants()) do
-                        if part:IsA("BasePart") then
-                            part.CanCollide = true
-                        end
-                    end
-                end)
             end
         end)
-    end,
+    end)
+end
+
+local function stopFling()
+    running = false
+    if connection then connection:Disconnect() end
+    if flingConnection then flingConnection:Disconnect() end
+
+    if soccerBall then
+        soccerBall.Anchored = originalProperties.Anchored
+        soccerBall.CanCollide = originalProperties.CanCollide
+        soccerBall.CanTouch = originalProperties.CanTouch
+    end
+
+    for _, part in ipairs(player.Character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = true
+        end
+    end
+
+    pcall(function()
+        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeUp", 1)
+    end)
+
+    if savedPosition then
+        local myHRP = player.Character:FindFirstChild("HumanoidRootPart")
+        if myHRP then
+            myHRP.Velocity = Vector3.new(0, 0, 0)
+            myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 10, 0))
+        end
+    end
+end
+
+-- Botões personalizados
+local StartButton = Tab10:Button({
+    Title = "Iniciar Fling",
+    Desc = "Inicia o efeito de fling no jogador selecionado",
+    Callback = startFling
 })
 
--- BOTÃO PARAR
-local ButtonStop = Tab10:Button({
+local StopButton = Tab10:Button({
     Title = "Parar Fling",
-    Desc = "Desativar bola apelona",
-    Callback = function()
-        running = false
-        if followConnection then followConnection:Disconnect() end
-        if flingConnection then flingConnection:Disconnect() end
-        if viewConnection then viewConnection:Disconnect() end
-        Camera.CameraSubject = LocalPlayer.Character:FindFirstChild("Humanoid")
-
-        if soccerBall then
-            soccerBall.Anchored = originalProperties.Anchored
-            soccerBall.CanCollide = originalProperties.CanCollide
-            soccerBall.CanTouch = originalProperties.CanTouch
-        end
-
-        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = true
-            end
-        end
-
-        pcall(function()
-            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeUp", 1)
-        end)
-
-        local myHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if savedPosition and myHRP then
-            myHRP.Velocity = Vector3.zero
-            myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
-        end
-    end,
+    Desc = "Para o efeito de fling",
+    Callback = stopFling
 })
