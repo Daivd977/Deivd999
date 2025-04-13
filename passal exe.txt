@@ -4,7 +4,7 @@
 local AllowedUsers = {
     "rtrt967",
     "kaio_lg1",-- Seu nome do Roblox pzinrlk929   Tataizin_021
-    "Rafainha4002",   -- Outro usuário permitido
+    "rafainha4002",   -- Outro usuário permitido
     "QUEROBOVO",
     "pzinrlk929",
     "Tataizin_021",-- Adicione mais nomes aqui, por exemplo:
@@ -74,7 +74,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.8",
+    Title = "Lolyta Hub 2.8,,",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.666",
@@ -149,6 +149,8 @@ Tab1:Button({
     end,
 })
 
+
+-- mandrakinho vou comer e pegar o ip da continha da continha e roubar os dados também hehhaha psr eu nao faria isso maos sla vai que cola
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
