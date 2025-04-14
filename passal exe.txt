@@ -6,6 +6,7 @@ local AllowedUsers = {
     "kaio_lg1",-- Seu nome do Roblox pzinrlk929   Tataizin_021
     "rafainha4002",   -- Outro usuário permitido
     "QUEROBOVO",
+    "guga_10plays",
     "pzinrlk929",
     "Tataizin_021",-- Adicione mais nomes aqui, por exemplo:
     -- "outro_usuario",
@@ -74,7 +75,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.8,,",
+    Title = "Lolyta Hub 2.8,",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.666",
@@ -411,6 +412,7 @@ end)
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
 
+--poiser mandrake sus peitoo suspeitaao lolita mais bela e armosa hehehe gostiosa hhehehehehhheehehehehhehehehehehehheeahaehaeheheh
 
 -- Botão para executar o script de fly
 Tab1:Button({
