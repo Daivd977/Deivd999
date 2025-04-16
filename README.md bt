@@ -1,4 +1,4 @@
--- brookhaven script teste funcionando beta
+-- brookhaven script teste funcionando beta guncionalhfhgjdjjgfolha logica
 
 -- === Configurações Iniciais === --
 local AllowedUsers = {
@@ -77,7 +77,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.8",
+    Title = "Lolyta Hub 2.9",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.666",
