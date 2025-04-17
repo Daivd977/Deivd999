@@ -1523,7 +1523,6 @@ Tab6:Toggle({
 local musicOptions = {
     ["Memes"] = {
         {name = "pankapakan", id = 122547522269143},
-        {name = "araara", id = 18388861760},
         {name = "gemido", id = 106835463235574},
         {name = "gemidao v2", id = 112179417472137},
         {name = "Gemido ultra rápido", id = 128863565301778},
@@ -1531,12 +1530,17 @@ local musicOptions = {
         {name = "gemido kawai", id = 100409245129170},
         {name = "Hentai gemido", id = 125037339642322},
         {name = "Hentai wiaaaaan", id = 88332347208779},
-
+        {name = "___", id = 4354908569},
+        {name = "gemidos acima", id = 4354908569},
+        {name = "___", id = 4354908569},
         --parte dos gemidos acima 
-
-        {name = "tomagerk", id = 132603645477541},
-        {name = "Tomagerk v2", id = 100446887985203},
-        {name = "Tomagerk no sol quente", id = 97476487963273},
+        --memes abaixo 
+        {name = "memes abaixo", id = 4354908569},
+        {name = "___", id = 4354908569},
+        {name = "kid bengala", id = 4354908569},
+        {name = "Toma jack", id = 132603645477541},
+        {name = "Toma jackV2", id = 100446887985203},
+        {name = "Toma jack no sol quente", id = 97476487963273},
         {name = "ifood", id = 133843750864059},
         {name = "coringa", id = 84663543883498},
         {name = "shoope", id = 8747441609},
@@ -1550,12 +1554,9 @@ local musicOptions = {
         {name = "Tu e um beta", id = 130233956349541},
         {name = "Porfavor n tira eu nao", id = 85321374020324},
         {name = "Olá beleza vc pode me dá muitos", id = 74235334504693},
-        {name = "Aí papi", id = 126284366884644},
-        {name = "Good boy", id = 112399901996574},
         {name = "Discord sus", id = 122662798976905},
         {name = "rojao apito", id = 6549021381},
         {name = "off", id = 1778829098},
-        {name = "Woooo", id = 117521059248354},
         {name = "Kazuma kazuma", id = 127954653962405},
         {name = "sometourado", id = 123592956882621},
         {name = "Estouradoespad", id = 136179020015211},
@@ -1653,23 +1654,32 @@ Tab6:Toggle({
 
 local musicOptions = {
     ["efeito/terror"] = {
-        {name = "pankapakan", id = 122547522269143},
         {name = "jumpscar", id = 91784486966761},
-        {name = "gritodoido", id = 7807987190},
         {name = "gritoestourado", id = 7520729342},
-        {name = "Risada", id = 79191730206814},
+        {name = "Woooo", id = 117521059248354},
+        {name = "gritodoido", id = 7807987190},
         {name = "gritomedo", id = 113029085566978},
+        {name = "___", id = 4354908569},
+        {name = "gritos acima", id = 4354908569},
+        {name = "___", id = 4354908569}, 
+        {name = "sirens abaixo", id = 4354908569},
+        {name = "___", id = 4354908569},
         {name = "Nukesiren", id = 9067330158},
         {name = "nuclear sirenv2", id = 675587093},
-        {name = "Memealert", id = 8379374771},
-        {name = "Sirenhead", id = 5681392074},
         {name = "Alertescola", id = 6607047008},
+        {name = "Memealertsiren", id = 8379374771},
+        {name = "Sirenhead", id = 5681392074},
         {name = "Chernobyl5", id = 101927395686044},
-        {name = "Radioxiado", id = 8028069841},
         {name = "Alerta3S", id = 402404861},
-        {name = "Hahahah", id = 90096947219465},
+        {name = "Radioxiado", id = 8028069841},
         {name = "Error", id = 101446887200514},
-        {name = "efeitos abaixo", id = 775443457877},
+        {name = "___", id = 4354908569},
+        {name = "sirens acima", id = 4354908569},
+        {name = "Risada", id = 79191730206814},
+        {name = "Hahahah", id = 90096947219465},
+        {name = "___", id = 4354908569},
+        {name = "efeitos abaixo", id = 4354908569},
+        {name = "___", id = 4354908569},
         {name = "metal", id = 71251935617451},
         {name = "tiro", id = 104223019424522},
         {name = "Golden efect", id = 77773293292155},
@@ -1710,7 +1720,7 @@ end
 local MusicDropdown = Tab6:Dropdown({
     Title = "Selecione um terror ou efeito",
     Desc = "Escolha umterror ou efeito para tocar no servidor",
-    Value = "pankapakan",
+    Value = "jumpscar",
     Multi = false,
     AllowNone = true,
     Values = musicNames,
@@ -1872,7 +1882,18 @@ end
 -- Função para atualizar o dropdown
 local function updateDropdown(dropdown)
     local success, errorMessage = pcall(function()
-        dropdown:Refresh(getPlayerNames())
+        local currentValue = dropdown.Value
+        local playerNames = getPlayerNames()
+        dropdown:Refresh(playerNames)
+        -- Verifica se o valor atual ainda é válido; se não, limpa a seleção
+        if currentValue and not table.find(playerNames, currentValue) then
+            dropdown:SetValue("")
+            print("Jogador anterior saiu do jogo. Seleção resetada.")
+            if isSpectating then
+                stopSpectating()
+                SpectateToggle:SetValue(false)
+            end
+        end
     end)
     if not success then
         warn("Erro ao atualizar dropdown: " .. tostring(errorMessage))
@@ -1960,6 +1981,14 @@ local function stopSpectating()
     end
 end
 
+-- Detecta quando o jogador local morre e reseta a câmera
+LocalPlayer.CharacterAdded:Connect(function(character)
+    if isSpectating then
+        stopSpectating()
+        print("Você morreu. Câmera voltou para o seu personagem.")
+    end
+end)
+
 -- Configuração do Dropdown
 local DropdownPlayer = Tab8:Dropdown({
     Title = "Selecionar Jogador",
@@ -1971,8 +2000,16 @@ local DropdownPlayer = Tab8:Dropdown({
     Callback = function(selectedPlayerName)
         if selectedPlayerName == "" or selectedPlayerName == nil then
             print("Nenhum jogador selecionado.")
+            if isSpectating then
+                stopSpectating()
+                SpectateToggle:SetValue(false)
+            end
         else
             print("Jogador selecionado: " .. selectedPlayerName)
+            if isSpectating then
+                stopSpectating()
+                spectatePlayer(selectedPlayerName)
+            end
         end
     end,
 })
@@ -2023,7 +2060,9 @@ local SpectateToggle = Tab8:Toggle({
 
 -- Atualiza o dropdown quando jogadores entram ou saem
 updateDropdown(DropdownPlayer)
-Players.PlayerAdded:Connect(function() updateDropdown(DropdownPlayer) end)
+Players.PlayerAdded:Connect(function()
+    updateDropdown(DropdownPlayer)
+end)
 Players.PlayerRemoving:Connect(function(player)
     updateDropdown(DropdownPlayer)
     if spectatedPlayer and spectatedPlayer == player then
@@ -2032,7 +2071,6 @@ Players.PlayerRemoving:Connect(function(player)
         DropdownPlayer:SetValue("")
     end
 end)
-
 -----------------------------------------------------------------------------------------------------------------------------------------
                                           -- === Tab 9: Teleports === --
 -----------------------------------------------------------------------------------------------------------------------------------------
@@ -2123,6 +2161,40 @@ local originalPosition = nil
 local isSpectating = false
 local spectatedPlayer = nil
 local characterConnection = nil
+local soccerBall = nil
+local running = false
+local connection, flingConnection
+local originalProperties = {}
+local savedPosition = nil
+
+-- Cria um RemoteEvent para comunicação com o servidor
+local SetNetworkOwnerEvent = Instance.new("RemoteEvent")
+SetNetworkOwnerEvent.Name = "SetNetworkOwnerEvent_" .. tostring(math.random(1000, 9999))
+SetNetworkOwnerEvent.Parent = ReplicatedStorage
+
+-- Cria um script no servidor para lidar com o RemoteEvent
+local serverScriptCode = [[
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local event = ReplicatedStorage:WaitForChild("]] .. SetNetworkOwnerEvent.Name .. [[")
+    
+    event.OnServerEvent:Connect(function(player, part, networkOwner)
+        if part and part:IsA("BasePart") then
+            pcall(function()
+                part:SetNetworkOwner(networkOwner)
+                part.Anchored = false
+                part.CanCollide = true
+                part.CanTouch = true
+            end)
+        end
+    end)
+]]
+
+local success, errorMessage = pcall(function()
+    loadstring(serverScriptCode)()
+end)
+if not success then
+    warn("Erro ao criar script no servidor: " .. tostring(errorMessage))
+end
 
 -- Função para pegar os nomes dos jogadores
 local function getPlayerNames()
@@ -2138,7 +2210,15 @@ end
 -- Função para atualizar o dropdown
 local function updateDropdown(dropdown)
     local success, errorMessage = pcall(function()
-        dropdown:Refresh(getPlayerNames())
+        local currentValue = dropdown.Value
+        local playerNames = getPlayerNames()
+        dropdown:Refresh(playerNames)
+        -- Verifica se o valor atual ainda é válido; se não, limpa a seleção
+        if currentValue and not table.find(playerNames, currentValue) then
+            dropdown:SetValue("")
+            selectedPlayer = nil
+            print("Jogador anterior saiu do jogo. Seleção resetada.")
+        end
     end)
     if not success then
         warn("Erro ao atualizar dropdown: " .. tostring(errorMessage))
@@ -2215,6 +2295,14 @@ local function stopSpectating()
     end
 end
 
+-- Detecta quando o jogador local morre e reseta a câmera
+LocalPlayer.CharacterAdded:Connect(function(character)
+    if isSpectating then
+        stopSpectating()
+        print("Você morreu. Câmera voltou para o seu personagem.")
+    end
+end)
+
 -- Botão System Broochk
 Tab10:Button({
     Title = "System Broochk",
@@ -2258,7 +2346,7 @@ Tab10:Paragraph({
 -- Dropdown único para selecionar jogador
 local DropdownPlayer = Tab10:Dropdown({
     Title = "Selecionar Jogador",
-    Desc = "Escolha um jogador para matar ou puxar com o sofá",
+    Desc = "Escolha um jogador para matar, puxar ou dar fling",
     Value = "",
     Multi = false,
     AllowNone = true,
@@ -2267,9 +2355,29 @@ local DropdownPlayer = Tab10:Dropdown({
         if selectedPlayerName == "" or selectedPlayerName == nil then
             selectedPlayer = nil
             print("Nenhum jogador selecionado.")
+            -- Para o fling se não houver jogador selecionado
+            if running then
+                running = false
+                if connection then connection:Disconnect() end
+                if flingConnection then flingConnection:Disconnect() end
+                stopSpectating()
+            end
+            -- Para matar/puxar se não houver jogador selecionado
+            isFollowingKill = false
+            isFollowingPull = false
         else
             selectedPlayer = Players:FindFirstChild(selectedPlayerName)
             print("Jogador selecionado: " .. selectedPlayerName)
+            -- Se estiver no modo espectador, atualiza o jogador visualizado
+            if isSpectating then
+                stopSpectating()
+                spectatePlayer(selectedPlayerName)
+            end
+            -- Se estiver dando fling, atualiza o jogador alvo do fling
+            if running then
+                -- O loop do fling já usa selectedPlayer, então ele será atualizado automaticamente
+                print("Jogador do fling atualizado para: " .. selectedPlayerName)
+            end
         end
     end,
 })
@@ -2327,7 +2435,6 @@ local ButtonStop = Tab10:Button({
             print("Movimento parado. Personagem voltou à posição original.")
         end
         originalPosition = nil
-        DropdownPlayer:SetValue("") -- Reseta o dropdown
     end,
 })
 
@@ -2357,7 +2464,7 @@ local SpectateToggle = Tab10:Toggle({
     end,
 })
 
--- Lógica de matar e puxar (simplificada e com verificações)
+-- Lógica de matar e puxar
 local followConnection
 if followConnection then followConnection:Disconnect() end
 followConnection = RunService.Heartbeat:Connect(function()
@@ -2389,7 +2496,6 @@ sitCheckConnection = RunService.Heartbeat:Connect(function()
                 print("Jogador sentado! Interrompendo ação...")
                 
                 if isFollowingKill then
-                    -- Para matar: teleporta para o void e reequipa o sofá
                     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
                         LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(0, -500, 0))
                         task.wait(0.5)
@@ -2398,7 +2504,6 @@ sitCheckConnection = RunService.Heartbeat:Connect(function()
                     end
                 end
                 
-                -- Para ambas as ações: volta à posição original
                 isFollowingKill = false
                 isFollowingPull = false
                 if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and originalPosition then
@@ -2429,13 +2534,7 @@ Tab10:Button({
                 [1] = "PickingTools",
                 [2] = "SoccerBall"
             }
-            local replicatedStorage = game:GetService("ReplicatedStorage")
-            local re = replicatedStorage:FindFirstChild("RE")
-            local toolEvent = re and re:FindFirstChild("1Too1l")
-            if not re or not toolEvent then
-                error("Evento 1Too1l não encontrado em ReplicatedStorage.RE")
-            end
-            toolEvent:InvokeServer(unpack(args))
+            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
         end)
         if success then
             print("Bola de futebol equipada com sucesso! Aguarde a bola aparecer no Workspace.")
@@ -2448,63 +2547,6 @@ Tab10:Button({
 Tab10:Paragraph({ 
     Title = "Para não morrer no void, use o SystemBroken e o noclip. Pegue a bola no botão acima e equipe-a na mão.", 
     Desc = "Faça isso antes de usar as funções abaixo!!!"
-})
-
--- Variáveis para o fling
-local soccerBall = nil
-local running = false
-local connection, flingConnection
-local originalProperties = {}
-local savedPosition = nil
-
--- Cria um RemoteEvent para comunicação com o servidor
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local SetNetworkOwnerEvent = Instance.new("RemoteEvent")
-SetNetworkOwnerEvent.Name = "SetNetworkOwnerEvent_" .. tostring(math.random(1000, 9999))
-SetNetworkOwnerEvent.Parent = ReplicatedStorage
-
--- Cria um script no servidor para lidar com o RemoteEvent
-local serverScriptCode = [[
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local event = ReplicatedStorage:WaitForChild("]] .. SetNetworkOwnerEvent.Name .. [[")
-    
-    event.OnServerEvent:Connect(function(player, part, networkOwner)
-        if part and part:IsA("BasePart") then
-            pcall(function()
-                part:SetNetworkOwner(networkOwner)
-                part.Anchored = false
-                part.CanCollide = true
-                part.CanTouch = true
-            end)
-        end
-    end)
-]]
-
--- Executa o script no servidor
-local success, errorMessage = pcall(function()
-    loadstring(serverScriptCode)()
-end)
-if not success then
-    warn("Erro ao criar script no servidor: " .. tostring(errorMessage))
-end
-
--- Dropdown para selecionar jogador (fling)
-local DropdownPlayerFling = Tab10:Dropdown({
-    Title = "Selecionar Jogador (Fling)",
-    Desc = "Selecione o jogador para o fling com bola",
-    Value = "",
-    Multi = false,
-    AllowNone = true,
-    Values = getPlayerNames(),
-    Callback = function(selectedPlayerName)
-        if selectedPlayerName == "" or selectedPlayerName == nil then
-            selectedPlayer = nil
-            print("Nenhum jogador selecionado para o fling.")
-        else
-            selectedPlayer = Players:FindFirstChild(selectedPlayerName)
-            print("Jogador selecionado para o fling: " .. selectedPlayerName)
-        end
-    end,
 })
 
 -- Botão Iniciar (Fling)
@@ -2522,13 +2564,11 @@ Tab10:Button({
             return
         end
 
-        -- Verifica se o jogador tem um HumanoidRootPart
         if not selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
             print("Jogador selecionado não tem HumanoidRootPart.")
             return
         end
 
-        -- Tenta encontrar a bola no Workspace
         local workspaceCom = Workspace:FindFirstChild("WorkspaceCom")
         if not workspaceCom then
             print("WorkspaceCom não encontrado. Certifique-se de que a bola foi equipada e está disponível.")
@@ -2546,23 +2586,20 @@ Tab10:Button({
             return
         end
 
-        -- Salva as propriedades originais da bola
         originalProperties = {
             Anchored = soccerBall.Anchored,
             CanCollide = soccerBall.CanCollide,
             CanTouch = soccerBall.CanTouch
         }
 
-        -- Solicita ao servidor para configurar a bola
         local successConfig, errorConfig = pcall(function()
-            SetNetworkOwnerEvent:FireServer(soccerBall, nil) -- nil faz o servidor assumir o controle
+            SetNetworkOwnerEvent:FireServer(soccerBall, nil)
         end)
         if not successConfig then
             warn("Erro ao solicitar configuração da bola ao servidor: " .. tostring(errorConfig))
             return
         end
 
-        -- Salva a posição do jogador local
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             savedPosition = LocalPlayer.Character.HumanoidRootPart.Position
         else
@@ -2570,28 +2607,24 @@ Tab10:Button({
             return
         end
 
-        -- Desativa colisão do jogador local
         for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
             if part:IsA("BasePart") then
                 part.CanCollide = false
             end
         end
 
-        -- Impede o jogador local de sentar
         local myHumanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
         if myHumanoid then
             myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
             myHumanoid.Sit = false
         end
 
-        -- Desativa assentos no Workspace
         for _, seat in ipairs(Workspace:GetDescendants()) do
             if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
                 seat.Disabled = true
             end
         end
 
-        -- Reduz o tamanho do personagem (se necessário)
         success, errorMessage = pcall(function()
             ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeDown", 4)
         end)
@@ -2602,13 +2635,13 @@ Tab10:Button({
         running = true
         local lastFlingTime = 0
 
-        -- Ativar modo espectador
-        local successSpectate, errorSpectate = pcall(spectatePlayer, selectedPlayer.Name)
-        if not successSpectate then
-            warn("Erro ao ativar modo espectador durante o fling: " .. tostring(errorSpectate))
+        if SpectateToggle.Value then
+            local successSpectate, errorSpectate = pcall(spectatePlayer, selectedPlayer.Name)
+            if not successSpectate then
+                warn("Erro ao ativar modo espectador durante o fling: " .. tostring(errorSpectate))
+            end
         end
 
-        -- Loop para posicionar a bola
         if connection then connection:Disconnect() end
         connection = RunService.Heartbeat:Connect(function()
             if not running or not selectedPlayer or not selectedPlayer.Character then
@@ -2626,150 +2659,4 @@ Tab10:Button({
                 end
 
                 local moveDir = hum.MoveDirection
-                local isStill = moveDir.Magnitude < 0.1
-                local isSitting = hum.Sit
-
-                if isSitting then
-                    local y = math.sin(tick() * 50) * 2
-                    soccerBall.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 0.75 + y, 0))
-                elseif isStill then
-                    local z = math.sin(tick() * 50) * 3
-                    soccerBall.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 0.75, z))
-                else
-                    local offset = moveDir.Unit * math.clamp(hrp.Velocity.Magnitude * 0.15, 5, 12)
-                    soccerBall.CFrame = CFrame.new(hrp.Position + offset + Vector3.new(0, 0.75, 0))
-                end
-
-                myHRP.CFrame = CFrame.new(soccerBall.Position + Vector3.new(0, 1, 0))
-            end)
-            if not success then
-                warn("Erro no loop de posicionamento da bola: " .. tostring(errorMessage))
-                running = false
-            end
-        end)
-
-        -- Loop para aplicar o fling
-        if flingConnection then flingConnection:Disconnect() end
-        flingConnection = RunService.Heartbeat:Connect(function()
-            if not running or not selectedPlayer or not selectedPlayer.Character then return end
-            local success, errorMessage = pcall(function()
-                local hrp = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
-                if not hrp then
-                    print("HumanoidRootPart do jogador alvo não encontrado. Parando o fling.")
-                    running = false
-                    return
-                end
-
-                local dist = (soccerBall.Position - hrp.Position).Magnitude
-                if dist < 4 and tick() - lastFlingTime > 0.4 then
-                    lastFlingTime = tick()
-
-                    for _, part in ipairs(selectedPlayer.Character:GetDescendants()) do
-                        if part:IsA("BasePart") then
-                            part.CanCollide = false
-                        end
-                    end
-
-                    local fling = Instance.new("BodyVelocity")
-                    fling.MaxForce = Vector3.new(1e9, 1e9, 1e9)
-                    fling.Velocity = Vector3.new(math.random(-3, 3), 1, math.random(-3, 3)).Unit * 12000 + Vector3.new(0, 12000, 0)
-                    fling.Parent = hrp
-
-                    task.delay(0.3, function()
-                        fling:Destroy()
-                        for _, part in ipairs(selectedPlayer.Character:GetDescendants()) do
-                            if part:IsA("BasePart") then
-                                part.CanCollide = true
-                            end
-                        end
-                    end)
-                end
-            end)
-            if not success then
-                warn("Erro no loop de fling: " .. tostring(errorMessage))
-                running = false
-            end
-        end)
-    end,
-})
-
--- Botão Parar (Fling)
-Tab10:Button({
-    Title = "Parar Fling",
-    Desc = "Para o fling e o modo espectador",
-    Callback = function()
-        running = false
-        if connection then connection:Disconnect() end
-        if flingConnection then flingConnection:Disconnect() end
-
-        if soccerBall then
-            local success, errorMessage = pcall(function()
-                SetNetworkOwnerEvent:FireServer(soccerBall, LocalPlayer) -- Devolve o controle ao cliente
-                soccerBall.Anchored = originalProperties.Anchored
-                soccerBall.CanCollide = originalProperties.CanCollide
-                soccerBall.CanTouch = originalProperties.CanTouch
-            end)
-            if not success then
-                warn("Erro ao restaurar propriedades da bola: " .. tostring(errorMessage))
-            end
-        end
-
-        if LocalPlayer.Character then
-            for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = true
-                end
-            end
-
-            local myHumanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
-            if myHumanoid then
-                myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
-            end
-        end
-
-        for _, seat in ipairs(Workspace:GetDescendants()) do
-            if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
-                seat.Disabled = false
-            end
-        end
-
-        local success, errorMessage = pcall(function()
-            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeUp", 1)
-        end)
-        if not success then
-            warn("Erro ao restaurar tamanho do personagem: " .. tostring(errorMessage))
-        end
-
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and savedPosition then
-            local myHRP = LocalPlayer.Character.HumanoidRootPart
-            myHRP.Velocity = Vector3.zero
-            myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 10, 0))
-        end
-
-        stopSpectating()
-        DropdownPlayerFling:SetValue("")
-    end,
-})
-
--- Atualiza o dropdown quando jogadores entram ou saem
-updateDropdown(DropdownPlayerFling)
-Players.PlayerAdded:Connect(function()
-    updateDropdown(DropdownPlayerFling)
-end)
-Players.PlayerRemoving:Connect(function(player)
-    updateDropdown(DropdownPlayerFling)
-    if selectedPlayer and selectedPlayer == player then
-        running = false
-        if connection then connection:Disconnect() end
-        if flingConnection then flingConnection:Disconnect() end
-        stopSpectating()
-        DropdownPlayerFling:SetValue("")
-    end
-end)
-
--- Limpa o RemoteEvent ao final (opcional)
-game:BindToClose(function()
-    if SetNetworkOwnerEvent then
-        SetNetworkOwnerEvent:Destroy()
-    end
-end)
+                local isSti
