@@ -77,7 +77,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.8",
+    Title = "Lolyta Hub 2.9",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.666",
@@ -1857,3 +1857,906 @@ Tab7:Button({
     end,
 })
 
+-----------------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 8: Jogadores === --
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+local isSpectating = false
+local spectatedPlayer = nil
+local characterConnection = nil
+
+-- Função para obter os nomes dos jogadores, excluindo o jogador local
+local function getPlayerNames()
+    local playerNames = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            table.insert(playerNames, player.Name)
+        end
+    end
+    return playerNames
+end
+
+-- Função para atualizar o dropdown com os nomes dos jogadores
+local function updateDropdown(dropdown)
+    local success, errorMessage = pcall(function()
+        local currentValue = dropdown.Value
+        local playerNames = getPlayerNames()
+        dropdown:Refresh(playerNames)
+        if currentValue and not table.find(playerNames, currentValue) then
+            dropdown:SetValue("")
+            print("Jogador anterior saiu do jogo. Seleção resetada.")
+            if isSpectating then
+                stopSpectating()
+                SpectateToggle:SetValue(false)
+            end
+        end
+    end)
+    if not success then
+        warn("Erro ao atualizar dropdown: " .. tostring(errorMessage))
+    end
+end
+
+-- Função para teletransportar para o jogador selecionado
+local function teleportToPlayer(playerName)
+    local targetPlayer = Players:FindFirstChild(playerName)
+    if targetPlayer and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(targetPlayer.Character.HumanoidRootPart.Position))
+        print("Teletransportado para o jogador: " .. playerName)
+    else
+        print("Jogador ou personagem não encontrado para teletransporte.")
+    end
+end
+
+-- Função para visualizar um jogador (modo espectador)
+local function spectatePlayer(playerName)
+    if characterConnection then
+        characterConnection:Disconnect()
+        characterConnection = nil
+    end
+
+    local targetPlayer = Players:FindFirstChild(playerName)
+    if targetPlayer and targetPlayer ~= LocalPlayer then
+        spectatedPlayer = targetPlayer
+        isSpectating = true
+        print("Visualizando jogador: " .. targetPlayer.Name)
+
+        local function updateCamera()
+            if not isSpectating or not spectatedPlayer then
+                return
+            end
+            if spectatedPlayer.Character and spectatedPlayer.Character:FindFirstChild("Humanoid") then
+                Workspace.CurrentCamera.CameraSubject = spectatedPlayer.Character.Humanoid
+            else
+                Workspace.CurrentCamera.CameraSubject = nil
+            end
+        end
+
+        updateCamera()
+
+        characterConnection = RunService.Heartbeat:Connect(function()
+            if not isSpectating then
+                characterConnection:Disconnect()
+                characterConnection = nil
+                return
+            end
+            local success, errorMessage = pcall(updateCamera)
+            if not success then
+                warn("Erro ao atualizar câmera no modo visualização: " .. tostring(errorMessage))
+                stopSpectating()
+            end
+        end)
+
+        spectatedPlayer.CharacterAdded:Connect(function()
+            if isSpectating then
+                updateCamera()
+            end
+        end)
+    else
+        print("Jogador inválido ou não encontrado para modo visualização.")
+        isSpectating = false
+        spectatedPlayer = nil
+    end
+end
+
+-- Função para parar de visualizar
+local function stopSpectating()
+    if characterConnection then
+        characterConnection:Disconnect()
+        characterConnection = nil
+    end
+
+    isSpectating = false
+    spectatedPlayer = nil
+
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        Workspace.CurrentCamera.CameraSubject = LocalPlayer.Character.Humanoid
+        print("Parando de visualizar. Voltando à visão do jogador local.")
+    else
+        Workspace.CurrentCamera.CameraSubject = nil
+        print("Nenhum personagem local encontrado. Câmera redefinida.")
+    end
+end
+
+-- Detecta quando o jogador local morre e reseta a câmera
+LocalPlayer.CharacterAdded:Connect(function(character)
+    if isSpectating then
+        stopSpectating()
+        print("Você morreu. Câmera voltou para o seu personagem.")
+    end
+end)
+
+-- Criação da aba Jogadores
+local Tab8 = Window:Tab({ Title = "Jogadores", Icon = "users" })
+
+-- Dropdown para selecionar jogador
+local DropdownPlayer = Tab8:Dropdown({
+    Title = "Selecionar Jogador",
+    Desc = "Selecione o jogador para teletransportar ou visualizar",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = getPlayerNames(),
+    Callback = function(selectedPlayerName)
+        if selectedPlayerName == "" or selectedPlayerName == nil then
+            print("Nenhum jogador selecionado.")
+            if isSpectating then
+                stopSpectating()
+                SpectateToggle:SetValue(false)
+            end
+        else
+            print("Jogador selecionado: " .. selectedPlayerName)
+            if isSpectating then
+                stopSpectating()
+                spectatePlayer(selectedPlayerName)
+            end
+        end
+    end,
+})
+
+-- Botão de Teleporte
+Tab8:Button({
+    Title = "Teleportar para Jogador",
+    Desc = "Clique para teletransportar para o jogador selecionado",
+    Callback = function()
+        local selectedPlayerName = DropdownPlayer.Value
+        if selectedPlayerName and selectedPlayerName ~= "" then
+            local success, errorMessage = pcall(teleportToPlayer, selectedPlayerName)
+            if not success then
+                warn("Erro ao teletransportar: " .. tostring(errorMessage))
+            end
+        else
+            print("Selecione um jogador antes de teletransportar.")
+        end
+    end,
+})
+
+-- Toggle para visualizar jogador
+local SpectateToggle = Tab8:Toggle({
+    Title = "Visualizar Jogador",
+    Desc = "Ativa ou desativa o modo de visualização",
+    Default = false,
+    Callback = function(state)
+        if state then
+            local selectedPlayerName = DropdownPlayer.Value
+            if selectedPlayerName and selectedPlayerName ~= "" then
+                local success, errorMessage = pcall(spectatePlayer, selectedPlayerName)
+                if not success then
+                    warn("Erro ao ativar modo de visualização: " .. tostring(errorMessage))
+                    SpectateToggle:SetValue(false)
+                end
+            else
+                print("Selecione um jogador antes de ativar o modo de visualização.")
+                SpectateToggle:SetValue(false)
+            end
+        else
+            local success, errorMessage = pcall(stopSpectating)
+            if not success then
+                warn("Erro ao desativar modo de visualização: " .. tostring(errorMessage))
+            end
+        end
+    end,
+})
+
+-- Atualiza o dropdown quando jogadores entram ou saem
+updateDropdown(DropdownPlayer)
+Players.PlayerAdded:Connect(function()
+    updateDropdown(DropdownPlayer)
+end)
+Players.PlayerRemoving:Connect(function(player)
+    updateDropdown(DropdownPlayer)
+    if spectatedPlayer and spectatedPlayer == player then
+        stopSpectating()
+        SpectateToggle:SetValue(false)
+        DropdownPlayer:SetValue("")
+    end
+end)
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 9: Teleportes === --
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+local player = game.Players.LocalPlayer
+local selectedLocation = "Morro"
+
+-- Criação da aba Teleportes
+local Tab9 = Window:Tab({ Title = "Teleportes", Icon = "map-pin" })
+
+-- Dropdown com as localizações de Brookhaven
+local Dropdown = Tab9:Dropdown({
+    Title = "Locais de Brookhaven",
+    Desc = "Selecione um local para teleportar",
+    Value = "Morro",
+    Multi = false,
+    AllowNone = false,
+    Values = {
+        "Morro",
+        "Praça",
+        "Banco",
+        "Hospital",
+        "Prefeitura",
+        "Fazenda",
+        "Mercado",
+        "Shopping",
+        "Aeroporto",
+        "Hotel",
+        "Beira-mar 1",
+        "Beira-mar 2"
+    },
+    Callback = function(value)
+        selectedLocation = value
+        print("Local selecionado: " .. selectedLocation)
+    end
+})
+
+-- Botão para teleportar
+local TeleportButton = Tab9:Button({
+    Title = "Teleportar",
+    Desc = "Teleporta para o local selecionado",
+    Callback = function()
+        print("Teleportando para: " .. selectedLocation)
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local humanoidRootPart = player.Character.HumanoidRootPart
+            local locations = {
+                ["Morro"] = Vector3.new(-348.64, 65.94, -458.08),
+                ["Praça"] = Vector3.new(-26.17, 3.48, -0.93),
+                ["Banco"] = Vector3.new(1.99, 3.32, 236.65),
+                ["Hospital"] = Vector3.new(-303.2, 3.40, 13.74),
+                ["Prefeitura"] = Vector3.new(-354.65, 7.32, -102.16),
+                ["Fazenda"] = Vector3.new(-766.41, 2.92, -61.10),
+                ["Mercado"] = Vector3.new(16.31, 3.32, -107.07),
+                ["Shopping"] = Vector3.new(151.05, 3.52, -190.64),
+                ["Aeroporto"] = Vector3.new(290.23, 4.32, 42.57),
+                ["Hotel"] = Vector3.new(159.10, 3.32, 164.97),
+                ["Beira-mar 1"] = Vector3.new(55.69, 2.94, -1403.60),
+                ["Beira-mar 2"] = Vector3.new(42.39, 2.94, 1336.14)
+            }
+            if locations[selectedLocation] then
+                local success, errorMessage = pcall(function()
+                    humanoidRootPart.CFrame = CFrame.new(locations[selectedLocation])
+                end)
+                if not success then
+                    warn("Erro ao teleportar: " .. tostring(errorMessage))
+                end
+            else
+                print("Local não encontrado!")
+            end
+        else
+            print("Personagem não encontrado!")
+        end
+    end
+})
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 10: Troll === --
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+
+-- Variáveis compartilhadas
+local selectedPlayer = nil
+local isFollowingKill = false
+local isFollowingPull = false
+local originalPosition = nil
+local isSpectating = false
+local spectatedPlayer = nil
+local characterConnection = nil
+local soccerBall = nil
+local running = false
+local connection, flingConnection
+local originalProperties = {}
+local savedPosition = nil
+
+-- Cria um RemoteEvent para comunicação com o servidor
+local SetNetworkOwnerEvent = Instance.new("RemoteEvent")
+SetNetworkOwnerEvent.Name = "SetNetworkOwnerEvent_" .. tostring(math.random(1000, 9999))
+SetNetworkOwnerEvent.Parent = ReplicatedStorage
+
+-- Cria um script no servidor para lidar com o RemoteEvent
+local serverScriptCode = [[
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local event = ReplicatedStorage:WaitForChild("]] .. SetNetworkOwnerEvent.Name .. [[")
+    
+    event.OnServerEvent:Connect(function(player, part, networkOwner)
+        if part and part:IsA("BasePart") then
+            pcall(function()
+                part:SetNetworkOwner(networkOwner)
+                part.Anchored = false
+                part.CanCollide = true
+                part.CanTouch = true
+            end)
+        end
+    end)
+]]
+
+local success, errorMessage = pcall(function()
+    loadstring(serverScriptCode)()
+end)
+if not success then
+    warn("Erro ao criar script no servidor: " .. tostring(errorMessage))
+end
+
+-- Função para obter os nomes dos jogadores, excluindo o jogador local
+local function getPlayerNames()
+    local playerNames = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            table.insert(playerNames, player.Name)
+        end
+    end
+    return playerNames
+end
+
+-- Função para atualizar o dropdown
+local function updateDropdown(dropdown)
+    local success, errorMessage = pcall(function()
+        local currentValue = dropdown.Value
+        local playerNames = getPlayerNames()
+        dropdown:Refresh(playerNames)
+        if currentValue and not table.find(playerNames, currentValue) then
+            dropdown:SetValue("")
+            selectedPlayer = nil
+            print("Jogador anterior saiu do jogo. Seleção resetada.")
+        end
+    end)
+    if not success then
+        warn("Erro ao atualizar dropdown: " .. tostring(errorMessage))
+    end
+end
+
+-- Função para visualizar um jogador
+local function spectatePlayer(playerName)
+    if characterConnection then
+        characterConnection:Disconnect()
+        characterConnection = nil
+    end
+
+    local targetPlayer = Players:FindFirstChild(playerName)
+    if targetPlayer and targetPlayer ~= LocalPlayer then
+        spectatedPlayer = targetPlayer
+        isSpectating = true
+        print("Visualizando jogador: " .. targetPlayer.Name)
+
+        local function updateCamera()
+            if not isSpectating or not spectatedPlayer then
+                return
+            end
+            if spectatedPlayer.Character and spectatedPlayer.Character:FindFirstChild("Humanoid") then
+                Workspace.CurrentCamera.CameraSubject = spectatedPlayer.Character.Humanoid
+            else
+                Workspace.CurrentCamera.CameraSubject = nil
+            end
+        end
+
+        updateCamera()
+
+        characterConnection = RunService.Heartbeat:Connect(function()
+            if not isSpectating then
+                characterConnection:Disconnect()
+                characterConnection = nil
+                return
+            end
+            local success, errorMessage = pcall(updateCamera)
+            if not success then
+                warn("Erro ao atualizar câmera no modo visualização: " .. tostring(errorMessage))
+                stopSpectating()
+            end
+        end)
+
+        spectatedPlayer.CharacterAdded:Connect(function()
+            if isSpectating then
+                updateCamera()
+            end
+        end)
+    else
+        print("Jogador inválido ou não encontrado para modo visualização.")
+        isSpectating = false
+        spectatedPlayer = nil
+    end
+end
+
+-- Função para parar de visualizar
+local function stopSpectating()
+    if characterConnection then
+        characterConnection:Disconnect()
+        characterConnection = nil
+    end
+
+    isSpectating = false
+    spectatedPlayer = nil
+
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        Workspace.CurrentCamera.CameraSubject = LocalPlayer.Character.Humanoid
+        print("Parando de visualizar. Voltando à visão do jogador local.")
+    else
+        Workspace.CurrentCamera.CameraSubject = nil
+        print("Nenhum personagem local encontrado. Câmera redefinida.")
+    end
+end
+
+-- Detecta quando o jogador local morre e reseta a câmera
+LocalPlayer.CharacterAdded:Connect(function(character)
+    if isSpectating then
+        stopSpectating()
+        print("Você morreu. Câmera voltou para o seu personagem.")
+    end
+end)
+
+-- Criação da aba Troll
+local Tab10 = Window:Tab({ Title = "Troll", Icon = "skull" })
+
+-- Botão System Broken
+Tab10:Button({
+    Title = "System Broken",
+    Desc = "Universal",
+    Callback = function()
+        local success, errorMessage = pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/H20CalibreYT/SystemBroken/main/script"))()
+        end)
+        if not success then
+            warn("Erro ao carregar System Broken: " .. tostring(errorMessage))
+        end
+    end,
+})
+
+Tab10:Paragraph({ 
+    Title = "Execute o System Broken e ative o VoidProtection", 
+    Desc = "Faça isso antes de usar as funções abaixo!!!"
+})
+
+-- Botão para pegar o sofá
+Tab10:Button({
+    Title = "Pegar Sofá",
+    Desc = "Pegue o sofá antes de usar as opções abaixo",
+    Callback = function()
+        local success, errorMessage = pcall(function()
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer("PickingTools", "Couch")
+        end)
+        if success then
+            print("Sofá equipado com sucesso!")
+        else
+            warn("Erro ao pegar o sofá: " .. tostring(errorMessage))
+        end
+    end,
+})
+
+Tab10:Paragraph({ 
+    Title = "Instruções para o Sofá", 
+    Desc = "Pegue o sofá e equipe o sofá na sua mão antes de usar as funções abaixo"
+})
+
+-- Dropdown único para selecionar jogador
+local DropdownPlayer = Tab10:Dropdown({
+    Title = "Selecionar Jogador",
+    Desc = "Escolha um jogador para matar, puxar ou aplicar fling",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = getPlayerNames(),
+    Callback = function(selectedPlayerName)
+        if selectedPlayerName == "" or selectedPlayerName == nil then
+            selectedPlayer = nil
+            print("Nenhum jogador selecionado.")
+            if running then
+                running = false
+                if connection then connection:Disconnect() end
+                if flingConnection then flingConnection:Disconnect() end
+                stopSpectating()
+            end
+            isFollowingKill = false
+            isFollowingPull = false
+        else
+            selectedPlayer = Players:FindFirstChild(selectedPlayerName)
+            print("Jogador selecionado: " .. selectedPlayerName)
+            if isSpectating then
+                stopSpectating()
+                spectatePlayer(selectedPlayerName)
+            end
+            if running then
+                print("Jogador do fling atualizado para: " .. selectedPlayerName)
+            end
+        end
+    end,
+})
+
+-- Botão para iniciar matar
+Tab10:Button({
+    Title = "Iniciar Matar com o Sofá",
+    Desc = "Clique para começar a matar o jogador selecionado",
+    Callback = function()
+        if isFollowingKill or isFollowingPull then
+            print("Uma ação (matar ou puxar) já está ativa. Use o botão Parar primeiro.")
+            return
+        end
+        if selectedPlayer and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            isFollowingKill = true
+            originalPosition = LocalPlayer.Character.HumanoidRootPart.Position
+            print("Iniciando matar para: " .. selectedPlayer.Name)
+        else
+            print("Selecione um jogador válido antes de iniciar.")
+        end
+    end,
+})
+
+-- Botão para iniciar puxar
+Tab10:Button({
+    Title = "Iniciar Puxar",
+    Desc = "Clique para começar a puxar o jogador selecionado",
+    Callback = function()
+        if isFollowingKill or isFollowingPull then
+            print("Uma ação (matar ou puxar) já está ativa. Use o botão Parar primeiro.")
+            return
+        end
+        if selectedPlayer and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            isFollowingPull = true
+            originalPosition = LocalPlayer.Character.HumanoidRootPart.Position
+            print("Iniciando puxar para: " .. selectedPlayer.Name)
+        else
+            print("Selecione um jogador válido antes de iniciar.")
+        end
+    end,
+})
+
+-- Botão para parar ambas as ações
+local ButtonStop = Tab10:Button({
+    Title = "Parar (Matar ou Puxar)",
+    Desc = "Para o movimento de matar ou puxar",
+    Callback = function()
+        isFollowingKill = false
+        isFollowingPull = false
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and originalPosition then
+            LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(originalPosition))
+            if LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+            end
+            print("Movimento parado. Personagem voltou à posição original.")
+        end
+        originalPosition = nil
+    end,
+})
+
+-- Toggle para visualizar jogador
+local SpectateToggle = Tab10:Toggle({
+    Title = "Visualizar Jogador",
+    Desc = "Ativa/desativa a visualização do jogador selecionado",
+    Default = false,
+    Callback = function(state)
+        if state then
+            if selectedPlayer then
+                local success, errorMessage = pcall(spectatePlayer, selectedPlayer.Name)
+                if not success then
+                    warn("Erro ao ativar modo visualização: " .. tostring(errorMessage))
+                    SpectateToggle:SetValue(false)
+                end
+            else
+                print("Selecione um jogador antes de ativar a visualização.")
+                SpectateToggle:SetValue(false)
+            end
+        else
+            local success, errorMessage = pcall(stopSpectating)
+            if not success then
+                warn("Erro ao desativar modo visualização: " .. tostring(errorMessage))
+            end
+        end
+    end,
+})
+
+-- Lógica de matar e puxar
+local followConnection
+if followConnection then followConnection:Disconnect() end
+followConnection = RunService.Heartbeat:Connect(function()
+    if (isFollowingKill or isFollowingPull) and selectedPlayer and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local success, errorMessage = pcall(function()
+            local targetPosition = selectedPlayer.Character.HumanoidRootPart.Position
+            LocalPlayer.Character:SetPrimaryPartCFrame(
+                CFrame.new(targetPosition) * CFrame.Angles(
+                    math.rad(Workspace.DistributedGameTime * 12000),
+                    math.rad(Workspace.DistributedGameTime * 15000),
+                    math.rad(Workspace.DistributedGameTime * 18000)
+                )
+            )
+        end)
+        if not success then
+            warn("Erro no loop de matar/puxar: " .. tostring(errorMessage))
+            isFollowingKill = false
+            isFollowingPull = false
+        end
+    end
+end)
+
+local sitCheckConnection
+if sitCheckConnection then sitCheckConnection:Disconnect() end
+sitCheckConnection = RunService.Heartbeat:Connect(function()
+    if (isFollowingKill or isFollowingPull) and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("Humanoid") then
+        local success, errorMessage = pcall(function()
+            if selectedPlayer.Character.Humanoid.Sit then
+                print("Jogador sentado! Interrompendo ação...")
+                
+                if isFollowingKill then
+                    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                        LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(0, -500, 0))
+                        task.wait(0.5)
+                        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer("PickingTools", "Couch")
+                        task.wait(1)
+                    end
+                end
+                
+                isFollowingKill = false
+                isFollowingPull = false
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and originalPosition then
+                    LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(originalPosition))
+                    if LocalPlayer.Character:FindFirstChild("Humanoid") then
+                        LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                    end
+                    print("Personagem voltou à posição original em pé!")
+                end
+                originalPosition = nil
+            end
+        end)
+        if not success then
+            warn("Erro na verificação de assento: " .. tostring(errorMessage))
+            isFollowingKill = false
+            isFollowingPull = false
+        end
+    end
+end)
+
+-- Botão para pegar a bola de futebol
+Tab10:Button({
+    Title = "Pegar Bola de Futebol",
+    Desc = "Clique para equipar a bola de futebol",
+    Callback = function()
+        local success, errorMessage = pcall(function()
+            local args = {
+                [1] = "PickingTools",
+                [2] = "SoccerBall"
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
+        end)
+        if success then
+            print("Bola de futebol equipada com sucesso! Aguarde a bola aparecer no Workspace.")
+        else
+            warn("Erro ao pegar a bola de futebol: " .. tostring(errorMessage))
+        end
+    end,
+})
+
+Tab10:Paragraph({ 
+    Title = "Para não morrer no void, use o System Broken e ative o modo sem colisão. Pegue a bola no botão acima e equipe-a na mão.", 
+    Desc = "Faça isso antes de usar as funções abaixo!!!"
+})
+
+-- Botão Iniciar (Fling)
+Tab10:Button({
+    Title = "Iniciar Fling",
+    Desc = "Inicia o fling no jogador selecionado",
+    Callback = function()
+        if running then
+            print("Fling já está ativo. Use o botão Parar primeiro.")
+            return
+        end
+
+        if not selectedPlayer or not selectedPlayer.Character then
+            print("Selecione um jogador válido antes de iniciar o fling.")
+            return
+        end
+
+        if not selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            print("Jogador selecionado não tem HumanoidRootPart.")
+            return
+        end
+
+        local workspaceCom = Workspace:FindFirstChild("WorkspaceCom")
+        if not workspaceCom then
+            print("WorkspaceCom não encontrado. Certifique-se de que a bola foi equipada e está disponível.")
+            return
+        end
+        local soccerBalls = workspaceCom:FindFirstChild("001_SoccerBalls")
+        if not soccerBalls then
+            print("001_SoccerBalls não encontrado. Certifique-se de que a bola foi equipada e está disponível.")
+            return
+        end
+
+        soccerBall = soccerBalls:FindFirstChild("Soccer" .. LocalPlayer.Name)
+        if not soccerBall then
+            print("Bola de futebol (Soccer" .. LocalPlayer.Name .. ") não encontrada. Certifique-se de que a bola foi equipada corretamente.")
+            return
+        end
+
+        originalProperties = {
+            Anchored = soccerBall.Anchored,
+            CanCollide = soccerBall.CanCollide,
+            CanTouch = soccerBall.CanTouch
+        }
+
+        local successConfig, errorConfig = pcall(function()
+            SetNetworkOwnerEvent:FireServer(soccerBall, nil)
+        end)
+        if not successConfig then
+            warn("Erro ao solicitar configuração da bola ao servidor: " .. tostring(errorConfig))
+            return
+        end
+
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            savedPosition = LocalPlayer.Character.HumanoidRootPart.Position
+        else
+            print("Não foi possível salvar a posição do jogador local. HumanoidRootPart não encontrado.")
+            return
+        end
+
+        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+
+        local myHumanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+        if myHumanoid then
+            myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+            myHumanoid.Sit = false
+        end
+
+        for _, seat in ipairs(Workspace:GetDescendants()) do
+            if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
+                seat.Disabled = true
+            end
+        end
+
+        success, errorMessage = pcall(function()
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeDown", 4)
+        end)
+        if not success then
+            warn("Erro ao alterar o tamanho do personagem: " .. tostring(errorMessage))
+        end
+
+        running = true
+        local lastFlingTime = 0
+
+        if SpectateToggle.Value then
+            local successSpectate, errorSpectate = pcall(spectatePlayer, selectedPlayer.Name)
+            if not successSpectate then
+                warn("Erro ao ativar modo visualização durante o fling: " .. tostring(errorSpectate))
+            end
+        end
+
+        if connection then connection:Disconnect() end
+        connection = RunService.Heartbeat:Connect(function()
+            if not running or not selectedPlayer or not selectedPlayer.Character then
+                stopSpectating()
+                return
+            end
+            local success, errorMessage = pcall(function()
+                local hrp = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local hum = selectedPlayer.Character:FindFirstChild("Humanoid")
+                local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if not hrp or not hum or not myHRP then
+                    print("Objetos necessários não encontrados (hrp, hum, ou myHRP). Parando o fling.")
+                    running = false
+                    return
+                end
+
+                local moveDir = hum.MoveDirection
+                local isSitting = hum.Sit
+
+                if isSitting then
+                    print("Jogador sentado! Parando o fling...")
+                    running = false
+                    return
+                end
+
+                local currentTime = tick()
+                if currentTime - lastFlingTime >= 0.1 then
+                    soccerBall.Position = hrp.Position + Vector3.new(0, 10, 0)
+                    soccerBall.AssemblyLinearVelocity = Vector3.new(0, -1000, 0)
+                    myHRP.Position = hrp.Position + Vector3.new(0, 5, 0)
+                    lastFlingTime = currentTime
+                end
+            end)
+            if not success then
+                warn("Erro no loop de fling: " .. tostring(errorMessage))
+                running = false
+            end
+        end)
+    end,
+})
+
+-- Botão Parar (Fling)
+Tab10:Button({
+    Title = "Parar Fling",
+    Desc = "Para o fling e restaura as configurações",
+    Callback = function()
+        if not running then
+            print("Nenhum fling ativo para parar.")
+            return
+        end
+
+        running = false
+        if connection then connection:Disconnect() end
+        if flingConnection then flingConnection:Disconnect() end
+
+        local success, errorMessage = pcall(function()
+            for _, seat in ipairs(Workspace:GetDescendants()) do
+                if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
+                    seat.Disabled = false
+                end
+            end
+
+            if soccerBall then
+                soccerBall.Anchored = originalProperties.Anchored
+                soccerBall.CanCollide = originalProperties.CanCollide
+                soccerBall.CanTouch = originalProperties.CanTouch
+            end
+
+            for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = true
+                end
+            end
+
+            local myHumanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+            if myHumanoid then
+                myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+            end
+
+            if savedPosition then
+                LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(savedPosition))
+                savedPosition = nil
+            end
+
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeDown", 1)
+        end)
+        if not success then
+            warn("Erro ao parar o fling: " .. tostring(errorMessage))
+        end
+
+        stopSpectating()
+        print("Fling parado e configurações restauradas.")
+    end,
+})
+
+-- Atualiza o dropdown quando jogadores entram ou saem
+updateDropdown(DropdownPlayer)
+Players.PlayerAdded:Connect(function()
+    updateDropdown(DropdownPlayer)
+end)
+Players.PlayerRemoving:Connect(function(player)
+    updateDropdown(DropdownPlayer)
+    if selectedPlayer and selectedPlayer == player then
+        selectedPlayer = nil
+        running = false
+        isFollowingKill = false
+        isFollowingPull = false
+        if connection then connection:Disconnect() end
+        if flingConnection then flingConnection:Disconnect() end
+        stopSpectating()
+        DropdownPlayer:SetValue("")
+    end
+end)
