@@ -110,13 +110,13 @@ Window:EditOpenButton({
 local Tab1 = Window:Tab({ Title = "Main", Icon = "house-plus" })
 local Tab2 = Window:Tab({ Title = "Casa", Icon = "house" })
 local Tab3 = Window:Tab({ Title = "Carro", Icon = "car" })
-local Tab4 = Window:Tab({ Title = "RGB Color", Icon = "palette" }) -- Nova aba RGB Color
+local Tab4 = Window:Tab({ Title = "RGB Color", Icon = "palette" })
 local Tab5 = Window:Tab({ Title = "Troll Musica", Icon = "music" })
 local Tab6 = Window:Tab({ Title = "Music All", Icon = "audio-lines" })
 local Tab7 = Window:Tab({ Title = "Scripts", Icon = "layers" })
-local Tab8 = Window:Tab({ Title = "Players", Icon = "user" })
-local Tab9 = Window:Tab({ Title = "teleports", Icon = "map-pin" })
-local Tab10 = Window:Tab({ Title = "troll", Icon = "skull" })
+local Tab8 = Window:Tab({ Title = "Jogadores", Icon = "users" }) -- Ajustado para "Jogadores" e ícone "users"
+local Tab9 = Window:Tab({ Title = "Teleportes", Icon = "map-pin" }) -- Ajustado para "Teleportes"
+local Tab10 = Window:Tab({ Title = "Troll", Icon = "skull" }) -- Ajustado para "Troll"
 
 
 -- === Funções Auxiliares === --
@@ -1995,8 +1995,6 @@ LocalPlayer.CharacterAdded:Connect(function(character)
     end
 end)
 
--- Criação da aba Jogadores
-local Tab8 = Window:Tab({ Title = "Jogadores", Icon = "users" })
 
 -- Dropdown para selecionar jogador
 local DropdownPlayer = Tab8:Dropdown({
@@ -2088,8 +2086,6 @@ end)
 local player = game.Players.LocalPlayer
 local selectedLocation = "Morro"
 
--- Criação da aba Teleportes
-local Tab9 = Window:Tab({ Title = "Teleportes", Icon = "map-pin" })
 
 -- Dropdown com as localizações de Brookhaven
 local Dropdown = Tab9:Dropdown({
@@ -2155,6 +2151,9 @@ local TeleportButton = Tab9:Button({
         end
     end
 })
+
+
+
 
 -----------------------------------------------------------------------------------------------------------------------------------------
                                           -- === Tab 10: Troll === --
@@ -2318,8 +2317,6 @@ LocalPlayer.CharacterAdded:Connect(function(character)
     end
 end)
 
--- Criação da aba Troll
-local Tab10 = Window:Tab({ Title = "Troll", Icon = "skull" })
 
 -- Botão System Broken
 Tab10:Button({
@@ -2537,6 +2534,41 @@ sitCheckConnection = RunService.Heartbeat:Connect(function()
     end
 end)
 
+sitCheckConnection = RunService.Heartbeat:Connect(function()
+    if (isFollowingKill or isFollowingPull) and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("Humanoid") then
+        local success, errorMessage = pcall(function()
+            if selectedPlayer.Character.Humanoid.Sit then
+                print("Jogador sentado! Interrompendo ação...")
+                
+                if isFollowingKill then
+                    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                        LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(0, -500, 0))
+                        task.wait(0.5)
+                        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer("PickingTools", "Couch")
+                        task.wait(1)
+                    end
+                end
+                
+                isFollowingKill = false
+                isFollowingPull = false
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and originalPosition then
+                    LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(originalPosition))
+                    if LocalPlayer.Character:FindFirstChild("Humanoid") then
+                        LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                    end
+                    print("Personagem voltou à posição original em pé!")
+                end
+                originalPosition = nil
+            end
+        end)
+        if not success then
+            warn("Erro na verificação de assento: " .. tostring(errorMessage))
+            isFollowingKill = false
+            isFollowingPull = false
+        end
+    end
+end)
+
 -- Botão para pegar a bola de futebol
 Tab10:Button({
     Title = "Pegar Bola de Futebol",
@@ -2547,7 +2579,7 @@ Tab10:Button({
                 [1] = "PickingTools",
                 [2] = "SoccerBall"
             }
-            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
         end)
         if success then
             print("Bola de futebol equipada com sucesso! Aguarde a bola aparecer no Workspace.")
@@ -2558,44 +2590,45 @@ Tab10:Button({
 })
 
 Tab10:Paragraph({ 
-    Title = "Para não morrer no void, use o System Broken e ative o modo sem colisão. Pegue a bola no botão acima e equipe-a na mão.", 
-    Desc = "Faça isso antes de usar as funções abaixo!!!"
+    Title = "Instruções para o Fling", 
+    Desc = "Selecione um jogador, pegue a bola de futebol e clique em 'Iniciar Fling' para começar."
 })
 
--- Botão Iniciar (Fling)
+-- Variáveis para o sistema de fling
+local soccerBall = nil
+local running = false
+local connection, flingConnection
+local originalProperties = {}
+local savedPosition = nil
+
+-- Botão para iniciar o fling
 Tab10:Button({
     Title = "Iniciar Fling",
     Desc = "Inicia o fling no jogador selecionado",
     Callback = function()
         if running then
-            print("Fling já está ativo. Use o botão Parar primeiro.")
+            print("O fling já está ativo. Use o botão 'Parar Fling' primeiro.")
             return
         end
-
         if not selectedPlayer or not selectedPlayer.Character then
-            print("Selecione um jogador válido antes de iniciar o fling.")
-            return
-        end
-
-        if not selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            print("Jogador selecionado não tem HumanoidRootPart.")
+            warn("Selecione um jogador válido antes de iniciar o fling!")
             return
         end
 
         local workspaceCom = Workspace:FindFirstChild("WorkspaceCom")
         if not workspaceCom then
-            print("WorkspaceCom não encontrado. Certifique-se de que a bola foi equipada e está disponível.")
+            warn("WorkspaceCom não encontrado!")
             return
         end
         local soccerBalls = workspaceCom:FindFirstChild("001_SoccerBalls")
         if not soccerBalls then
-            print("001_SoccerBalls não encontrado. Certifique-se de que a bola foi equipada e está disponível.")
+            warn("001_SoccerBalls não encontrado!")
             return
         end
 
         soccerBall = soccerBalls:FindFirstChild("Soccer" .. LocalPlayer.Name)
         if not soccerBall then
-            print("Bola de futebol (Soccer" .. LocalPlayer.Name .. ") não encontrada. Certifique-se de que a bola foi equipada corretamente.")
+            warn("Bola de futebol não encontrada! Certifique-se de pegá-la primeiro.")
             return
         end
 
@@ -2605,19 +2638,14 @@ Tab10:Button({
             CanTouch = soccerBall.CanTouch
         }
 
-        local successConfig, errorConfig = pcall(function()
-            SetNetworkOwnerEvent:FireServer(soccerBall, nil)
-        end)
-        if not successConfig then
-            warn("Erro ao solicitar configuração da bola ao servidor: " .. tostring(errorConfig))
-            return
-        end
+        soccerBall.Anchored = false
+        soccerBall.CanCollide = true
+        soccerBall.CanTouch = true
+        pcall(function() soccerBall:SetNetworkOwner(nil) end)
 
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            savedPosition = LocalPlayer.Character.HumanoidRootPart.Position
-        else
-            print("Não foi possível salvar a posição do jogador local. HumanoidRootPart não encontrado.")
-            return
+        local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if myHRP then
+            savedPosition = myHRP.Position
         end
 
         for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
@@ -2626,168 +2654,131 @@ Tab10:Button({
             end
         end
 
+        -- Desativar capacidade de sentar para o jogador local
         local myHumanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
         if myHumanoid then
             myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
             myHumanoid.Sit = false
         end
 
+        -- Bloquear interações com assentos
         for _, seat in ipairs(Workspace:GetDescendants()) do
             if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
                 seat.Disabled = true
             end
         end
 
-        success, errorMessage = pcall(function()
+        pcall(function()
             ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeDown", 4)
         end)
-        if not success then
-            warn("Erro ao alterar o tamanho do personagem: " .. tostring(errorMessage))
-        end
 
         running = true
+        local lastFlingTime = 0
 
-        if SpectateToggle.Value then
-            local successSpectate, errorSpectate = pcall(spectatePlayer, selectedPlayer.Name)
-            if not successSpectate then
-                warn("Erro ao ativar modo visualização durante o fling: " .. tostring(errorSpectate))
+        connection = RunService.Heartbeat:Connect(function()
+            if not running or not selectedPlayer.Character then return end
+            local hrp = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+            local hum = selectedPlayer.Character:FindFirstChild("Humanoid")
+            local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if not hrp or not hum or not myHRP then return end
+
+            local moveDir = hum.MoveDirection
+            local isStill = moveDir.Magnitude < 0.1
+            local isSitting = hum.Sit
+
+            if isSitting then
+                -- Bola se move rapidamente para cima e para baixo
+                local y = math.sin(tick() * 50) * 2
+                soccerBall.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 0.75 + y, 0))
+            elseif isStill then
+                -- Bola se move rapidamente para frente e para trás
+                local z = math.sin(tick() * 50) * 3
+                soccerBall.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 0.75, z))
+            else
+                local offset = moveDir.Unit * math.clamp(hrp.Velocity.Magnitude * 0.15, 5, 12)
+                soccerBall.CFrame = CFrame.new(hrp.Position + offset + Vector3.new(0, 0.75, 0))
             end
-        end
 
-        -- Variáveis para controle do movimento da bola
-        local lastPosition = selectedPlayer.Character.HumanoidRootPart.Position
-        local oscillationOffset = 0
-        local oscillationSpeed = 15 -- Velocidade do movimento para frente/para trás e para cima/para baixo
-        local forwardDistance = 5 -- Distância base à frente do jogador
-        local heightAdjustment = 0 -- Ajuste de altura baseado no movimento vertical
+            myHRP.CFrame = CFrame.new(soccerBall.Position + Vector3.new(0, 1, 0))
+        end)
 
-        if connection then connection:Disconnect() end
-        connection = RunService.Heartbeat:Connect(function(deltaTime)
-            if not running or not selectedPlayer or not selectedPlayer.Character then
-                stopSpectating()
-                return
-            end
-            local success, errorMessage = pcall(function()
-                local hrp = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
-                local hum = selectedPlayer.Character:FindFirstChild("Humanoid")
-                local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                if not hrp or not hum or not myHRP then
-                    print("Objetos necessários não encontrados (hrp, hum, ou myHRP). Parando o fling.")
-                    running = false
-                    return
+        flingConnection = RunService.Heartbeat:Connect(function()
+            if not running or not selectedPlayer.Character then return end
+            local hrp = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if not hrp then return end
+
+            local dist = (soccerBall.Position - hrp.Position).Magnitude
+            if dist < 4 and tick() - lastFlingTime > 0.4 then
+                lastFlingTime = tick()
+
+                for _, part in ipairs(selectedPlayer.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
                 end
 
-                local currentPosition = hrp.Position
-                local moveDir = hum.MoveDirection
-                local isSitting = hum.Sit
-                local isMoving = moveDir.Magnitude > 0
-                local velocity = (currentPosition - lastPosition) / deltaTime -- Velocidade do jogador
-                lastPosition = currentPosition
+                local fling = Instance.new("BodyVelocity")
+                fling.MaxForce = Vector3.new(1e9, 1e9, 1e9)
+                fling.Velocity = Vector3.new(math.random(-3, 3), 1, math.random(-3, 3)).Unit * 12000 + Vector3.new(0, 12000, 0)
+                fling.Parent = hrp
 
-                -- Calcula a variação vertical (subida/descida)
-                local verticalVelocity = velocity.Y
-                heightAdjustment = math.clamp(heightAdjustment + verticalVelocity * deltaTime, -10, 10)
-
-                -- Oscilação para frente e para trás (usada quando parado ou sentado)
-                oscillationOffset = oscillationOffset + oscillationSpeed * deltaTime
-                local oscillation = math.sin(oscillationOffset) * 5 -- Amplitude de 5 unidades
-
-                if isSitting then
-                    -- Quando o jogador está sentado: bola sobe e desce rapidamente
-                    local verticalOscillation = math.sin(oscillationOffset * 2) * 10 -- Amplitude de 10 unidades, mais rápido
-                    soccerBall.Position = currentPosition + Vector3.new(0, verticalOscillation + 5, 0)
-                elseif isMoving then
-                    -- Quando o jogador está andando: bola à frente, na altura do centro, subindo/descendo conforme o jogador
-                    local speedFactor = velocity.Magnitude * 0.5 -- Fator baseado na velocidade do jogador
-                    local forwardOffset = moveDir * (forwardDistance + speedFactor) -- Distância à frente ajustada pela velocidade
-                    local heightOffset = heightAdjustment -- Ajuste de altura baseado no movimento vertical
-                    soccerBall.Position = currentPosition + forwardOffset + Vector3.new(0, heightOffset, 0)
-                else
-                    -- Quando o jogador está parado: bola se move para frente e para trás
-                    local forwardOffset = hrp.CFrame.LookVector * oscillation
-                    soccerBall.Position = currentPosition + forwardOffset + Vector3.new(0, 5, 0)
-                end
-
-                -- Mantém o jogador local acima do jogador selecionado para evitar interferências
-                myHRP.Position = currentPosition + Vector3.new(0, 10, 0)
-            end)
-            if not success then
-                warn("Erro no loop de fling: " .. tostring(errorMessage))
-                running = false
+                task.delay(0.3, function()
+                    fling:Destroy()
+                    for _, part in ipairs(selectedPlayer.Character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = true
+                        end
+                    end
+                end)
             end
         end)
     end,
 })
 
--- Botão Parar (Fling)
+-- Botão para parar o fling
 Tab10:Button({
     Title = "Parar Fling",
-    Desc = "Para o fling e restaura as configurações",
+    Desc = "Para o fling no jogador selecionado",
     Callback = function()
-        if not running then
-            print("Nenhum fling ativo para parar.")
-            return
-        end
-
         running = false
         if connection then connection:Disconnect() end
         if flingConnection then flingConnection:Disconnect() end
 
-        local success, errorMessage = pcall(function()
-            for _, seat in ipairs(Workspace:GetDescendants()) do
-                if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
-                    seat.Disabled = false
-                end
-            end
-
-            if soccerBall then
-                soccerBall.Anchored = originalProperties.Anchored
-                soccerBall.CanCollide = originalProperties.CanCollide
-                soccerBall.CanTouch = originalProperties.CanTouch
-            end
-
-            for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = true
-                end
-            end
-
-            local myHumanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
-            if myHumanoid then
-                myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
-            end
-
-            if savedPosition then
-                LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(savedPosition))
-                savedPosition = nil
-            end
-
-            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeDown", 1)
-        end)
-        if not success then
-            warn("Erro ao parar o fling: " .. tostring(errorMessage))
+        if soccerBall then
+            soccerBall.Anchored = originalProperties.Anchored
+            soccerBall.CanCollide = originalProperties.CanCollide
+            soccerBall.CanTouch = originalProperties.CanTouch
         end
 
-        stopSpectating()
-        print("Fling parado e configurações restauradas.")
+        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
+        end
+
+        -- Restaurar capacidade de sentar para o jogador local
+        local myHumanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+        if myHumanoid then
+            myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+        end
+
+        -- Reativar assentos
+        for _, seat in ipairs(Workspace:GetDescendants()) do
+            if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
+                seat.Disabled = false
+            end
+        end
+
+        pcall(function()
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeUp", 1)
+        end)
+
+        if savedPosition then
+            local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if myHRP then
+                myHRP.Velocity = Vector3.zero
+                myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 10, 0))
+            end
+        end
     end,
 })
-
--- Atualiza o dropdown quando jogadores entram ou saem
-updateDropdown(DropdownPlayer)
-Players.PlayerAdded:Connect(function()
-    updateDropdown(DropdownPlayer)
-end)
-Players.PlayerRemoving:Connect(function(player)
-    updateDropdown(DropdownPlayer)
-    if selectedPlayer and selectedPlayer == player then
-        selectedPlayer = nil
-        running = false
-        isFollowingKill = false
-        isFollowingPull = false
-        if connection then connection:Disconnect() end
-        if flingConnection then flingConnection:Disconnect() end
-        stopSpectating()
-        DropdownPlayer:SetValue("")
-    end
-end)
