@@ -10,7 +10,9 @@ local AllowedUsers = {
     "pzinrlk929",
     "Tataizin_021",
     "Lolytateste666",
-    "rafainha4002",-- Adicione mais nomes aqui, por exemplo:
+    "rafainha4002",
+    "Tiago_RJ4",
+    "lacradoor123",-- Adicione mais nomes aqui, por exemplo:
     -- "outro_usuario",
     -- "amigo123",
 }
@@ -77,7 +79,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.9",
+    Title = "Lolyta Hub 2.8",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.666",
@@ -1973,11 +1975,14 @@ local function stopSpectating()
     isSpectating = false
     spectatedPlayer = nil
 
+    -- Garante que a câmera volte para o Humanoid do jogador local
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         Workspace.CurrentCamera.CameraSubject = LocalPlayer.Character.Humanoid
+        Workspace.CurrentCamera.CameraType = Enum.CameraType.Custom -- Força o modo de câmera padrão
         print("Parando de visualizar. Voltando à visão do jogador local.")
     else
         Workspace.CurrentCamera.CameraSubject = nil
+        Workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
         print("Nenhum personagem local encontrado. Câmera redefinida.")
     end
 end
@@ -2293,11 +2298,14 @@ local function stopSpectating()
     isSpectating = false
     spectatedPlayer = nil
 
+    -- Garante que a câmera volte para o Humanoid do jogador local
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         Workspace.CurrentCamera.CameraSubject = LocalPlayer.Character.Humanoid
+        Workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
         print("Parando de visualizar. Voltando à visão do jogador local.")
     else
         Workspace.CurrentCamera.CameraSubject = nil
+        Workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
         print("Nenhum personagem local encontrado. Câmera redefinida.")
     end
 end
@@ -2638,7 +2646,6 @@ Tab10:Button({
         end
 
         running = true
-        local lastFlingTime = 0
 
         if SpectateToggle.Value then
             local successSpectate, errorSpectate = pcall(spectatePlayer, selectedPlayer.Name)
@@ -2647,8 +2654,15 @@ Tab10:Button({
             end
         end
 
+        -- Variáveis para controle do movimento da bola
+        local lastPosition = selectedPlayer.Character.HumanoidRootPart.Position
+        local oscillationOffset = 0
+        local oscillationSpeed = 15 -- Velocidade do movimento para frente/para trás e para cima/para baixo
+        local forwardDistance = 5 -- Distância base à frente do jogador
+        local heightAdjustment = 0 -- Ajuste de altura baseado no movimento vertical
+
         if connection then connection:Disconnect() end
-        connection = RunService.Heartbeat:Connect(function()
+        connection = RunService.Heartbeat:Connect(function(deltaTime)
             if not running or not selectedPlayer or not selectedPlayer.Character then
                 stopSpectating()
                 return
@@ -2663,22 +2677,39 @@ Tab10:Button({
                     return
                 end
 
+                local currentPosition = hrp.Position
                 local moveDir = hum.MoveDirection
                 local isSitting = hum.Sit
+                local isMoving = moveDir.Magnitude > 0
+                local velocity = (currentPosition - lastPosition) / deltaTime -- Velocidade do jogador
+                lastPosition = currentPosition
+
+                -- Calcula a variação vertical (subida/descida)
+                local verticalVelocity = velocity.Y
+                heightAdjustment = math.clamp(heightAdjustment + verticalVelocity * deltaTime, -10, 10)
+
+                -- Oscilação para frente e para trás (usada quando parado ou sentado)
+                oscillationOffset = oscillationOffset + oscillationSpeed * deltaTime
+                local oscillation = math.sin(oscillationOffset) * 5 -- Amplitude de 5 unidades
 
                 if isSitting then
-                    print("Jogador sentado! Parando o fling...")
-                    running = false
-                    return
+                    -- Quando o jogador está sentado: bola sobe e desce rapidamente
+                    local verticalOscillation = math.sin(oscillationOffset * 2) * 10 -- Amplitude de 10 unidades, mais rápido
+                    soccerBall.Position = currentPosition + Vector3.new(0, verticalOscillation + 5, 0)
+                elseif isMoving then
+                    -- Quando o jogador está andando: bola à frente, na altura do centro, subindo/descendo conforme o jogador
+                    local speedFactor = velocity.Magnitude * 0.5 -- Fator baseado na velocidade do jogador
+                    local forwardOffset = moveDir * (forwardDistance + speedFactor) -- Distância à frente ajustada pela velocidade
+                    local heightOffset = heightAdjustment -- Ajuste de altura baseado no movimento vertical
+                    soccerBall.Position = currentPosition + forwardOffset + Vector3.new(0, heightOffset, 0)
+                else
+                    -- Quando o jogador está parado: bola se move para frente e para trás
+                    local forwardOffset = hrp.CFrame.LookVector * oscillation
+                    soccerBall.Position = currentPosition + forwardOffset + Vector3.new(0, 5, 0)
                 end
 
-                local currentTime = tick()
-                if currentTime - lastFlingTime >= 0.1 then
-                    soccerBall.Position = hrp.Position + Vector3.new(0, 10, 0)
-                    soccerBall.AssemblyLinearVelocity = Vector3.new(0, -1000, 0)
-                    myHRP.Position = hrp.Position + Vector3.new(0, 5, 0)
-                    lastFlingTime = currentTime
-                end
+                -- Mantém o jogador local acima do jogador selecionado para evitar interferências
+                myHRP.Position = currentPosition + Vector3.new(0, 10, 0)
             end)
             if not success then
                 warn("Erro no loop de fling: " .. tostring(errorMessage))
