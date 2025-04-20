@@ -3,18 +3,18 @@
 -- === Configurações Iniciais === --
 local AllowedUsers = {
     "rtrt967",
-    "kaio_lg1",
-    "Higor_hg5",   -- Outro usuário permitido
+    "kaio_lg1",-- Seu nome do Roblox pzinrlk929   Tataizin_021
+    "sasah_7x",   -- Outro usuário permitido
     "QUEROBOVO",
     "guga_10plays",
     "pzinrlk929",
-    "Tataizin_021",      
+    "Tataizin_021",
     "Lolytateste666",
     "rafainha4002",
     "Tiago_RJ4",
     "lacradoor123",
-    "RED_MIGZINN",
-    "enzin12346BR", -- Adicione mais nomes aqui, por exemplo:
+    "enzin12346BR",
+    "RED_MIGZINN", -- Adicione mais nomes aqui, por exemplo:
     -- "outro_usuario",
     -- "amigo123",
 }
@@ -106,7 +106,7 @@ Window:EditOpenButton({
     Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29"))
 })
 
--- interface i entegrirente jojbsjshsb sisnskg  hs sj  kh a aj snaha shvsjsvajbajhalllllbanshajah havba ha ba abana ba s BB s sbba  aba aja BB tô Titan do do dia Ruth olhou tudo estão Juju staff jjthe oi tem.
+
 
 -- === Abas da Interface === --
 local Tab1 = Window:Tab({ Title = "Main", Icon = "house-plus" })
@@ -145,8 +145,7 @@ Tab1:Button({
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
---ksjsnshsb  shsbajahiahsks sbhsbssuhsh jhsushai hbsbab --------busbsh   jsbsj ssubs   snsjahajahsjsjjshshssv hvahabaha ------bysbsabshsbbshsbshs abuwbshebwhwbehe wbe wbe wbe o heeu
--- oi princesa linda cut cut muaaaajsbjshsjshjsnsjs havs shb  -- hahauahjjjj
+
 
 Tab1:Button({
     Title = "Voltar tamanho normal (size 1)",
@@ -282,8 +281,6 @@ Tab1:Toggle({
         end
     end,
 })
-
---mandrake lixo odio a todos e todas entodes atromavadoos jjsknexplis ta ujb s jsbdjejeihe  jh enehe ikbdujejsisbeksje sus ejsbshebejs dndis emsbsnsjbeieje njs bsnjissj ssisj
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
 
