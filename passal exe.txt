@@ -4,7 +4,7 @@
 local AllowedUsers = {
     "rtrt967",
     "kaio_lg1",-- Seu nome do Roblox pzinrlk929   Tataizin_021
-    "sasah_7x",   -- Outro usuário permitido
+    "Higor_hg5",   -- Outro usuário permitido
     "QUEROBOVO",
     "guga_10plays",
     "pzinrlk929",
