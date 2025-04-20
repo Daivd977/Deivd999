@@ -106,7 +106,7 @@ Window:EditOpenButton({
     Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29"))
 })
 
-
+-- interface i entegrirente jojbsjshsb sisnskg  hs sj  kh a aj snaha shvsjsvajbajhalllllbanshajah havba ha ba abana ba s BB s sbba  aba aja BB tô Titan do do dia Ruth olhou tudo estão Juju staff jjthe oi tem.
 
 -- === Abas da Interface === --
 local Tab1 = Window:Tab({ Title = "Main", Icon = "house-plus" })
