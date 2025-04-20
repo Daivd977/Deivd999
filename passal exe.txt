@@ -3,18 +3,18 @@
 -- === Configurações Iniciais === --
 local AllowedUsers = {
     "rtrt967",
-    "kaio_lg1",-- Seu nome do Roblox pzinrlk929   Tataizin_021
+    "kaio_lg1",
     "Higor_hg5",   -- Outro usuário permitido
     "QUEROBOVO",
     "guga_10plays",
     "pzinrlk929",
-    "Tataizin_021",    enzin12346BR  RED_MIGZINN
+    "Tataizin_021",      
     "Lolytateste666",
     "rafainha4002",
     "Tiago_RJ4",
     "lacradoor123",
     "RED_MIGZINN",
-    "enzin12346BR",-- Adicione mais nomes aqui, por exemplo:
+    "enzin12346BR", -- Adicione mais nomes aqui, por exemplo:
     -- "outro_usuario",
     -- "amigo123",
 }
@@ -145,8 +145,8 @@ Tab1:Button({
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
---ksjsnshsb  shsbajahiahsks sbhsbssuhsh jhsushai hbsbab busbsh   jsbsj ssubs   snsjahajahsjsjjshshssv hvahabaha bysbsabshsbbshsbshs abuwbshebwhwbehe wbe wbe wbe o heeu
-
+--ksjsnshsb  shsbajahiahsks sbhsbssuhsh jhsushai hbsbab --------busbsh   jsbsj ssubs   snsjahajahsjsjjshshssv hvahabaha ------bysbsabshsbbshsbshs abuwbshebwhwbehe wbe wbe wbe o heeu
+-- oi princesa linda cut cut muaaaajsbjshsjshjsnsjs havs shb  -- hahauahjjjj
 
 Tab1:Button({
     Title = "Voltar tamanho normal (size 1)",
