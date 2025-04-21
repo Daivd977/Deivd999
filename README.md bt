@@ -4,7 +4,7 @@
 local AllowedUsers = {
     "rtrt967",
     "kaio_lg1",-- Seu nome do Roblox pzinrlk929   Tataizin_021
-    "sasah_7x",   -- Outro usuário permitido
+    "Higor_hg5",   -- Outro usuário permitido
     "QUEROBOVO",
     "guga_10plays",
     "pzinrlk929",
@@ -12,7 +12,9 @@ local AllowedUsers = {
     "Lolytateste666",
     "rafainha4002",
     "Tiago_RJ4",
-    "lacradoor123",-- Adicione mais nomes aqui, por exemplo:
+    "lacradoor123",
+    "enzin12346BR",
+    "RED_MIGZINN", -- Adicione mais nomes aqui, por exemplo:
     -- "outro_usuario",
     -- "amigo123",
 }
@@ -76,10 +78,9 @@ end
 
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
 local Version = "1.4.0"
-local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 2.8",
+    Title = "Lolyta Hub 3.0",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.666",
@@ -131,40 +132,6 @@ end
 ---------------------------------------------------------------------------------------------------------------------------------
                                                    -- === Tab 1: Main === --
 ---------------------------------------------------------------------------------------------------------------------------------
-
-Tab1:Button({
-    Title = "Ser desbanido do voice (so se acabou de ser banido)",
-    Desc = "Universal",
-    Callback = function()
-        game:GetService("VoiceChatService"):joinVoice()
-    end,
-})
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-Tab1:Button({
-    Title = "Voltar tamanho normal (size 1)",
-    Desc = "Brookhaven",
-    Callback = function()
-        fireServer("1Clothe1s", {"CharacterSizeUp", 1})
-    end,
-})
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-Tab1:Button({
-    Title = "Invisível (size 4)",
-    Desc = "Brookhaven",
-    Callback = function()
-        fireServer("1Clothe1s", {"CharacterSizeDown", 4})
-    end,
-})
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1216,236 +1183,390 @@ Tab4:Toggle({
                                           -- === Tab 5: Troll Musica === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
-Tab5:Paragraph({ Title = "funçoes so para quem tem a gamepass de musica ", Desc = "" })
+local function tocarMusica(id)
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    
+    local argsCasa = {
+        [1] = "PickHouseMusicText",
+        [2] = id
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sHous1e"):FireServer(unpack(argsCasa))
 
-Tab5:Paragraph({ Title = "Precisa de gamepass", Desc = "Gamepass música" })
-Tab5:Paragraph({ Title = "Só funciona em veículos do tipo over board", Desc = "" })
+    local argsCarro = {
+        [1] = "PickingCarMusicText",
+        [2] = id
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(argsCarro))
+
+    local argsScooter = {
+        [1] = "PickingScooterMusicText",
+        [2] = id
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(argsScooter))
+end
+
+-- Função auxiliar para validar valores do Dropdown
+local function isValidMusicId(value)
+    return value and value ~= "" and value ~= "Option 1" and not value:match("novas musica adds") and not value:match("musica brasil") and not value:match("musica do meu interece") and not value:match("musica dls por elas") and not value:match("meme abaixo") and not value:match("estourada")
+end
+
+Tab5:Input({
+    Title = "ID da música",
+    Placeholder = "Digite o ID e pressione Enter",
+    Callback = function(value)
+        if value and value ~= "" then
+            tocarMusica(tostring(value))
+        end
+    end,
+})
 
 
---------------------------------------------------------------------------------------------------------------------------------------------------
+
+local function tocarMusica(id)
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    
+    local argsCasa = {
+        [1] = "PickHouseMusicText",
+        [2] = id
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sHous1e"):FireServer(unpack(argsCasa))
+
+    local argsCarro = {
+        [1] = "PickingCarMusicText",
+        [2] = id
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(argsCarro))
+
+    local argsScooter = {
+        [1] = "PickingScooterMusicText",
+        [2] = id
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(argsScooter))
+end
+
+-- Função auxiliar para validar valores do Dropdown
+local function isValidMusicId(value)
+    return value and value ~= "" and value ~= "Option 1" and not value:match("novas musica adds") and not value:match("musica brasil") and not value:match("musica do meu interece") and not value:match("musica dls por elas") and not value:match("meme abaixo") and not value:match("estourada")
+end
+
+Tab5:Input({
+    Title = "ID da música",
+    Placeholder = "Digite o ID e pressione Enter",
+    Callback = function(value)
+        if value and value ~= "" then
+            tocarMusica(tostring(value))
+        end
+    end,
+})
 
 
+-- Tabela de opções de música para o Dropdown "Funk, Phonk, MTG"
+local musicOptions = {
+    ["forro"] = {
+        {name = "forro", id = "4354908569"}, -- Placeholder ID para título
+        {name = "forro ja cançou", id = "74812784884330"},
+        {name = "lenbro ate hoje", id = "71531533552899"},
+        {name = "escolha certa", id = "107088620814881"},
+        {name = "nome na ajenda", id = "140095882383991"},
+        {name = "forro da rezenha", id = "120973520531216"},
+        {name = "forro dudu", id = "74404168179733"},
+        {name = "forro sao joao", id = "106364874935196"},
+        {name = "forro engraçado paia", id = "76524290482399"}
+       
+        
+    }
+}
 
+-- Criar listas de nomes e mapeamento de categorias
+local musicNames = {}
+local categoryMap = {}
+for category, sounds in pairs(musicOptions) do
+    for _, music in ipairs(sounds) do
+        table.insert(musicNames, music.name)
+        categoryMap[music.name] = {id = music.id, category = category}
+    end
+end
+
+-- Função auxiliar para tocar música
+local function playMusic(soundId)
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local argsScooter = {
+        [1] = "PickingScooterMusicText",
+        [2] = tostring(soundId)
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(argsScooter))
+    
+    local argsCarro = {
+        [1] = "PickingCarMusicText",
+        [2] = tostring(soundId)
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(argsCarro))
+end
+
+-- Dropdown para "Funk, Phonk, MTG"
 Tab5:Dropdown({
-    Title = "Funk, Phonk, MTG",
-    Desc = "Over board",
+    Title = "forro",
+    Desc = "all",
     Value = "Option 1",
     Multi = false,
     AllowNone = true,
-    Values = {
-        "novas musica adds", "90844637105538", "102333419023382", "102333419023382", "104240235018198", "111668097052966", "93786060174790", "74812784884330", "musica brasil", "77501611905348", "126887144190812", "88033569921555", "132436320685732", "105832154444494", "", "90323407842935", "132245626038510",
-"111995323199676","115016589376700", "118740708757685", "139435437308948",
-"109189438638906", "138415155024226", "105126065014034", "102919095332206", "132245626038510", "97765714111493",
-"100788814736643", "72720721570850", "138487820505005", "87968531262747", "106317184644394",
-"musica do meu interece", "123592956882621", "108494476595033", "106835463235574", "123723674864058", "112068892721408", "musica dls por elas", "91760524161503",
-"73140398421340", "137962454483542", "84733736048142", "106322173003761", "94604796823780", "118063577904953", "115567432786512", "71304501822029",
-"132218979961283", "102708912256857", "140642559093189", "13530439660", "87863924786534", "133135085604736", "97258811783169", "92308400487695",
-"104635713368149", "88064647826500", "85385155970460", "122871512353520", "122852029094656", "115016589376700", "meme abaixo", "94395705857835", "136804576009416",
-"108494476595033", "131804436682424", "80291355054807", "137774355552052", "127944706557246", "82284055473737", "102906880476838", "91502410121438", "81694110949920", "estourada", "92175624643620", "108099943758978"
-    },
-    Callback = function(selectedValue)
-        fireServer("1NoMoto1rVehicle1s", {"PickingScooterMusicText", selectedValue})
-        print("Argumentos enviados: " .. selectedValue)
+    Values = musicNames,
+    Callback = function(selectedSound)
+        if selectedSound and categoryMap[selectedSound] then
+            local soundId = categoryMap[selectedSound].id
+            if soundId and soundId ~= "" and soundId ~= "4354908569" then
+                playMusic(soundId)
+                print("Música selecionada: " .. selectedSound .. " (ID: " .. soundId .. ")")
+            else
+                print("ID inválido ou título selecionado: " .. tostring(selectedSound))
+            end
+        else
+            print("Nenhuma música selecionada ou ID não encontrado!")
+        end
     end,
 })
 
 
---------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
+
+
+-------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+-- Tabela de opções de música para o Dropdown "Funk, Phonk, MTG"
+local musicOptions = {
+    ["Funk"] = {
+        {name = "funks", id = "4354908569"},
+        {name = "sua mulher funk", id = "90844637105538"},
+        {name = "carro ", id = "100788814736643"},
+        {name = "efuga na viatura", id = "131891110268352"},
+        {name = "da queles momentos", id = "123134215207264"},
+        {name = "ela vem para provacar", id = "79916408808299"},
+        {name = "funkphonk fumando verde", id = "112143944982807"},
+        {name = "trippi troop funk", id = "73049389767013"},
+        {name = "bombini funkphonk", id = "88814770244609"},
+        {name = "rachador", id = "109411226739991"},
+        {name = "cauma xmara", id = "95664293972405"},
+        {name = "tipo tasmania phonkfunk", id = "104300546340195"},
+        {name = "que que sharke", id = "129546408528391"},
+        {name = "cappuccino assassino funk", id = "122197083209373"},
+        {name = "kawai funk", id = "130053797131700"},
+        {name = "acordei passando mal", id = "83875675100660"},
+        {name = "mechamou de amor", id = "81791559745283"},
+        {name = "oeee ja ven sentando", id = "130944058486069"},
+        {name = "orror (omega007)", id = "73638649204496"},
+        {name = "que pro", id = "97239186078279"},
+        {name = "3 em um dot funk", id = "92191873659720"},
+        {name = "naved novinha", id = "102930993846348"},
+        {name = "preparaaa raaaaa", id = "98063604604756"},
+        {name = "vagalumes", id = "72026860897382"},
+        {name = "nova geraçao", id = "140065053895542"},
+        {name = "lovezin", id = "130664328738685"},
+        {name = "to voando alto", id = "110475831724424"},
+        {name = "CVVV", id = "94245278418076"},
+        {name = "MW funk", id = "73473695797214"},
+        {name = "menor TV", id = "93993692602344"},
+        {name = "de duplinha", id = "80112997683181"},
+        {name = "tropa da jamaika", id = "104498738218748"},
+        {name = "pre treino", id = "136869502216760"}
+        
+        
+    }
+}
+
+-- Criar listas de nomes e mapeamento de categorias
+local musicNames = {}
+local categoryMap = {}
+for category, sounds in pairs(musicOptions) do
+    for _, music in ipairs(sounds) do
+        table.insert(musicNames, music.name)
+        categoryMap[music.name] = {id = music.id, category = category}
+    end
+end
+
+-- Função auxiliar para tocar música
+local function playMusic(soundId)
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local argsScooter = {
+        [1] = "PickingScooterMusicText",
+        [2] = tostring(soundId)
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(argsScooter))
+    
+    local argsCarro = {
+        [1] = "PickingCarMusicText",
+        [2] = tostring(soundId)
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(argsCarro))
+end
+
+-- Dropdown para "Funk, Phonk, MTG"
 Tab5:Dropdown({
-    Title = "Música Normal",
-    Desc = "Over board",
+    Title = "Funk",
+    Desc = "all",
     Value = "Option 1",
     Multi = false,
     AllowNone = true,
-    Values = {"82406276148517", "129569692779816", "84584808135615", "131116056080033", "119540502924273", "75244543048318", "85439942763713", "97001593161206", "122473498105749"},
-    Callback = function(selectedValue)
-        fireServer("1NoMoto1rVehicle1s", {"PickingScooterMusicText", selectedValue})
-        print("Argumentos enviados: " .. selectedValue)
+    Values = musicNames,
+    Callback = function(selectedSound)
+        if selectedSound and categoryMap[selectedSound] then
+            local soundId = categoryMap[selectedSound].id
+            if soundId and soundId ~= "" and soundId ~= "4354908569" then
+                playMusic(soundId)
+                print("Música selecionada: " .. selectedSound .. " (ID: " .. soundId .. ")")
+            else
+                print("ID inválido ou título selecionado: " .. tostring(selectedSound))
+            end
+        else
+            print("Nenhuma música selecionada ou ID não encontrado!")
+        end
     end,
 })
 
+
+
+
+
+
+
+-------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+-- Tabela de opções de música para o Dropdown "Funk, Phonk, MTG"
+local musicOptions = {
+    ["phonk"] = {
+        {name = "phonk", id = "4354908569"},
+        {name = "wyles", id = "85385155970460"},
+        {name = "phonk kawai", id = "91502410121438"},
+        {name = "querendo da a bucet@", id = "72720721570850"},
+        {name = "vem no pocpoc", id = "102333419023382"},
+        {name = "tatiu wim", id = "122871512353520"},
+        {name = "novinha sapeca", id = "111668097052966"},
+        {name = "novinha representa", id = "93786060174790"},
+        {name = "phonk1", id = "77501611905348"},
+        {name = "phonk2", id = "126887144190812"},
+        {name = "phonk osadia", id = "88033569921555"},
+        {name = "phonk sarra", id = "132436320685732"},
+        {name = "relaionamento sem crush", id = "105832154444494"},
+        {name = "phonk3", id = "90323407842935"},
+        {name = "novinha dançapanpa", id = "132245626038510"},
+        {name = "phonk sexoagreçivo", id = "111995323199676"},
+        {name = "phonk4", id = "115016589376700"},
+        {name = "phonk5", id = "118740708757685"},
+        {name = "phonk6", id = "139435437308948"},
+        {name = "phonk chapaquente", id = "109189438638906"},
+        {name = "phonk rajada", id = "105126065014034"},
+        {name = "rede globo", id = "138487820505005"},
+        {name = "phonk indiano", id = "87968531262747"},
+        {name = "vapo do vapo", id = "106317184644394"},
+        {name = "tutatatutata", id = "112068892721408"},
+        {name = "phonk slower", id = "122852029094656"},
+        {name = "phonk9", id = "91760524161503"},
+        {name = "phonk10", id = "73140398421340"},
+        {name = "phonk11", id = "137962454483542"},
+        {name = "phonk12", id = "84733736048142"},
+        {name = "phonk12", id = "106322173003761"},
+        {name = "phonk13", id = "94604796823780"},
+        {name = "phonk14", id = "118063577904953"},
+        {name = "phonk15", id = "115567432786512"},
+        {name = "phonk toq", id = "71304501822029"},
+        {name = "phonk hey", id = "132218979961283"},
+        {name = "phonk16", id = "102708912256857"},
+        {name = "phonk17", id = "140642559093189"},
+        {name = "phonk neve", id = "13530439660"},
+        {name = "phonk18", id = "87863924786534"},
+        {name = "phonk19", id = "133135085604736"},
+        {name = "phonk lento", id = "97258811783169"},
+        {name = "phonk20", id = "92308400487695"},
+        {name = "phonk21", id = "104635713368149"},
+        {name = "tipo wym", id = "88064647826500"},
+        {name = "estouradassa1", id = "92175624643620"},
+        {name = "estouradassa2", id = "108099943758978"},
+        {name = "Naaaaa", id = "109784877184952"},
+        {name = "trem", id = "114608169341947"},
+        {name = "eoropa", id = "111346133543699"},
+        {name = "atimosphekika", id = "77857496821844"}
+        
+        
+    }
+}
+
+-- Criar listas de nomes e mapeamento de categorias
+local musicNames = {}
+local categoryMap = {}
+for category, sounds in pairs(musicOptions) do
+    for _, music in ipairs(sounds) do
+        table.insert(musicNames, music.name)
+        categoryMap[music.name] = {id = music.id, category = category}
+    end
+end
+
+-- Função auxiliar para tocar música
+local function playMusic(soundId)
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local argsScooter = {
+        [1] = "PickingScooterMusicText",
+        [2] = tostring(soundId)
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(argsScooter))
+    
+    local argsCarro = {
+        [1] = "PickingCarMusicText",
+        [2] = tostring(soundId)
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(argsCarro))
+end
+
+-- Dropdown para "Funk, Phonk, MTG"
 Tab5:Dropdown({
-    Title = "Meme Música",
-    Desc = "Over board",
+    Title = "Phonk",
+    Desc = "all",
     Value = "Option 1",
     Multi = false,
     AllowNone = true,
-    Values = {"115199984575713", "", "82161110448949", "139639579473440", "92212156099339", "86855540619546", "128027832969902", "118785260057094", "", "72739838426009"},
-    Callback = function(selectedValue)
-        fireServer("1NoMoto1rVehicle1s", {"PickingScooterMusicText", selectedValue})
-        print("Argumentos enviados: " .. selectedValue)
+    Values = musicNames,
+    Callback = function(selectedSound)
+        if selectedSound and categoryMap[selectedSound] then
+            local soundId = categoryMap[selectedSound].id
+            if soundId and soundId ~= "" and soundId ~= "4354908569" then
+                playMusic(soundId)
+                print("Música selecionada: " .. selectedSound .. " (ID: " .. soundId .. ")")
+            else
+                print("ID inválido ou título selecionado: " .. tostring(selectedSound))
+            end
+        else
+            print("Nenhuma música selecionada ou ID não encontrado!")
+        end
     end,
 })
 
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-Tab5:Dropdown({
-    Title = "Terror Assustar",
-    Desc = "Over board",
-    Value = "Option 1",
-    Multi = false,
-    AllowNone = true,
-    Values = {"72624476289253", "116709209733976", "99430297570707", "102348131944238", "125199445385812", "73562744560566", "106975887314345", "", "77874596719163", "83764626839857", "132027370834826"},
-    Callback = function(selectedValue)
-        fireServer("1NoMoto1rVehicle1s", {"PickingScooterMusicText", selectedValue})
-        print("Argumentos enviados: " .. selectedValue)
-    end,
-})
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-Tab5:Dropdown({
-    Title = "Miside, Mita",
-    Desc = "Over board",
-    Value = "Option 1",
-    Multi = false,
-    AllowNone = true,
-    Values = {"112170504958980", "106013565624854", "104676632588868", "113222738822583", "98552734554697"},
-    Callback = function(selectedValue)
-        fireServer("1NoMoto1rVehicle1s", {"PickingScooterMusicText", selectedValue})
-        print("Argumentos enviados: " .. selectedValue)
-    end,
-})
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-Tab5:Button({
-    Title = "STOP",
-    Desc = "Stop music",
-    Callback = function()
-        fireServer("1NoMoto1rVehicle1s", {"PickingScooterMusicText", ""})
-    end,
-})
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-Tab5:Button({
-    Title = "Telefone FNAF",
-    Desc = "FNAF",
-    Callback = function()
-        fireServer("1NoMoto1rVehicle1s", {"PickingScooterMusicText", "4835346587"})
-    end,
-})
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-Tab5:Button({
-    Title = "HELOU HAY AHAHAHA",
-    Desc = "FNAF",
-    Callback = function()
-        fireServer("1NoMoto1rVehicle1s", {"PickingScooterMusicText", "5608077885"})
-    end,
-})
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-Tab5:Button({
-    Title = "Grito Ohor",
-    Desc = "FNAF",
-    Callback = function()
-        fireServer("1NoMoto1rVehicle1s", {"PickingScooterMusicText", "268116333"})
-    end,
-})
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-Tab5:Button({
-    Title = "Risada Doida",
-    Desc = "Load meme",
-    Callback = function()
-        fireServer("1NoMoto1rVehicle1s", {"PickingScooterMusicText", "7752143456"})
-    end,
-})
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-Tab5:Paragraph({ Title = "Carro Música", Desc = "Gamepass música" })
-Tab5:Paragraph({ Title = "Precisa da gamepass", Desc = "" })
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-Tab5:Dropdown({
-    Title = "Selecionar Música",
-    Desc = "Música",
-    Value = "Option 1",
-    Multi = false,
-    AllowNone = true,
-    Values = {
-        "novas musica adds", "90844637105538", "102333419023382", "102333419023382", "104240235018198", "111668097052966", "93786060174790", "74812784884330", "musica brasil", "77501611905348", "126887144190812", "88033569921555", "132436320685732", "105832154444494", "", "90323407842935", "132245626038510",
-"111995323199676","115016589376700", "118740708757685", "139435437308948",
-"109189438638906", "138415155024226", "105126065014034", "102919095332206", "132245626038510", "97765714111493",
-"100788814736643", "72720721570850", "138487820505005", "87968531262747", "106317184644394",
-"musica do meu interece", "123592956882621", "108494476595033", "106835463235574", "123723674864058", "112068892721408", "musica dls por elas", "91760524161503",
-"73140398421340", "137962454483542", "84733736048142", "106322173003761", "94604796823780", "118063577904953", "115567432786512", "71304501822029",
-"132218979961283", "102708912256857", "140642559093189", "13530439660", "87863924786534", "133135085604736", "97258811783169", "92308400487695",
-"104635713368149", "88064647826500", "85385155970460", "122871512353520", "122852029094656", "115016589376700", "meme abaixo", "94395705857835", "136804576009416",
-"108494476595033", "131804436682424", "80291355054807", "137774355552052", "127944706557246", "82284055473737", "102906880476838", "91502410121438", "81694110949920", "estourada", "92175624643620", "108099943758978"
-    },
-    Callback = function(selectedValue)
-        fireServer("1Player1sCa1r", {"PickingCarMusicText", selectedValue})
-        print("Argumentos enviados: " .. selectedValue)
-    end,
-})
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-local Input = Tab5:Input({
-    Title = "Música",
-    Desc = "Colocar o id da música",
-    Value = "",
-    PlaceholderText = "coloque o id aqui...",
-    ClearTextOnFocus = false,
-    Callback = function(text)
-        fireServer("1Player1sCa1r", {"PickingCarMusicText", text})
-    end,
-})
-
-Input:SetTitle("New Title!")
-Input:SetDesc("New Description!")
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
+-- Botão Stop (Carro)
 Tab5:Button({
     Title = "Stop",
     Desc = "Car music",
     Callback = function()
-        fireServer("1Player1sCa1r", {"PickingCarMusicText", ""})
+        tocarMusica("")
+        print("Música do carro parada")
     end,
 })
 
@@ -1532,6 +1653,7 @@ local musicOptions = {
         {name = "gemido kawai", id = 100409245129170},
         {name = "Hentai gemido", id = 125037339642322},
         {name = "Hentai wiaaaaan", id = 88332347208779},
+        {name = "iamete cunasai", id = 108494476595033},
         {name = "___", id = 4354908569},
         {name = "gemidos acima", id = 4354908569},
         {name = "___", id = 4354908569},
@@ -1544,6 +1666,8 @@ local musicOptions = {
         {name = "Toma jackV2", id = 100446887985203},
         {name = "Toma jack no sol quente", id = 97476487963273},
         {name = "ifood", id = 133843750864059},
+        {name = "pelo geito ela ta querendo ram", id = 94395705857835},
+        {name = "vai todo mundo se ", id = 136804576009416},
         {name = "coringa", id = 84663543883498},
         {name = "shoope", id = 8747441609},
         {name = "quenojo", id = 103440368630269},
@@ -1552,7 +1676,13 @@ local musicOptions = {
         {name = "mita sequer que eu too uma", id = 94889439372168},
         {name = "Hoje vou ser tua mulher e tu", id = 90844637105538},
         {name = "Deita aqui eu mandei vc deitar sirens", id = 100291188941582},
+        {name = "miau", id = 131804436682424},
+        {name = "deixa os garoto brinca", id = 80291355054807},
+        {name = "famengo", id = 137774355552052},
+        {name = "sai do mei satnas", id = 127944706557246},
         {name = "namoral agora e a hora", id = 120677947987369},
+        {name = "n pode e chutar pq seu elebro e burro", id = 82284055473737},
+        {name = "deley", id = 102906880476838},
         {name = "Tu e um beta", id = 130233956349541},
         {name = "Porfavor n tira eu nao", id = 85321374020324},
         {name = "Olá beleza vc pode me dá muitos", id = 74235334504693},
