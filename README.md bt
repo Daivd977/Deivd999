@@ -1183,43 +1183,6 @@ Tab4:Toggle({
                                           -- === Tab 5: Troll Musica === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
-local function tocarMusica(id)
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    
-    local argsCasa = {
-        [1] = "PickHouseMusicText",
-        [2] = id
-    }
-    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sHous1e"):FireServer(unpack(argsCasa))
-
-    local argsCarro = {
-        [1] = "PickingCarMusicText",
-        [2] = id
-    }
-    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(argsCarro))
-
-    local argsScooter = {
-        [1] = "PickingScooterMusicText",
-        [2] = id
-    }
-    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(argsScooter))
-end
-
--- Função auxiliar para validar valores do Dropdown
-local function isValidMusicId(value)
-    return value and value ~= "" and value ~= "Option 1" and not value:match("novas musica adds") and not value:match("musica brasil") and not value:match("musica do meu interece") and not value:match("musica dls por elas") and not value:match("meme abaixo") and not value:match("estourada")
-end
-
-Tab5:Input({
-    Title = "ID da música",
-    Placeholder = "Digite o ID e pressione Enter",
-    Callback = function(value)
-        if value and value ~= "" then
-            tocarMusica(tostring(value))
-        end
-    end,
-})
-
 
 
 local function tocarMusica(id)
