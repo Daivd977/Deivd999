@@ -1,30 +1,8 @@
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
 local Version = "1.4.0"
 
---jjjjjjjffhfhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
-
---jjjjjjjffhfhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
---jjjjjjjffhfhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
---jjjjjjjffhfhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
---jjjjjjjffhfhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
---jjjjjjjffhfhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
---jjjjjjjffhfhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
---jjjjjjjffhfhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
---jjjjjjjffhfhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
---jjjjjjjffhfhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
---jjjjjjjffhfhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
---jjjjjjjffhfhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
---jjjjjjjffhfhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
---jjjjjjjffhfhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
---jjjjjjjffhfhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
---jjjjjjjffhfhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
---jjjjjjjffhfhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
---jjjjjjjffhfhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
---jjjjjjjffhfhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
---jjjjjjjffhfhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
---jjjjjjjffhfhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta troll 666888",
+    Title = "Lolyta troll 666",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta 666",
@@ -427,25 +405,17 @@ Tab1:Button({
             end
         end)
 
-        -- Cria BodyGyro para backflips
-        local bodyGyro = Instance.new("BodyGyro")
-        bodyGyro.MaxTorque = Vector3.new(math.huge, 0, 0) -- Rotação apenas no eixo X
-        bodyGyro.P = 10000
-        bodyGyro.Parent = myHRP
-
-        -- Segue o jogador selecionado com backflips rápidos
+        -- Segue o jogador selecionado com backflips rápidos (como no "Matar com o Sofá")
         print("Iniciando acompanhamento de " .. selectedPlayer.Name .. " com backflips!")
         local startTime = tick()
         flingConnection = RunService.Heartbeat:Connect(function()
             if not running then
                 print("Loop de acompanhamento interrompido: running = false")
-                bodyGyro:Destroy()
                 return
             end
             if not selectedPlayer or not selectedPlayer.Character then
                 warn("Jogador selecionado não está mais disponível!")
                 running = false
-                bodyGyro:Destroy()
                 return
             end
             local newTargetHRP = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -453,29 +423,26 @@ Tab1:Button({
             if not newTargetHRP or not newTargetHumanoid then
                 warn("HumanoidRootPart ou Humanoid do jogador selecionado não encontrado!")
                 running = false
-                bodyGyro:Destroy()
                 return
             end
             if not myHRP or not humanoid then
                 warn("HumanoidRootPart ou Humanoid do jogador local não encontrado!")
                 running = false
-                bodyGyro:Destroy()
                 return
             end
 
-            -- Teleporta para o jogador selecionado
+            -- Teleporta e aplica backflips caóticos (igual ao "Matar com o Sofá")
             pcall(function()
-                myHRP.Anchored = true
-                myHRP.CFrame = newTargetHRP.CFrame * CFrame.new(0, 0, -2) -- 2 unidades atrás
-                myHRP.Anchored = false
+                local targetPosition = newTargetHRP.Position + Vector3.new(0, 0, -2) -- 2 unidades atrás
+                character:SetPrimaryPartCFrame(
+                    CFrame.new(targetPosition) * CFrame.Angles(
+                        math.rad(Workspace.DistributedGameTime * 12000),
+                        math.rad(Workspace.DistributedGameTime * 15000),
+                        math.rad(Workspace.DistributedGameTime * 18000)
+                    )
+                )
             end)
-            print("Teleportado para " .. selectedPlayer.Name .. " (Posição: " .. tostring(newTargetHRP.Position) .. ")")
-
-            -- Aplica backflips rápidos (como no botão "Matar com o Sofá")
-            pcall(function()
-                bodyGyro.CFrame = myHRP.CFrame * CFrame.Angles(math.rad(360 * 10 * task.wait()), 0, 0) -- 10 rotações por segundo no eixo X
-            end)
-            print("Aplicando backflips para " .. selectedPlayer.Name)
+            print("Teleportado e aplicando backflips caóticos para " .. selectedPlayer.Name .. " (Posição: " .. tostring(newTargetHRP.Position) .. ")")
 
             -- Verifica se o jogador selecionado está sentado ou se o tempo limite foi atingido
             print("Jogador " .. selectedPlayer.Name .. " sentado: " .. tostring(newTargetHumanoid.Sit) .. " | Tempo decorrido: " .. tostring(tick() - startTime))
@@ -483,7 +450,6 @@ Tab1:Button({
                 running = false
                 flingConnection:Disconnect()
                 flingConnection = nil
-                bodyGyro:Destroy()
 
                 -- Deleta o sofá do inventário
                 local args = {
