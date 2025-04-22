@@ -1,6 +1,8 @@
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
 local Version = "1.4.0"
 
+--heheehhehehehe noclip bem op mesmo heehhe jujuanopafja jggggjjjf fjjbsdnjn  j b dj  fb d jdf  
+
 local Window = WindUI:CreateWindow({
     Title = "Lolyta troll",
     Icon = "door-open",
