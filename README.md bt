@@ -2,7 +2,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 local Version = "1.4.0"
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta troll 666",
+    Title = "Lolyta troll78",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta 666",
@@ -509,17 +509,63 @@ Tab1:Button({
             return
         end
 
-        -- Equipar a bola automaticamente
-        local success, err = pcall(function()
-            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer("PickingTools", "SoccerBall")
-        end)
-        if not success then
-            warn("Erro ao pegar a bola: " .. tostring(err))
+        -- Função para equipar a bola
+        local function equipBola()
+            local backpack = LocalPlayer:WaitForChild("Backpack")
+            local bola = backpack:FindFirstChild("SoccerBall") or character:FindFirstChild("SoccerBall")
+
+            if not bola then
+                -- Pega a bola se não estiver no inventário ou equipada
+                local args = {
+                    [1] = "PickingTools",
+                    [2] = "SoccerBall"
+                }
+                local success, err = pcall(function()
+                    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
+                end)
+                if not success then
+                    warn("Erro ao pegar a bola: " .. tostring(err))
+                    return false
+                end
+
+                -- Espera a bola aparecer na mochila
+                repeat
+                    bola = backpack:FindFirstChild("SoccerBall")
+                    task.wait()
+                until bola or task.wait(5) -- Timeout de 5 segundos
+                if not bola then
+                    warn("Falha ao pegar a bola!")
+                    return false
+                end
+            end
+
+            -- Se a bola não estiver equipada, equipa
+            if bola.Parent ~= character then
+                bola.Parent = character
+                print("Bola equipada!")
+            else
+                print("Bola já está equipada!")
+            end
+            return true
+        end
+
+        -- Equipa a bola
+        if not equipBola() then
             return
         end
 
-        -- Espera a bola ser equipada
+        -- Espera 0.5 segundos
         task.wait(0.5)
+
+        -- Deleta a bola do inventário
+        local args = {
+            [1] = "PlayerWantsToDeleteTool",
+            [2] = "SoccerBall"
+        }
+        pcall(function()
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer(unpack(args))
+        end)
+        print("Bola removida do inventário!")
 
         -- Encontra a bola no Workspace
         local workspaceCom = Workspace:FindFirstChild("WorkspaceCom")
