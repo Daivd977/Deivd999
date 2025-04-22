@@ -14,7 +14,9 @@ local AllowedUsers = {
     "Tiago_RJ4",
     "lacradoor123",
     "enzin12346BR",
-    "RED_MIGZINN", -- Adicione mais nomes aqui, por exemplo:
+    "RED_MIGZINN",
+    "XxFriend03",
+    "Fanboy_Series",-- Adicione mais nomes aqui, por exemplo:
     -- "outro_usuario",
     -- "amigo123",
 }
@@ -82,7 +84,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 3.0",
+    Title = "Lolyta Hub 3.0,,",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.666",
@@ -845,6 +847,97 @@ Tab3:Toggle({
                 warn("HumanoidRootPart não encontrado!")
                 return false
             end
+
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+-- Outro usuário permitido
+
 
             -- Força o jogador a não estar sentado antes de tentar
             humanoid.Sit = false
