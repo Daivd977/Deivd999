@@ -2,7 +2,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 local Version = "1.4.0"
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta troll78",
+    Title = "Lolyta troll 666",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta 666",
@@ -279,225 +279,19 @@ local SpectateToggle = Tab1:Toggle({
     end,
 })
 
--- Botão para iniciar matar
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- BOTÃO INICIAR FLING COM SOFÁ
 Tab1:Button({
-    Title = "Iniciar Matar com o Sofá",
-    Desc = "Clique para começar a matar o jogador selecionado",
-    Callback = function()
-        if isFollowingKill or isFollowingPull then
-            print("Uma ação (matar ou puxar) já está ativa. Use o botão Parar primeiro.")
-            return
-        end
-        if not selectedPlayer or not selectedPlayer.Character or not LocalPlayer.Character then
-            warn("Selecione um jogador válido antes de iniciar!")
-            return
-        end
-
-        -- Verifica se o sofá está no inventário
-        local backpack = LocalPlayer:WaitForChild("Backpack")
-        local sofa = backpack:FindFirstChild("Couch")
-
-        if not sofa then
-            -- Pega o sofá se não estiver na mochila
-            local args = { [1] = "PickingTools", [2] = "Couch" }
-            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
-
-            repeat
-                sofa = backpack:FindFirstChild("Couch")
-                task.wait()
-            until sofa or task.wait(5) -- Timeout de 5 segundos
-            if not sofa then
-                warn("Falha ao pegar o sofá!")
-                return
-            end
-        end
-
-        -- Equipa o sofá
-        sofa.Parent = LocalPlayer.Character
-        print("Sofá equipado!")
-
-        isFollowingKill = true
-        originalPosition = LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position
-        print("Iniciando matar para: " .. selectedPlayer.Name)
-    end,
-})
-
--- Botão para iniciar puxar
-Tab1:Button({
-    Title = "Iniciar Puxar",
-    Desc = "Clique para começar a puxar o jogador selecionado",
-    Callback = function()
-        if isFollowingKill or isFollowingPull then
-            print("Uma ação (matar ou puxar) já está ativa. Use o botão Parar primeiro.")
-            return
-        end
-        if not selectedPlayer or not selectedPlayer.Character or not LocalPlayer.Character then
-            warn("Selecione um jogador válido antes de iniciar!")
-            return
-        end
-
-        -- Verifica se o sofá está no inventário
-        local backpack = LocalPlayer:WaitForChild("Backpack")
-        local sofa = backpack:FindFirstChild("Couch")
-
-        if not sofa then
-            -- Pega o sofá se não estiver na mochila
-            local args = { [1] = "PickingTools", [2] = "Couch" }
-            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
-
-            repeat
-                sofa = backpack:FindFirstChild("Couch")
-                task.wait()
-            until sofa or task.wait(5) -- Timeout de 5 segundos
-            if not sofa then
-                warn("Falha ao pegar o sofá!")
-                return
-            end
-        end
-
-        -- Equipa o sofá
-        sofa.Parent = LocalPlayer.Character
-        print("Sofá equipado!")
-
-        isFollowingPull = true
-        originalPosition = LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position
-        print("Iniciando puxar para: " .. selectedPlayer.Name)
-    end,
-})
-
--- Botão para parar matar ou puxar
-Tab1:Button({
-    Title = "Parar (Matar ou Puxar)",
-    Desc = "Para o movimento de matar ou puxar",
-    Callback = function()
-        isFollowingKill = false
-        isFollowingPull = false
-
-        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = true
-                part.Velocity = Vector3.zero
-                part.RotVelocity = Vector3.zero
-            end
-        end
-
-        -- Restaura a capacidade de sentar
-        local myHumanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
-        if myHumanoid then
-            myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
-        end
-
-        for _, seat in ipairs(Workspace:GetDescendants()) do
-            if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
-                seat.Disabled = false
-            end
-        end
-
-        -- Teleporta com segurança
-        if originalPosition then
-            local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if myHRP then
-                myHRP.Anchored = true
-                myHRP.CFrame = CFrame.new(originalPosition + Vector3.new(0, 5, 0))
-                task.wait(0.2)
-                myHRP.Velocity = Vector3.zero
-                myHRP.RotVelocity = Vector3.zero
-                myHRP.Anchored = false
-                if myHumanoid then
-                    myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-                end
-            end
-            originalPosition = nil
-        end
-        print("Movimento parado. Personagem voltou à posição original.")
-    end,
-})
-
--- Lógica de matar e puxar
-local followConnection
-if followConnection then followConnection:Disconnect() end
-followConnection = RunService.Heartbeat:Connect(function()
-    if (isFollowingKill or isFollowingPull) and selectedPlayer and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        local success, errorMessage = pcall(function()
-            local targetPosition = selectedPlayer.Character.HumanoidRootPart.Position
-            LocalPlayer.Character:SetPrimaryPartCFrame(
-                CFrame.new(targetPosition) * CFrame.Angles(
-                    math.rad(Workspace.DistributedGameTime * 12000),
-                    math.rad(Workspace.DistributedGameTime * 15000),
-                    math.rad(Workspace.DistributedGameTime * 18000)
-                )
-            )
-        end)
-        if not success then
-            warn("Erro no loop de matar/puxar: " .. tostring(errorMessage))
-            isFollowingKill = false
-            isFollowingPull = false
-        end
-    end
-end)
-
-local sitCheckConnection
-if sitCheckConnection then sitCheckConnection:Disconnect() end
-sitCheckConnection = RunService.Heartbeat:Connect(function()
-    if (isFollowingKill or isFollowingPull) and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("Humanoid") then
-        local success, errorMessage = pcall(function()
-            if selectedPlayer.Character.Humanoid.Sit then
-                print("Jogador sentado! Interrompendo ação...")
-                
-                if isFollowingKill then
-                    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                        LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(0, -500, 0))
-                        task.wait(0.5)
-                        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer("PickingTools", "Couch")
-                        task.wait(1)
-                    end
-                end
-                
-                isFollowingKill = false
-                isFollowingPull = false
-                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and originalPosition then
-                    local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                    local myHumanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
-                    if myHRP then
-                        myHRP.Anchored = true
-                        myHRP.CFrame = CFrame.new(originalPosition + Vector3.new(0, 5, 0))
-                        task.wait(0.2)
-                        myHRP.Velocity = Vector3.zero
-                        myHRP.RotVelocity = Vector3.zero
-                        myHRP.Anchored = false
-                        if myHumanoid then
-                            myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-                        end
-                    end
-                    print("Personagem voltou à posição original em pé!")
-                end
-                originalPosition = nil
-            end
-        end)
-        if not success then
-            warn("Erro na verificação de assento: " .. tostring(errorMessage))
-            isFollowingKill = false
-            isFollowingPull = false
-        end
-    end
-end)
-
-
-
------------------------------------------------------------------------------------------------------
-
-
--- BOTÃO INICIAR FLING
-Tab1:Button({
-    Title = "Iniciar Fling",
-    Desc = "Inicia o fling no jogador selecionado",
+    Title = "Iniciar Fling com Sofá",
+    Desc = "Inicia o fling no jogador selecionado usando o sofá",
     Callback = function()
         if running then
             print("O fling já está ativo. Use o botão 'Parar Fling' primeiro.")
             return
         end
-        if not selectedPlayer or not selectedPlayer.Character then
-            warn("Selecione um jogador válido antes de iniciar o fling!")
+        if not selectedPlayer or not selectedPlayer.Character or not LocalPlayer.Character then
+            warn("Selecione um jogador válido antes de iniciar!")
             return
         end
 
@@ -509,184 +303,163 @@ Tab1:Button({
             return
         end
 
-        -- Função para equipar a bola
-        local function equipBola()
-            local backpack = LocalPlayer:WaitForChild("Backpack")
-            local bola = backpack:FindFirstChild("SoccerBall") or character:FindFirstChild("SoccerBall")
+        -- Salva a posição inicial
+        savedPosition = myHRP.Position
 
-            if not bola then
-                -- Pega a bola se não estiver no inventário ou equipada
+        -- Função para equipar o sofá
+        local function equipSofa()
+            local backpack = LocalPlayer:WaitForChild("Backpack")
+            local sofa = backpack:FindFirstChild("Couch") or character:FindFirstChild("Couch")
+
+            if not sofa then
+                -- Pega o sofá se não estiver no inventário ou equipado
                 local args = {
                     [1] = "PickingTools",
-                    [2] = "SoccerBall"
+                    [2] = "Couch"
                 }
                 local success, err = pcall(function()
                     ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
                 end)
                 if not success then
-                    warn("Erro ao pegar a bola: " .. tostring(err))
+                    warn("Erro ao pegar o sofá: " .. tostring(err))
                     return false
                 end
 
-                -- Espera a bola aparecer na mochila
+                -- Espera o sofá aparecer na mochila
                 repeat
-                    bola = backpack:FindFirstChild("SoccerBall")
+                    sofa = backpack:FindFirstChild("Couch")
                     task.wait()
-                until bola or task.wait(5) -- Timeout de 5 segundos
-                if not bola then
-                    warn("Falha ao pegar a bola!")
+                until sofa or task.wait(5) -- Timeout de 5 segundos
+                if not sofa then
+                    warn("Falha ao pegar o sofá!")
                     return false
                 end
             end
 
-            -- Se a bola não estiver equipada, equipa
-            if bola.Parent ~= character then
-                bola.Parent = character
-                print("Bola equipada!")
+            -- Se o sofá não estiver equipado, equipa
+            if sofa.Parent ~= character then
+                sofa.Parent = character
+                print("Sofá equipado!")
             else
-                print("Bola já está equipada!")
+                print("Sofá já está equipado!")
             end
             return true
         end
 
-        -- Equipa a bola
-        if not equipBola() then
+        -- Equipa o sofá
+        if not equipSofa() then
             return
         end
 
         -- Espera 0.5 segundos
         task.wait(0.5)
 
-        -- Deleta a bola do inventário
-        local args = {
-            [1] = "PlayerWantsToDeleteTool",
-            [2] = "SoccerBall"
-        }
-        pcall(function()
-            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer(unpack(args))
-        end)
-        print("Bola removida do inventário!")
-
-        -- Encontra a bola no Workspace
+        -- Encontra o sofá no Workspace
         local workspaceCom = Workspace:FindFirstChild("WorkspaceCom")
         if not workspaceCom then
             warn("WorkspaceCom não encontrado!")
             return
         end
-        local soccerBalls = workspaceCom:FindFirstChild("001_SoccerBalls")
-        if not soccerBalls then
-            warn("001_SoccerBalls não encontrado!")
+        local couches = workspaceCom:FindFirstChild("001_Couches")
+        if not couches then
+            warn("001_Couches não encontrado!")
             return
         end
 
-        soccerBall = soccerBalls:FindFirstChild("Soccer" .. LocalPlayer.Name)
-        if not soccerBall then
-            warn("Bola de futebol não encontrada em Workspace.WorkspaceCom.001_SoccerBalls.Soccer" .. LocalPlayer.Name)
+        local couch = couches:FindFirstChild("Couch" .. LocalPlayer.Name)
+        if not couch then
+            warn("Sofá não encontrado em Workspace.WorkspaceCom.001_Couches.Couch" .. LocalPlayer.Name)
             return
         end
 
-        -- Configura a bola
+        -- Configura o sofá
         originalProperties = {
-            Anchored = soccerBall.Anchored,
-            CanCollide = soccerBall.CanCollide,
-            CanTouch = soccerBall.CanTouch
+            Anchored = couch.Anchored,
+            CanCollide = couch.CanCollide,
+            CanTouch = couch.CanTouch
         }
-        soccerBall.Anchored = false
-        soccerBall.CanCollide = true
-        soccerBall.CanTouch = true
-        pcall(function() soccerBall:SetNetworkOwner(nil) end)
-
-        -- Salva a posição inicial
-        savedPosition = myHRP.Position
+        couch.Anchored = false
+        couch.CanCollide = true
+        couch.CanTouch = true
+        pcall(function() couch:SetNetworkOwner(nil) end)
 
         -- Ativa o NoClip
-        for _, part in ipairs(character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
-            end
-        end
-
-        -- Desativa capacidade de sentar
-        if humanoid then
-            humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
-            humanoid.Sit = false
-        end
-
-        -- Bloqueia interações com assentos
-        for _, seat in ipairs(Workspace:GetDescendants()) do
-            if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
-                seat.Disabled = true
-            end
-        end
-
-        -- Reduz o tamanho do personagem
-        pcall(function()
-            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeDown", 4)
-        end)
-
         running = true
-        local lastFlingTime = 0
-
-        -- Loop de movimento da bola
-        connection = RunService.Heartbeat:Connect(function()
-            if not running or not selectedPlayer.Character then return end
-            local hrp = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
-            local hum = selectedPlayer.Character:FindFirstChild("Humanoid")
-            local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if not hrp or not hum or not myHRP then return end
-
-            local moveDir = hum.MoveDirection
-            local isStill = moveDir.Magnitude < 0.1
-            local isSitting = hum.Sit
-
-            if isSitting then
-                -- Bola se move rapidamente para cima e para baixo
-                local y = math.sin(tick() * 50) * 2
-                soccerBall.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 0.75 + y, 0))
-            elseif isStill then
-                -- Bola se move rapidamente para frente e para trás
-                local z = math.sin(tick() * 50) * 3
-                soccerBall.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 0.75, z))
-            else
-                local offset = moveDir.Unit * math.clamp(hrp.Velocity.Magnitude * 0.15, 5, 12)
-                soccerBall.CFrame = CFrame.new(hrp.Position + offset + Vector3.new(0, 0.75, 0))
+        connection = RunService.Stepped:Connect(function()
+            if not running then return end
+            for _, part in ipairs(character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
             end
-
-            myHRP.CFrame = CFrame.new(soccerBall.Position + Vector3.new(0, 1, 0))
         end)
 
-        -- Loop de fling
-        flingConnection = RunService.Heartbeat:Connect(function()
-            if not running or not selectedPlayer.Character then return end
-            local hrp = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if not hrp then return end
+        -- Faz o jogador selecionado sentar no sofá
+        local targetHRP = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local targetHumanoid = selectedPlayer.Character:FindFirstChild("Humanoid")
+        if targetHRP and targetHumanoid then
+            -- Teleporta o jogador selecionado para o sofá
+            targetHRP.CFrame = couch.CFrame + Vector3.new(0, 3, 0)
+            targetHumanoid.Sit = true
+            print("Jogador " .. selectedPlayer.Name .. " sentado no sofá!")
+        else
+            warn("Jogador selecionado não tem HumanoidRootPart ou Humanoid!")
+            running = false
+            return
+        end
 
-            local dist = (soccerBall.Position - hrp.Position).Magnitude
-            if dist < 4 and tick() - lastFlingTime > 0.4 then
-                lastFlingTime = tick()
+        -- Deleta o sofá do inventário
+        local args = {
+            [1] = "PlayerWantsToDeleteTool",
+            [2] = "Couch"
+        }
+        pcall(function()
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer(unpack(args))
+        end)
+        print("Sofá removido do inventário!")
 
+        -- Aplica o fling extremamente forte no jogador selecionado
+        if targetHRP then
+            for _, part in ipairs(selectedPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+
+            local fling = Instance.new("BodyVelocity")
+            fling.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+            fling.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 50000 + Vector3.new(0, 50000, 0)
+            fling.Parent = targetHRP
+
+            task.delay(0.5, function()
+                fling:Destroy()
                 for _, part in ipairs(selectedPlayer.Character:GetDescendants()) do
                     if part:IsA("BasePart") then
-                        part.CanCollide = false
+                        part.CanCollide = true
                     end
                 end
+            end)
+            print("Fling extremamente forte aplicado em " .. selectedPlayer.Name .. "!")
+        end
 
-                local fling = Instance.new("BodyVelocity")
-                fling.MaxForce = Vector3.new(1e9, 1e9, 1e9)
-                fling.Velocity = Vector3.new(math.random(-3, 3), 1, math.random(-3, 3)).Unit * 12000 + Vector3.new(0, 12000, 0)
-                fling.Parent = hrp
+        -- Teleporta o jogador local de volta à posição inicial
+        myHRP.Anchored = true
+        myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
+        task.wait(0.2)
+        myHRP.Velocity = Vector3.zero
+        myHRP.RotVelocity = Vector3.zero
+        myHRP.Anchored = false
+        if humanoid then
+            humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+        end
+        print("Jogador local retornado à posição inicial!")
 
-                task.delay(0.3, function()
-                    fling:Destroy()
-                    for _, part in ipairs(selectedPlayer.Character:GetDescendants()) do
-                        if part:IsA("BasePart") then
-                            part.CanCollide = true
-                        end
-                    end
-                end)
-            end
-        end)
-        print("Fling iniciado com sucesso!")
+        -- Para o loop de NoClip
+        running = false
+        if connection then
+            connection:Disconnect()
+            connection = nil
+        end
     end,
 })
 
@@ -705,11 +478,11 @@ Tab1:Button({
             flingConnection = nil
         end
 
-        -- Restaura as propriedades da bola
-        if soccerBall then
-            soccerBall.Anchored = originalProperties.Anchored
-            soccerBall.CanCollide = originalProperties.CanCollide
-            soccerBall.CanTouch = originalProperties.CanTouch
+        -- Restaura as propriedades do sofá
+        if couch then
+            couch.Anchored = originalProperties.Anchored
+            couch.CanCollide = originalProperties.CanCollide
+            couch.CanTouch = originalProperties.CanTouch
         end
 
         -- Desativa o NoClip
