@@ -2,7 +2,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 local Version = "1.4.0"
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta troll",
+    Title = "Lolyta troll 666",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta 666",
@@ -501,100 +501,144 @@ Tab1:Button({
             return
         end
 
-        local backpack = LocalPlayer:WaitForChild("Backpack")
         local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         local humanoid = character:FindFirstChildOfClass("Humanoid")
-        local hrp = character:FindFirstChild("HumanoidRootPart")
-        if not humanoid or not hrp then
+        local myHRP = character:FindFirstChild("HumanoidRootPart")
+        if not humanoid or not myHRP then
             warn("Seu personagem ainda não está totalmente carregado.")
             return
         end
 
-        -- Salva a posição inicial
-        savedPosition = hrp.Position
-
-        -- Verifica se a bola está no inventário
-        local ballTool = backpack:FindFirstChild("SoccerBall")
-        if not ballTool then
-            -- Pega a bola se não estiver no inventário
-            local success, err = pcall(function()
-                ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer("PickingTools", "SoccerBall")
-            end)
-            if not success then
-                warn("Erro ao pegar a bola: " .. tostring(err))
-                return
-            end
-
-            -- Espera a bola aparecer no inventário
-            repeat
-                ballTool = backpack:FindFirstChild("SoccerBall")
-                task.wait()
-            until ballTool or task.wait(5) -- Timeout de 5 segundos
-            if not ballTool then
-                warn("Falha ao pegar a bola!")
-                return
-            end
+        -- Equipar a bola automaticamente
+        local success, err = pcall(function()
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer("PickingTools", "SoccerBall")
+        end)
+        if not success then
+            warn("Erro ao pegar a bola: " .. tostring(err))
+            return
         end
 
-        -- Equipa a bola diretamente
-        pcall(function()
-            humanoid:EquipTool(ballTool)
-        end)
-
-        -- Espera 0.5 segundos antes de iniciar o fling
+        -- Espera a bola ser equipada
         task.wait(0.5)
 
         -- Encontra a bola no Workspace
         local workspaceCom = Workspace:FindFirstChild("WorkspaceCom")
-        local soccerBalls = workspaceCom and workspaceCom:FindFirstChild("001_SoccerBalls")
-        soccerBall = soccerBalls and soccerBalls:FindFirstChild("Soccer" .. LocalPlayer.Name)
-        if not soccerBall then
-            warn("Bola de futebol não encontrada no Workspace!")
+        if not workspaceCom then
+            warn("WorkspaceCom não encontrado!")
+            return
+        end
+        local soccerBalls = workspaceCom:FindFirstChild("001_SoccerBalls")
+        if not soccerBalls then
+            warn("001_SoccerBalls não encontrado!")
             return
         end
 
-        -- Encontra a parte da bola (evita erro de "Handle")
-        local ballPart = soccerBall:FindFirstChild("Handle") or soccerBall:FindFirstChildWhichIsA("BasePart")
-        if not ballPart then
-            warn("Nenhuma parte válida encontrada na bola!")
+        soccerBall = soccerBalls:FindFirstChild("Soccer" .. LocalPlayer.Name)
+        if not soccerBall then
+            warn("Bola de futebol não encontrada em Workspace.WorkspaceCom.001_SoccerBalls.Soccer" .. LocalPlayer.Name)
             return
         end
 
         -- Configura a bola
         originalProperties = {
-            Anchored = ballPart.Anchored,
-            CanCollide = ballPart.CanCollide,
-            CanTouch = ballPart.CanTouch
+            Anchored = soccerBall.Anchored,
+            CanCollide = soccerBall.CanCollide,
+            CanTouch = soccerBall.CanTouch
         }
-        ballPart.Anchored = false
-        ballPart.CanCollide = true
-        ballPart.CanTouch = true
-        pcall(function() ballPart:SetNetworkOwner(nil) end)
+        soccerBall.Anchored = false
+        soccerBall.CanCollide = true
+        soccerBall.CanTouch = true
+        pcall(function() soccerBall:SetNetworkOwner(nil) end)
+
+        -- Salva a posição inicial
+        savedPosition = myHRP.Position
 
         -- Ativa o NoClip
-        running = true
-        connection = RunService.Stepped:Connect(function()
-            if not running then return end
-            for _, part in ipairs(character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
-                end
+        for _, part in ipairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
             end
+        end
+
+        -- Desativa capacidade de sentar
+        if humanoid then
+            humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+            humanoid.Sit = false
+        end
+
+        -- Bloqueia interações com assentos
+        for _, seat in ipairs(Workspace:GetDescendants()) do
+            if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
+                seat.Disabled = true
+            end
+        end
+
+        -- Reduz o tamanho do personagem
+        pcall(function()
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeDown", 4)
         end)
 
-        -- Loop do fling
+        running = true
+        local lastFlingTime = 0
+
+        -- Loop de movimento da bola
+        connection = RunService.Heartbeat:Connect(function()
+            if not running or not selectedPlayer.Character then return end
+            local hrp = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+            local hum = selectedPlayer.Character:FindFirstChild("Humanoid")
+            local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if not hrp or not hum or not myHRP then return end
+
+            local moveDir = hum.MoveDirection
+            local isStill = moveDir.Magnitude < 0.1
+            local isSitting = hum.Sit
+
+            if isSitting then
+                -- Bola se move rapidamente para cima e para baixo
+                local y = math.sin(tick() * 50) * 2
+                soccerBall.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 0.75 + y, 0))
+            elseif isStill then
+                -- Bola se move rapidamente para frente e para trás
+                local z = math.sin(tick() * 50) * 3
+                soccerBall.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 0.75, z))
+            else
+                local offset = moveDir.Unit * math.clamp(hrp.Velocity.Magnitude * 0.15, 5, 12)
+                soccerBall.CFrame = CFrame.new(hrp.Position + offset + Vector3.new(0, 0.75, 0))
+            end
+
+            myHRP.CFrame = CFrame.new(soccerBall.Position + Vector3.new(0, 1, 0))
+        end)
+
+        -- Loop de fling
         flingConnection = RunService.Heartbeat:Connect(function()
             if not running or not selectedPlayer.Character then return end
-            local targetHRP = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
-            local myHRP = character:FindFirstChild("HumanoidRootPart")
-            if not targetHRP or not myHRP or not ballPart.Parent then return end
+            local hrp = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if not hrp then return end
 
-            -- Move a bola para a posição do alvo
-            ballPart.CFrame = targetHRP.CFrame * CFrame.new(0, 0, -1)
-            ballPart.Velocity = Vector3.new(10000, 10000, 10000)
+            local dist = (soccerBall.Position - hrp.Position).Magnitude
+            if dist < 4 and tick() - lastFlingTime > 0.4 then
+                lastFlingTime = tick()
 
-            -- Move o jogador para acompanhar a bola
-            myHRP.CFrame = CFrame.new(ballPart.Position + Vector3.new(0, 1, 0))
+                for _, part in ipairs(selectedPlayer.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+
+                local fling = Instance.new("BodyVelocity")
+                fling.MaxForce = Vector3.new(1e9, 1e9, 1e9)
+                fling.Velocity = Vector3.new(math.random(-3, 3), 1, math.random(-3, 3)).Unit * 12000 + Vector3.new(0, 12000, 0)
+                fling.Parent = hrp
+
+                task.delay(0.3, function()
+                    fling:Destroy()
+                    for _, part in ipairs(selectedPlayer.Character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = true
+                        end
+                    end
+                end)
+            end
         end)
         print("Fling iniciado com sucesso!")
     end,
@@ -617,12 +661,9 @@ Tab1:Button({
 
         -- Restaura as propriedades da bola
         if soccerBall then
-            local ballPart = soccerBall:FindFirstChild("Handle") or soccerBall:FindFirstChildWhichIsA("BasePart")
-            if ballPart then
-                ballPart.Anchored = originalProperties.Anchored
-                ballPart.CanCollide = originalProperties.CanCollide
-                ballPart.CanTouch = originalProperties.CanTouch
-            end
+            soccerBall.Anchored = originalProperties.Anchored
+            soccerBall.CanCollide = originalProperties.CanCollide
+            soccerBall.CanTouch = originalProperties.CanTouch
         end
 
         -- Desativa o NoClip
