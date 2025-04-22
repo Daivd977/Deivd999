@@ -2,7 +2,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 local Version = "1.4.0"
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta troll 666",
+    Title = "Lolyta troll",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta 666",
@@ -18,27 +18,6 @@ local Window = WindUI:CreateWindow({
     SideBarWidth = 200,
     HasOutline = false,
 })
-
--- fjgjgjfgmdfkj gjf g f gnf  gnjdf gnjdf gfdg dfg df g fgfdgjfgjnf gdjn ffffffffffff  fffffffffffff ffffffffffffffffff ffffffffffffffff ffffffffffffffff fffffffffffffffff 
-
--- fjgjgjfgmdfkj gjf g f gnf  gnjdf gnjdf gfdg dfg df g fgfdgjfgjnf gdjn ffffffffffff  fffffffffffff ffffffffffffffffff ffffffffffffffff ffffffffffffffff fffffffffffffffff
-
--- fjgjgjfgmdfkj gjf g f gnf  gnjdf gnjdf gfdg dfg df g fgfdgjfgjnf gdjn ffffffffffff  fffffffffffff ffffffffffffffffff ffffffffffffffff ffffffffffffffff fffffffffffffffff
-
--- fjgjgjfgmdfkj gjf g f gnf  gnjdf gnjdf gfdg dfg df g fgfdgjfgjnf gdjn ffffffffffff  fffffffffffff ffffffffffffffffff ffffffffffffffff ffffffffffffffff fffffffffffffffff
-
--- fjgjgjfgmdfkj gjf g f gnf  gnjdf gnjdf gfdg dfg df g fgfdgjfgjnf gdjn ffffffffffff  fffffffffffff ffffffffffffffffff ffffffffffffffff ffffffffffffffff fffffffffffffffff
-
--- fjgjgjfgmdfkj gjf g f gnf  gnjdf gnjdf gfdg dfg df g fgfdgjfgjnf gdjn ffffffffffff  fffffffffffff ffffffffffffffffff ffffffffffffffff ffffffffffffffff fffffffffffffffff
-
--- fjgjgjfgmdfkj gjf g f gnf  gnjdf gnjdf gfdg dfg df g fgfdgjfgjnf gdjn ffffffffffff  fffffffffffff ffffffffffffffffff ffffffffffffffff ffffffffffffffff fffffffffffffffff
-
--- fjgjgjfgmdfkj gjf g f gnf  gnjdf gnjdf gfdg dfg df g fgfdgjfgjnf gdjn ffffffffffff  fffffffffffff ffffffffffffffffff ffffffffffffffff ffffffffffffffff fffffffffffffffff
--- fjgjgjfgmdfkj gjf g f gnf  gnjdf gnjdf gfdg dfg df g fgfdgjfgjnf gdjn ffffffffffff  fffffffffffff ffffffffffffffffff ffffffffffffffff ffffffffffffffff fffffffffffffffff
--- fjgjgjfgmdfkj gjf g f gnf  gnjdf gnjdf gfdg dfg df g fgfdgjfgjnf gdjn ffffffffffff  fffffffffffff ffffffffffffffffff ffffffffffffffff ffffffffffffffff fffffffffffffffff-- fjgjgjfgmdfkj gjf g f gnf  gnjdf gnjdf gfdg dfg df g fgfdgjfgjnf gdjn ffffffffffff  fffffffffffff ffffffffffffffffff ffffffffffffffff ffffffffffffffff fffffffffffffffff
-
--- fjgjgjfgmdfkj gjf g f gnf  gnjdf gnjdf gfdg dfg df g fgfdgjfgjnf gdjn ffffffffffff  fffffffffffff ffffffffffffffffff ffffffffffffffff ffffffffffffffff fffffffffffffffff
--- fjgjgjfgmdfkj gjf g f gnf  gnjdf gnjdf gfdg dfg df g fgfdgjfgjnf gdjn ffffffffffff  fffffffffffff ffffffffffffffffff ffffffffffffffff ffffffffffffffff fffffffffffffffff
 
 Window:EditOpenButton({
     Title = "Lolyta troll",
@@ -531,13 +510,13 @@ Tab1:Button({
             return
         end
 
+        -- Salva a posição inicial
         savedPosition = hrp.Position
 
-        -- Buscar bola
-        local ballTool = backpack:FindFirstChild("SoccerBall") or character:FindFirstChild("SoccerBall")
-
-        -- Se não tiver a bola, pegar
+        -- Verifica se a bola está no inventário
+        local ballTool = backpack:FindFirstChild("SoccerBall")
         if not ballTool then
+            -- Pega a bola se não estiver no inventário
             local success, err = pcall(function()
                 ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer("PickingTools", "SoccerBall")
             end)
@@ -545,82 +524,152 @@ Tab1:Button({
                 warn("Erro ao pegar a bola: " .. tostring(err))
                 return
             end
+
+            -- Espera a bola aparecer no inventário
+            repeat
+                ballTool = backpack:FindFirstChild("SoccerBall")
+                task.wait()
+            until ballTool or task.wait(5) -- Timeout de 5 segundos
+            if not ballTool then
+                warn("Falha ao pegar a bola!")
+                return
+            end
         end
 
-        -- Espera um pouco e busca a bola novamente
-        task.wait(0.2)
-        ballTool = backpack:FindFirstChild("SoccerBall") or character:FindFirstChild("SoccerBall")
-        if not ballTool then
-            warn("Bola não apareceu.")
-            return
-        end
-
-        -- Reequipar a bola
+        -- Equipa a bola diretamente
         pcall(function()
-            humanoid:UnequipTools()
-            task.wait(0.1)
             humanoid:EquipTool(ballTool)
         end)
 
-        -- Esperar 0.5s antes de iniciar o fling
+        -- Espera 0.5 segundos antes de iniciar o fling
         task.wait(0.5)
 
-        -- Ativa o noclip
+        -- Encontra a bola no Workspace
+        local workspaceCom = Workspace:FindFirstChild("WorkspaceCom")
+        local soccerBalls = workspaceCom and workspaceCom:FindFirstChild("001_SoccerBalls")
+        soccerBall = soccerBalls and soccerBalls:FindFirstChild("Soccer" .. LocalPlayer.Name)
+        if not soccerBall then
+            warn("Bola de futebol não encontrada no Workspace!")
+            return
+        end
+
+        -- Encontra a parte da bola (evita erro de "Handle")
+        local ballPart = soccerBall:FindFirstChild("Handle") or soccerBall:FindFirstChildWhichIsA("BasePart")
+        if not ballPart then
+            warn("Nenhuma parte válida encontrada na bola!")
+            return
+        end
+
+        -- Configura a bola
+        originalProperties = {
+            Anchored = ballPart.Anchored,
+            CanCollide = ballPart.CanCollide,
+            CanTouch = ballPart.CanTouch
+        }
+        ballPart.Anchored = false
+        ballPart.CanCollide = true
+        ballPart.CanTouch = true
+        pcall(function() ballPart:SetNetworkOwner(nil) end)
+
+        -- Ativa o NoClip
         running = true
         connection = RunService.Stepped:Connect(function()
             if not running then return end
             for _, part in ipairs(character:GetDescendants()) do
-                if part:IsA("BasePart") and part.CanCollide then
+                if part:IsA("BasePart") then
                     part.CanCollide = false
                 end
             end
         end)
 
-        -- Fling loop
-        task.spawn(function()
-            local target = selectedPlayer
-            local ball = character:FindFirstChild("SoccerBall")
+        -- Loop do fling
+        flingConnection = RunService.Heartbeat:Connect(function()
+            if not running or not selectedPlayer.Character then return end
+            local targetHRP = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
             local myHRP = character:FindFirstChild("HumanoidRootPart")
-            if not ball or not myHRP or not target then return end
+            if not targetHRP or not myHRP or not ballPart.Parent then return end
 
-            while running and target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") do
-                local targetHRP = target.Character:FindFirstChild("HumanoidRootPart")
-                if not targetHRP then break end
+            -- Move a bola para a posição do alvo
+            ballPart.CFrame = targetHRP.CFrame * CFrame.new(0, 0, -1)
+            ballPart.Velocity = Vector3.new(10000, 10000, 10000)
 
-                ball.Handle.CFrame = targetHRP.CFrame * CFrame.new(0, 0, -1)
-                ball.Handle.Velocity = Vector3.new(10000, 10000, 10000)
-
-                task.wait(0.03)
-            end
+            -- Move o jogador para acompanhar a bola
+            myHRP.CFrame = CFrame.new(ballPart.Position + Vector3.new(0, 1, 0))
         end)
-    end
+        print("Fling iniciado com sucesso!")
+    end,
 })
 
 -- BOTÃO PARAR FLING
 Tab1:Button({
     Title = "Parar Fling",
-    Desc = "Interrompe o fling e reseta seu personagem",
+    Desc = "Para o fling no jogador selecionado",
     Callback = function()
         running = false
-
         if connection then
             connection:Disconnect()
             connection = nil
         end
+        if flingConnection then
+            flingConnection:Disconnect()
+            flingConnection = nil
+        end
 
-        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        for _, part in ipairs(character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = true
+        -- Restaura as propriedades da bola
+        if soccerBall then
+            local ballPart = soccerBall:FindFirstChild("Handle") or soccerBall:FindFirstChildWhichIsA("BasePart")
+            if ballPart then
+                ballPart.Anchored = originalProperties.Anchored
+                ballPart.CanCollide = originalProperties.CanCollide
+                ballPart.CanTouch = originalProperties.CanTouch
             end
         end
 
-        local myHRP = character:FindFirstChild("HumanoidRootPart")
-        if myHRP and savedPosition then
-            myHRP.Anchored = true
-            myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
-            task.wait(0.3)
-            myHRP.Anchored = false
+        -- Desativa o NoClip
+        local character = LocalPlayer.Character
+        if character then
+            for _, part in ipairs(character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = true
+                    part.Velocity = Vector3.zero
+                    part.RotVelocity = Vector3.zero
+                end
+            end
         end
-    end
+
+        -- Restaura a capacidade de sentar
+        local myHumanoid = character and character:FindFirstChild("Humanoid")
+        if myHumanoid then
+            myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+        end
+
+        -- Reativa assentos
+        for _, seat in ipairs(Workspace:GetDescendants()) do
+            if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
+                seat.Disabled = false
+            end
+        end
+
+        -- Restaura o tamanho do personagem
+        pcall(function()
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeUp", 1)
+        end)
+
+        -- Teleporta com segurança
+        if savedPosition then
+            local myHRP = character and character:FindFirstChild("HumanoidRootPart")
+            if myHRP then
+                myHRP.Anchored = true
+                myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
+                task.wait(0.2)
+                myHRP.Velocity = Vector3.zero
+                myHRP.RotVelocity = Vector3.zero
+                myHRP.Anchored = false
+                if myHumanoid then
+                    myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                end
+            end
+        end
+        print("Fling parado. Personagem voltou à posição original.")
+    end,
 })
