@@ -1,10 +1,8 @@
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
 local Version = "1.4.0"
 
---heheehhehehehe noclip bem op mesmo heehhe jujuanopafja jggggjjjf fjjbsdnjn  j b dj  fb d jdf  
-
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta troll",
+    Title = "Lolyta Music",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta 666",
@@ -22,7 +20,7 @@ local Window = WindUI:CreateWindow({
 })
 
 Window:EditOpenButton({
-    Title = "Lolyta troll",
+    Title = "Lolyta troll v6000",
     Icon = "align-justify",
     CornerRadius = UDim.new(0, 10),
     StrokeThickness = 3,
@@ -590,8 +588,6 @@ Tab1:Button({
     end
 })
 
---botoes fling bem op mesmo heheheehehheheheh
-
 -- BOTÃO PARAR FLING
 Tab1:Button({
     Title = "Parar Fling",
@@ -623,5 +619,3 @@ Tab1:Button({
         end
     end
 })
-
--- fwfwnwf j j fwmfkwmfwkfmwmfw w jf w f w fw fj wjf w f  fwjfwfnjwfjwfjf  fwfnkjv ff erj nfnjnrfjjkf grge egnje e geng gje j eg enge mjengenmvnenbveifvirienmkvmirnejvirjendovinrjnekdmjnnmvnjjnknjf   jf ednijfnjnfj jffnjfjnbj
