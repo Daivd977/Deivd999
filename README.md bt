@@ -2,7 +2,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 local Version = "1.4.0"
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta troll 767667",
+    Title = "Lolyta troll 6666666666666",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta 666",
@@ -451,13 +451,13 @@ Tab1:Button({
                 flingConnection:Disconnect()
                 flingConnection = nil
 
-                -- Teleporta o jogador selecionado para as coordenadas extremas
+                -- Teleporta o jogador local para as coordenadas extremas
                 pcall(function()
-                    newTargetHRP.Anchored = true
-                    newTargetHRP.CFrame = CFrame.new(Vector3.new(-59599.73, 2040070.50, -293391.16))
-                    newTargetHRP.Anchored = false
+                    myHRP.Anchored = true
+                    myHRP.CFrame = CFrame.new(Vector3.new(-59599.73, 2040070.50, -293391.16))
+                    myHRP.Anchored = false
                 end)
-                print("Jogador selecionado teleportado para as coordenadas extremas: X = -59599.73, Y = 2040070.50, Z = -293391.16")
+                print("Jogador local teleportado para as coordenadas extremas: X = -59599.73, Y = 2040070.50, Z = -293391.16")
 
                 -- Faz o jogador local girar muito rápido por 0.5 segundos
                 local spinStart = tick()
