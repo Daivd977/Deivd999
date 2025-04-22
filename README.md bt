@@ -354,39 +354,45 @@ Tab1:Button({
         -- Espera 0.5 segundos
         task.wait(0.5)
 
-        -- Procura o sofá no Workspace ou no personagem
+        -- Procura o sofá no personagem (Tool) ou no Workspace (BasePart)
         local couch
-        for _, obj in ipairs(Workspace:GetDescendants()) do
-            if obj.Name == "Couch" or obj.Name == "Couch" .. LocalPlayer.Name then
-                couch = obj
-                break
+        couch = character:FindFirstChild("Couch") -- Prioriza o sofá equipado (Tool)
+        if not couch then
+            for _, obj in ipairs(Workspace:GetDescendants()) do
+                if (obj.Name == "Couch" or obj.Name == "Couch" .. LocalPlayer.Name) and (obj:IsA("BasePart") or obj:IsA("Tool")) then
+                    couch = obj
+                    break
+                end
             end
         end
         if not couch then
-            couch = character:FindFirstChild("Couch")
-        end
-        if not couch then
-            warn("Sofá não encontrado no Workspace ou no personagem!")
+            warn("Sofá não encontrado no personagem ou como BasePart/Tool no Workspace!")
             print("Procurando sofá... Objetos no Workspace com 'Couch' no nome:")
             for _, obj in ipairs(Workspace:GetDescendants()) do
                 if obj.Name:find("Couch") then
-                    print(" - " .. obj.Name .. " (Path: " .. obj:GetFullName() .. ")")
+                    print(" - " .. obj.Name .. " (Type: " .. obj.ClassName .. ", Path: " .. obj:GetFullName() .. ")")
                 end
             end
             return
         end
-        print("Sofá encontrado: " .. couch.Name .. " (Path: " .. couch:GetFullName() .. ")")
+        print("Sofá encontrado: " .. couch.Name .. " (Type: " .. couch.ClassName .. ", Path: " .. couch:GetFullName() .. ")")
 
-        -- Configura o sofá
-        originalProperties = {
-            Anchored = couch.Anchored,
-            CanCollide = couch.CanCollide,
-            CanTouch = couch.CanTouch
-        }
-        couch.Anchored = false
-        couch.CanCollide = true
-        couch.CanTouch = true
-        pcall(function() couch:SetNetworkOwner(nil) end)
+        -- Configura o sofá apenas se for BasePart
+        originalProperties = {}
+        if couch:IsA("BasePart") then
+            originalProperties = {
+                Anchored = couch.Anchored,
+                CanCollide = couch.CanCollide,
+                CanTouch = couch.CanTouch
+            }
+            couch.Anchored = false
+            couch.CanCollide = true
+            couch.CanTouch = true
+            pcall(function() couch:SetNetworkOwner(nil) end)
+            print("Propriedades do sofá configuradas: Anchored = false, CanCollide = true, CanTouch = true")
+        else
+            print("Sofá é um " .. couch.ClassName .. ", pulando configuração de propriedades.")
+        end
 
         -- Ativa o NoClip
         running = true
@@ -511,8 +517,8 @@ Tab1:Button({
             flingConnection = nil
         end
 
-        -- Restaura as propriedades do sofá
-        if couch then
+        -- Restaura as propriedades do sofá (se for BasePart)
+        if couch and couch:IsA("BasePart") then
             couch.Anchored = originalProperties.Anchored
             couch.CanCollide = originalProperties.CanCollide
             couch.CanTouch = originalProperties.CanTouch
