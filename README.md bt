@@ -500,7 +500,7 @@ local savedPosition = nil
 
 
 -- BOTÃO INICIAR FLING
-Tab10:Button({
+Tab1:Button({
     Title = "Iniciar Fling",
     Desc = "Inicia o fling no jogador selecionado",
     Callback = function()
@@ -588,8 +588,10 @@ Tab10:Button({
     end
 })
 
+--botoes fling bem op mesmo heheheehehheheheh
+
 -- BOTÃO PARAR FLING
-Tab10:Button({
+Tab1:Button({
     Title = "Parar Fling",
     Desc = "Interrompe o fling e reseta seu personagem",
     Callback = function()
