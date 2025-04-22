@@ -1,91 +1,11 @@
--- brookhaven script teste funcionando beta
-
--- === Configurações Iniciais === --
-local AllowedUsers = {
-    "rtrt967",
-    "kaio_lg1",-- Seu nome do Roblox pzinrlk929   Tataizin_021
-    "Higor_hg5",   -- Outro usuário permitido
-    "QUEROBOVO",
-    "guga_10plays",
-    "pzinrlk929",
-    "Tataizin_021",
-    "Lolytateste666",
-    "rafainha4002",
-    "Tiago_RJ4",
-    "lacradoor123",
-    "enzin12346BR",
-    "RED_MIGZINN", -- Adicione mais nomes aqui, por exemplo:
-    -- "outro_usuario",
-    -- "amigo123",
-}
-
--- Serviços do Roblox
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-
--- Verificação de permissão do jogador
-local LocalPlayer = Players.LocalPlayer
-local PlayerName = LocalPlayer.Name
-local isAllowed = false
-
-for _, user in pairs(AllowedUsers) do
-    if user == PlayerName then
-        isAllowed = true
-        break
-    end
-end
-
-if not isAllowed then
-    game.StarterGui:SetCore("SendNotification", {
-        Title = "Acesso Negado",
-        Text = "Você não tem permissão para usar o Lolyta Hub 2.0. Contate o criador para ser adicionado à lista.",
-        Duration = 5
-    })
-    return
-end
-
--- Scripts a serem executados ao iniciar o hub
-local argsBio = {
-    [1] = "RolePlayBio",
-    [2] = "scripter"
-}
-local successBio, errorBio = pcall(function()
-    game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1RPNam1eTex1t"):FireServer(unpack(argsBio))
-end)
-if successBio then
-    print("Bio definida como 'scripter' com sucesso!")
-else
-    warn("Erro ao definir a bio: " .. tostring(errorBio))
-end
-
-local argsName = {
-    [1] = "RolePlayName",
-    [2] = "Lolyta Hub "
-}
-local successName, errorName = pcall(function()
-    game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1RPNam1eTex1t"):FireServer(unpack(argsName))
-end)
-if successName then
-    print("Nome definido como 'Lolyta Hub ' com sucesso!")
-else
-    warn("Erro ao definir o nome: " .. tostring(errorName))
-end
------------------------------------------------------------------------------------------------------------------------------------
-                                    -- === Inicialização da Interface === --
------------------------------------------------------------------------------------------------------------------------------------
-
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
 local Version = "1.4.0"
-local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
-
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 3.0",
+    Title = "Lolyta Music",
     Icon = "door-open",
     Author = "Lolycon666",
-    Folder = "Lolyta hub v.1.666",
+    Folder = "Lolyta 666",
     Size = UDim2.fromOffset(580, 460),
     KeySystem = {
         Key = "666",
@@ -100,2158 +20,18 @@ local Window = WindUI:CreateWindow({
 })
 
 Window:EditOpenButton({
-    Title = "Lolyta",
+    Title = "Lolyta troll",
     Icon = "align-justify",
     CornerRadius = UDim.new(0, 10),
     StrokeThickness = 3,
     Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29"))
 })
 
-
-
 -- === Abas da Interface === --
-local Tab1 = Window:Tab({ Title = "Main", Icon = "house-plus" })
-local Tab2 = Window:Tab({ Title = "Casa", Icon = "house" })
-local Tab3 = Window:Tab({ Title = "Carro", Icon = "car" })
-local Tab4 = Window:Tab({ Title = "RGB Color", Icon = "palette" })
-local Tab5 = Window:Tab({ Title = "Troll Musica", Icon = "music" })
-local Tab6 = Window:Tab({ Title = "Music All", Icon = "audio-lines" })
-local Tab7 = Window:Tab({ Title = "Scripts", Icon = "layers" })
-local Tab8 = Window:Tab({ Title = "Jogadores", Icon = "users" }) -- Ajustado para "Jogadores" e ícone "users"
-local Tab9 = Window:Tab({ Title = "Teleportes", Icon = "map-pin" }) -- Ajustado para "Teleportes"
-local Tab10 = Window:Tab({ Title = "Troll", Icon = "skull" }) -- Ajustado para "Troll"
-
-
--- === Funções Auxiliares === --
-local function fireServer(eventPath, args)
-    ReplicatedStorage:WaitForChild("RE"):WaitForChild(eventPath):FireServer(unpack(args))
-end
-
-local function invokeServer(eventPath, args)
-    return ReplicatedStorage:WaitForChild("RE"):WaitForChild(eventPath):InvokeServer(unpack(args))
-end
-
----------------------------------------------------------------------------------------------------------------------------------
-                                                   -- === Tab 1: Main === --
----------------------------------------------------------------------------------------------------------------------------------
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-Tab1:Button({
-    Title = "Pegar sofá",
-    Desc = "Brookhaven",
-    Callback = function()
-        invokeServer("1Too1l", {"PickingTools", "Couch"})
-    end,
-})
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-Tab1:Button({
-    Title = "TP ALL",
-    Desc = "Teleporte para todos os players",
-    Callback = function()
-        local startingPosition = LocalPlayer.Character:GetPrimaryPartCFrame()
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer then
-                LocalPlayer.Character:SetPrimaryPartCFrame(player.Character:GetPrimaryPartCFrame())
-                wait(1)
-            end
-        end
-        LocalPlayer.Character:SetPrimaryPartCFrame(startingPosition)
-    end,
-})
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-Tab1:Toggle({
-    Title = "ESP",
-    Desc = "Para visualizar jogadores",
-    Value = false,
-    Callback = function(state)
-        local connections = {} -- Tabela para armazenar as conexões dos eventos
-        local espEnabled = state -- Estado do ESP para controle
-
-        local function createESP(player)
-            if player == game.Players.LocalPlayer then return end
-            if not espEnabled then return end -- Evita criar ESP se desativado
-            local character = player.Character
-            if character then
-                local head = character:WaitForChild("Head", 5)
-                if head then
-                    -- Remove ESP existente, se houver
-                    if head:FindFirstChild("BillboardGui") then
-                        head.BillboardGui:Destroy()
-                    end
-                    local billboard = Instance.new("BillboardGui")
-                    billboard.Parent = head
-                    billboard.Adornee = head
-                    billboard.Size = UDim2.new(0, 200, 0, 50)
-                    billboard.StudsOffset = Vector3.new(0, 3, 0)
-                    billboard.AlwaysOnTop = true
-                    local textLabel = Instance.new("TextLabel")
-                    textLabel.Parent = billboard
-                    textLabel.Size = UDim2.new(1, 0, 1, 0)
-                    textLabel.BackgroundTransparency = 1
-                    textLabel.TextColor3 = Color3.new(1, 1, 1)
-                    textLabel.TextStrokeTransparency = 0.5
-                    textLabel.Font = Enum.Font.SourceSansBold
-                    textLabel.TextSize = 14
-                    textLabel.Text = player.Name .. " | " .. player.AccountAge .. " dias"
-                end
-            end
-        end
-
-        local function removeESP(player)
-            if player.Character then
-                local head = player.Character:FindFirstChild("Head")
-                if head and head:FindFirstChild("BillboardGui") then
-                    head.BillboardGui:Destroy()
-                end
-            end
-        end
-
-        if state then
-            -- Adiciona ESP para jogadores existentes
-            for _, player in pairs(game.Players:GetPlayers()) do
-                createESP(player)
-            end
-            -- Conecta evento para novos jogadores
-            local playerAddedConnection = game.Players.PlayerAdded:Connect(function(player)
-                if not espEnabled then return end -- Evita criar ESP se desativado
-                createESP(player)
-                local charAddedConnection = player.CharacterAdded:Connect(function()
-                    if not espEnabled then return end -- Evita criar ESP se desativado
-                    createESP(player)
-                end)
-                table.insert(connections, charAddedConnection)
-            end)
-            table.insert(connections, playerAddedConnection)
-        else
-            -- Remove ESP de todos os jogadores
-            for _, player in pairs(game.Players:GetPlayers()) do
-                removeESP(player)
-            end
-            -- Desconecta todos os eventos
-            for _, connection in ipairs(connections) do
-                connection:Disconnect()
-            end
-            connections = {} -- Limpa a tabela de conexões
-            espEnabled = false -- Garante que o estado está desativado
-        end
-    end,
-})
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
------------------------------------------------------------------------------------------------------------------------------------------------
-Tab1:Paragraph({ Title = "Jogador", Desc = "funçoes paara o jogador no caso voçe" })
-
--- Variáveis para o noclip
-local noclipEnabled = false
-local noclipConnections = {}
-
--- Função para ativar/desativar o noclip
-local function setNoclip(state)
-    local player = game.Players.LocalPlayer
-    local character = player.Character
-    if not character or not character:FindFirstChild("HumanoidRootPart") then
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Erro",
-            Text = "Personagem não encontrado!",
-            Duration = 5
-        })
-        return
-    end
-
-    local humanoid = character:FindFirstChild("Humanoid")
-    local rootPart = character:FindFirstChild("HumanoidRootPart")
-
-    if not humanoid or not rootPart then
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Erro",
-            Text = "Componentes do personagem não encontrados!",
-            Duration = 5
-        })
-        return
-    end
-
-    noclipEnabled = state -- Define o estado do noclip com base no toggle
-
-    if noclipEnabled then
-        -- Desativa as colisões do personagem
-        for _, part in pairs(character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
-            end
-        end
-
-        -- Loop para manter o noclip ativo e evitar reversão pelo servidor
-        local connection = game:GetService("RunService").Heartbeat:Connect(function()
-            if not noclipEnabled or not character or not character.Parent then
-                connection:Disconnect()
-                return
-            end
-            for _, part in pairs(character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
-                end
-            end
-        end)
-        table.insert(noclipConnections, connection)
-
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Noclip",
-            Text = "Noclip ativado!",
-            Duration = 5
-        })
-    else
-        -- Desativa o noclip e restaura as propriedades do personagem
-        for _, connection in pairs(noclipConnections) do
-            connection:Disconnect()
-        end
-        noclipConnections = {}
-
-        -- Restaura as colisões e corrige a física
-        for _, part in pairs(character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = true -- Reativa colisões
-                part.Velocity = Vector3.new(0, 0, 0) -- Zera a velocidade
-                part.RotVelocity = Vector3.new(0, 0, 0) -- Zera a rotação
-            end
-        end
-
-        -- Restaura o estado do Humanoid e a posição
-        if humanoid then
-            humanoid:ChangeState(Enum.HumanoidStateType.GettingUp) -- Força o personagem a "se levantar"
-            task.wait(0.1) -- Pequeno atraso para o estado se aplicar
-            humanoid.WalkSpeed = 16 -- Restaura a velocidade padrão
-            humanoid.JumpPower = 50 -- Restaura o pulo padrão
-            humanoid.PlatformStand = false -- Desativa PlatformStand, se ativo
-        end
-
-        -- Corrige a posição para evitar ficar preso
-        if rootPart then
-            local rayOrigin = rootPart.Position
-            local rayDirection = Vector3.new(0, -10, 0) -- Raycast para baixo
-            local raycastParams = RaycastParams.new()
-            raycastParams.FilterDescendantsInstances = {character}
-            raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
-            local raycastResult = workspace:Raycast(rayOrigin, rayDirection, raycastParams)
-
-            if raycastResult then
-                rootPart.CFrame = CFrame.new(raycastResult.Position + Vector3.new(0, 3, 0)) -- Coloca o personagem acima do chão
-            end
-        end
-
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Noclip",
-            Text = "Noclip desativado!",
-            Duration = 5
-        })
-    end
-end
-
--- Garante que o noclip comece desativado ao carregar o hub
-setNoclip(false)
-
--- Toggle para ativar/desativar o noclip
-Tab1:Toggle({
-    Title = "Noclip",
-    Desc = "Ativa/desativa o noclip para atravessar paredes",
-    Default = false,
-    Callback = function(value)
-        setNoclip(value)
-    end,
-})
-
--- Reconecta o noclip ao respawn do personagem
-game.Players.LocalPlayer.CharacterAdded:Connect(function(character)
-    if noclipEnabled then
-        task.wait(0.1) -- Pequeno atraso para garantir que o personagem esteja totalmente carregado
-        setNoclip(true) -- Reaplica o noclip se estava ativado
-    end
-end)
-
----------------------------------------------------------------------------------------------------------------------------------------------
-
-
--- Botão para executar o script de fly
-Tab1:Button({
-    Title = "Ativar Fly GUI",
-    Desc = "Carrega um GUI de fly universal",
-    Callback = function()
-        local success, errorMessage = pcall(function()
-            loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Fly-gui-v3-30439"))()
-        end)
-
-        if success then
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Sucesso",
-                Text = "Fly GUI carregado!",
-                Duration = 5
-            })
-        else
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Erro",
-                Text = "Falha ao carregar o Fly GUI.",
-                Duration = 5
-            })
-        end
-    end,
-})
-
-----------------------------------------------------------------------------------------------------------------------------------------------
-
-local SpeedInput = Tab1:Input({
-    Title = "Definir a velocidade do jogador",
-    Desc = "Insira a velocidade (mínimo 1, sem limite máximo)",
-    Value = "70", -- Valor padrão como string
-    PlaceholderText = "Digite um número maior que 1...",
-    ClearTextOnFocus = false,
-    Callback = function(Text)
-        local value = tonumber(Text) -- Converte o texto para número
-        if value then
-            -- Garante que o valor seja pelo menos 1
-            value = math.max(value, 1)
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                LocalPlayer.Character.Humanoid.WalkSpeed = value
-                print("Velocidade definida para: " .. value)
-            else
-                warn("Personagem ou Humanoid não encontrado!")
-            end
-        else
-            warn("Por favor, insira um número válido!")
-        end
-    end
-})
-
-local ResetSpeedButton = Tab1:Button({
-    Title = "Restaurar velocidade padrão",
-    Desc = "Retorna a velocidade para 16 (padrão do Roblox)",
-    Callback = function()
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.WalkSpeed = 16
-            print("Velocidade restaurada para 16!")
-        else
-            warn("Personagem ou Humanoid não encontrado!")
-        end
-    end,
-})
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-local JumpInput = Tab1:Input({
-    Title = "Definir o tamanho do salto do jogador",
-    Desc = "Insira o salto (mínimo 1, sem limite máximo)",
-    Value = "70", -- Valor padrão como string
-    PlaceholderText = "Digite um número maior que 1...",
-    ClearTextOnFocus = false,
-    Callback = function(Text)
-        local value = tonumber(Text) -- Converte o texto para número
-        if value then
-            -- Garante que o valor seja pelo menos 1
-            value = math.max(value, 1)
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                LocalPlayer.Character.Humanoid.JumpPower = value
-                print("Tamanho do salto definido para: " .. value)
-            else
-                warn("Personagem ou Humanoid não encontrado!")
-            end
-        else
-            warn("Por favor, insira um número válido!")
-        end
-    end
-})
-
-local ResetJumpButton = Tab1:Button({
-    Title = "Restaurar salto padrão",
-    Desc = "Retorna o salto para 50 (padrão do Roblox)",
-    Callback = function()
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.JumpPower = 50
-            print("Tamanho do salto restaurado para 50!")
-        else
-            warn("Personagem ou Humanoid não encontrado!")
-        end
-    end,
-})
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
--- Toggle Anti-Sit
-local antiSitConnection
-
-Tab1:Toggle({
-    Title = "Anti-Sit",
-    Desc = "Impede o jogador de sentar em qualquer assento",
-    Value = false,
-    Callback = function(state)
-        if state then
-            -- Ativa o Anti-Sit
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                local humanoid = LocalPlayer.Character.Humanoid
-                humanoid.Sit = false -- Força o jogador a não estar sentado
-                antiSitConnection = humanoid.Seated:Connect(function(isSeated, seat)
-                    if isSeated then
-                        humanoid.Sit = false -- Levanta o jogador imediatamente
-                    end
-                end)
-            end
-            -- Conecta ao evento de personagem reaparecendo
-            LocalPlayer.CharacterAdded:Connect(function(character)
-                local humanoid = character:WaitForChild("Humanoid")
-                humanoid.Sit = false
-                antiSitConnection = humanoid.Seated:Connect(function(isSeated, seat)
-                    if isSeated then
-                        humanoid.Sit = false
-                    end
-                end)
-            end)
-            print("Anti-Sit ativado!")
-        else
-            -- Desativa o Anti-Sit
-            if antiSitConnection then
-                antiSitConnection:Disconnect()
-                antiSitConnection = nil
-            end
-            print("Anti-Sit desativado!")
-        end
-    end,
-})
-
----------------------------------------------------------------------------------------------------------------------------------
-                                          -- === Tab 2: casa === --
----------------------------------------------------------------------------------------------------------------------------------
-
-Tab2:Paragraph({ Title = "funçoes para voce usar em voce", Desc = "" })
-
-
--- Botão para remover ban de todas as casas (versão ajustada)
-Tab2:Button({
-    Title = "Remover Ban de Todas as Casas",
-    Desc = "Tenta remover o ban de todas as casas (1 a 37)",
-    Callback = function()
-        local successCount = 0
-        local failCount = 0
-        -- Verifica se há algum BannedBlock no Workspace
-        print("Procurando por BannedBlocks no Workspace...")
-        for i = 1, 37 do
-            local bannedBlockName = "BannedBlock" .. i
-            local bannedBlock = Workspace:FindFirstChild(bannedBlockName, true) -- Busca recursiva no Workspace
-            if bannedBlock then
-                local success, errorMessage = pcall(function()
-                    bannedBlock:Destroy()
-                end)
-                if success then
-                    successCount = successCount + 1
-                    print("Ban removido da casa " .. i .. " com sucesso!")
-                else
-                    failCount = failCount + 1
-                    warn("Erro ao remover ban da casa " .. i .. ": " .. tostring(errorMessage))
-                end
-            else
-                print("Nenhum ban encontrado para a casa " .. i .. " (BannedBlock" .. i .. " não existe).")
-            end
-        end
-        -- Tenta procurar em outros lugares (por exemplo, dentro das casas)
-        print("Procurando por BannedBlocks dentro das casas...")
-        for _, house in pairs(Workspace:GetDescendants()) do
-            if house.Name:match("BannedBlock") then
-                local success, errorMessage = pcall(function()
-                    house:Destroy()
-                end)
-                if success then
-                    successCount = successCount + 1
-                    print("Ban removido: " .. house.Name .. " em " .. house:GetFullName())
-                else
-                    failCount = failCount + 1
-                    warn("Erro ao remover ban " .. house.Name .. ": " .. tostring(errorMessage))
-                end
-            end
-        end
-        -- Resumo do resultado
-        print("Resumo: " .. successCount .. " bans removidos com sucesso, " .. failCount .. " falhas.")
-        if successCount > 0 then
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Sucesso",
-                Text = "Bans removidos de " .. successCount .. " casas!",
-                Duration = 5
-            })
-        end
-        if failCount > 0 then
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Aviso",
-                Text = "Falha ao remover bans de " .. failCount .. " casas. Veja o console para detalhes.",
-                Duration = 5
-            })
-        end
-        if successCount == 0 and failCount == 0 then
-            game.StarterGui:SetCore("SendNotification", {
-                Title = "Aviso",
-                Text = "Nenhum ban encontrado para remover.",
-                Duration = 5
-            })
-        end
-    end,
-})
-
-
-
-------------------------------------------------------------------------------------------------------------------------------------------------
-
-Tab2:Paragraph({ Title = "pegar permisao de casas!", Desc = "" })
-
-Tab2:Dropdown({
-    Title = "pegar permissão das casas",
-    Desc = "",
-    Value = "Option 1",
-    Multi = false,
-    AllowNone = true,
-    Values = {"Option 1", "Option 2", "Option 3", "Option 4", "Option 5", "Option 6", "Option 7", "Option 8", "Option 9", "Option 10", "Option 11", "Option 12", "Option 13", "Option 14", "Option 15", "Option 16", "Option 17", "Option 18", "Option 19", "Option 20", "Option 21", "Option 22", "Option 23", "Option 24", "Option 25", "Option 26", "Option 27", "Option 28", "Option 29", "Option 30", "Option 31", "Option 32", "Option 33", "Option 34", "Option 35", "Option 36", "Option 37"},
-    Callback = function(tab)
-        local permission = tonumber(tab:match("%d+")) or 1
-        fireServer("1Playe1rTrigge1rEven1t", {"GivePermissionLoopToServer", LocalPlayer, permission})
-    end,
-})
-
-----------------------------------------------------------------------------------------------------------------------------------------------
-
-Tab2:Paragraph({ Title = "funçoes para outros players", Desc = "" })
-
-Tab2:Paragraph({ Title = "esta funçao e para dar permisao de qualquer casa para qualquer player", Desc = "" })
-
--- Função para pegar os nomes dos jogadores
-local function getPlayerNames()
-    local playerNames = {}
-    for _, player in ipairs(Players:GetPlayers()) do
-        table.insert(playerNames, player.Name)
-    end
-    return playerNames
-end
-
--- Dropdown para selecionar o jogador
-local selectedPlayerName = ""
-local DropdownPlayers = Tab2:Dropdown({
-    Title = "Selecionar Jogador",
-    Desc = "Escolha um jogador para dar permissão",
-    Value = "",
-    Multi = false,
-    AllowNone = true,
-    Values = getPlayerNames(),
-    Callback = function(playerName)
-        selectedPlayerName = playerName
-        print("Jogador selecionado: " .. selectedPlayerName)
-    end,
-})
-
--- Atualiza o dropdown quando jogadores entram ou saem
-Players.PlayerAdded:Connect(function() DropdownPlayers:Refresh(getPlayerNames()) end)
-Players.PlayerRemoving:Connect(function() DropdownPlayers:Refresh(getPlayerNames()) end)
-
--- Dropdown para selecionar o número da casa
-local selectedHouseNumber = 1
-local houseOptions = {}
-for i = 1, 37 do
-    table.insert(houseOptions, tostring(i))
-end
-
-local DropdownHouses = Tab2:Dropdown({
-    Title = "Selecionar Casa",
-    Desc = "Escolha o número da casa (1 a 37)",
-    Value = "1",
-    Multi = false,
-    AllowNone = false,
-    Values = houseOptions,
-    Callback = function(houseNumber)
-        selectedHouseNumber = tonumber(houseNumber)
-        print("Casa selecionada: " .. selectedHouseNumber)
-    end,
-})
-
--- Botão para dar permissão
-Tab2:Button({
-    Title = "Dar Permissão",
-    Desc = "Dá permissão ao jogador selecionado para a casa escolhida",
-    Callback = function()
-        if selectedPlayerName == "" then
-            warn("Nenhum jogador selecionado!")
-            return
-        end
-        local targetPlayer = Players:FindFirstChild(selectedPlayerName)
-        if not targetPlayer then
-            warn("Jogador não encontrado: " .. selectedPlayerName)
-            return
-        end
-        local args = {
-            [1] = "GivePermissionLoopToServer",
-            [2] = targetPlayer,
-            [3] = selectedHouseNumber
-        }
-        local success, errorMessage = pcall(function()
-            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
-        end)
-        if success then
-            print("Permissão dada para " .. selectedPlayerName .. " na casa " .. selectedHouseNumber)
-        else
-            warn("Erro ao dar permissão: " .. tostring(errorMessage))
-        end
-    end,
-})
-
-----------------------------------------------------------------------------------------------------------------------------------------------
-
-Tab2:Paragraph({ Title = "esta funçao e para remover a permisao de qualquer casa e de qualque player", Desc = "" })
-
--- Função para pegar os nomes dos jogadores
-local function getPlayerNames()
-    local playerNames = {}
-    for _, player in ipairs(Players:GetPlayers()) do
-        table.insert(playerNames, player.Name)
-    end
-    return playerNames
-end
-
--- Dropdown para selecionar o jogador
-local selectedPlayerNameRemove = ""
-local DropdownPlayersRemove = Tab2:Dropdown({
-    Title = "Selecionar Jogador (Remover)",
-    Desc = "Escolha um jogador para remover permissão",
-    Value = "",
-    Multi = false,
-    AllowNone = true,
-    Values = getPlayerNames(),
-    Callback = function(playerName)
-        selectedPlayerNameRemove = playerName
-        print("Jogador selecionado para remover permissão: " .. selectedPlayerNameRemove)
-    end,
-})
-
--- Atualiza o dropdown quando jogadores entram ou saem
-Players.PlayerAdded:Connect(function() DropdownPlayersRemove:Refresh(getPlayerNames()) end)
-Players.PlayerRemoving:Connect(function() DropdownPlayersRemove:Refresh(getPlayerNames()) end)
-
--- Dropdown para selecionar o número da casa
-local selectedHouseNumberRemove = 1
-local houseOptionsRemove = {}
-for i = 1, 37 do
-    table.insert(houseOptionsRemove, tostring(i))
-end
-
-local DropdownHousesRemove = Tab2:Dropdown({
-    Title = "Selecionar Casa (Remover)",
-    Desc = "Escolha o número da casa (1 a 37)",
-    Value = "1",
-    Multi = false,
-    AllowNone = false,
-    Values = houseOptionsRemove,
-    Callback = function(houseNumber)
-        selectedHouseNumberRemove = tonumber(houseNumber)
-        print("Casa selecionada para remover permissão: " .. selectedHouseNumberRemove)
-    end,
-})
-
--- Botão para remover permissão
-Tab2:Button({
-    Title = "Remover Permissão",
-    Desc = "Remove a permissão do jogador selecionado para a casa escolhida",
-    Callback = function()
-        if selectedPlayerNameRemove == "" then
-            warn("Nenhum jogador selecionado para remover permissão!")
-            return
-        end
-        local targetPlayer = Players:FindFirstChild(selectedPlayerNameRemove)
-        if not targetPlayer then
-            warn("Jogador não encontrado: " .. selectedPlayerNameRemove)
-            return
-        end
-        local args = {
-            [1] = "RemovePermissionLoopToServer",
-            [2] = targetPlayer,
-            [3] = selectedHouseNumberRemove
-        }
-        local success, errorMessage = pcall(function()
-            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
-        end)
-        if success then
-            print("Permissão removida de " .. selectedPlayerNameRemove .. " na casa " .. selectedHouseNumberRemove)
-        else
-            warn("Erro ao remover permissão: " .. tostring(errorMessage))
-        end
-    end,
-})
-
-
--- (Código anterior, como a Tab1 e Tab2)
----------------------------------------------------------------------------------------------------------------------------------
-                                          -- === Tab 3: Carro === --
----------------------------------------------------------------------------------------------------------------------------------
-
-Tab3:Paragraph({ 
-    Title = "Instruções para o teleporta todods os carros do server no void ", 
-    Desc = "para que funcione perfeitamente use o void protection do systemBroken na tab sripts la vai tar ele e vai em game e voidprotection"
-})
-
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-
-Tab3:Toggle({
-    Title = "matar todos os carros do server",
-    Desc = "teleporta os carrospara o void",
-    Value = false,
-    Callback = function(state)
-        local LocalPlayer = Players.LocalPlayer
-        local originalPosition -- Para armazenar a posição original do jogador
-        local teleportActive = state -- Estado do toggle
-        local fallDamageDisabled = false -- Para controlar se a morte por queda está desativada
-
-        -- Função para desativar/reativar a morte por queda
-        local function toggleFallDamage(disable)
-            if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("Humanoid") then return end
-            local humanoid = LocalPlayer.Character.Humanoid
-            if disable then
-                -- Desativa a morte por queda
-                humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
-                humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-                humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, true)
-                humanoid.PlatformStand = false
-                fallDamageDisabled = true
-                print("Morte por queda desativada!")
-            else
-                -- Reativa a morte por queda
-                humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
-                humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, true)
-                fallDamageDisabled = false
-                print("Morte por queda reativada!")
-            end
-        end
-
-        -- Função para teleportar o jogador para um assento
-        local function teleportToSeat(seat, car)
-            if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("Humanoid") then
-                warn("Personagem ou Humanoid não encontrado!")
-                return false
-            end
-            local humanoid = LocalPlayer.Character.Humanoid
-            local rootPart = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if not rootPart then
-                warn("HumanoidRootPart não encontrado!")
-                return false
-            end
-
-            -- Força o jogador a não estar sentado antes de tentar
-            humanoid.Sit = false
-            task.wait(0.1)
-
-            -- Teleporta o jogador para perto do assento antes de sentar
-            rootPart.CFrame = seat.CFrame + Vector3.new(0, 5, 0) -- Coloca o jogador acima do assento
-            task.wait(0.1)
-
-            -- Tenta sentar no assento
-            seat:Sit(humanoid)
-            task.wait(0.5) -- Espera para confirmar que sentou
-            local success = humanoid.SeatPart == seat
-            if success then
-                print("Sentou no assento do carro: " .. car.Name)
-            else
-                warn("Falha ao sentar no assento do carro: " .. car.Name)
-            end
-            return success
-        end
-
-        -- Função para teleportar o carro e o jogador para o void
-        local function teleportToVoid(car)
-            if not car then
-                warn("Carro não encontrado para teleportar ao void!")
-                return
-            end
-            -- Define o PrimaryPart se não estiver definido
-            if not car.PrimaryPart then
-                local body = car:FindFirstChild("Body", true) or car:FindFirstChild("Chassis", true)
-                if body and body:IsA("BasePart") then
-                    car.PrimaryPart = body
-                else
-                    warn("Carro " .. car.Name .. " não tem PrimaryPart ou Body/Chassis para teleportar!")
-                    return
-                end
-            end
-            local voidPosition = Vector3.new(0, -1000, 0) -- Posição no "void"
-            car:SetPrimaryPartCFrame(CFrame.new(voidPosition))
-            print("Carro " .. car.Name .. " teleportado para o void!")
-            task.wait(0.5) -- Espera para garantir que o teleporte ocorreu
-        end
-
-        -- Função para forçar o jogador a sair do carro e voltar à posição original
-        local function exitCarAndReturn()
-            if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("Humanoid") then
-                warn("Personagem ou Humanoid não encontrado para sair do carro!")
-                return
-            end
-            local humanoid = LocalPlayer.Character.Humanoid
-            if humanoid.SeatPart then
-                humanoid.Sit = false -- Força o jogador a sair do assento
-                print("Jogador saiu do assento!")
-            end
-            task.wait(0.1) -- Pequeno atraso para garantir que saiu
-            if originalPosition then
-                LocalPlayer.Character:PivotTo(CFrame.new(originalPosition))
-                print("Jogador retornou à posição original: " .. tostring(originalPosition))
-            else
-                warn("Posição original não definida para retorno!")
-            end
-        end
-
-        if state then
-            -- Salva a posição original do jogador antes de começar
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                originalPosition = LocalPlayer.Character.HumanoidRootPart.Position
-                print("Posição original salva: " .. tostring(originalPosition))
-            else
-                warn("Não foi possível encontrar o personagem do jogador para salvar a posição!")
-                return
-            end
-
-            -- Desativa a morte por queda
-            toggleFallDamage(true)
-
-            -- Inicia o loop para processar os carros
-            spawn(function()
-                -- Obtém todos os carros em Workspace.Vehicles
-                local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
-                if not vehiclesFolder then
-                    warn("Pasta 'Vehicles' não encontrada no Workspace!")
-                    return
-                end
-
-                -- Cria uma lista de carros (filtra apenas os que terminam com "Car")
-                local cars = {}
-                for _, car in ipairs(vehiclesFolder:GetChildren()) do
-                    if car.Name:match("Car$") then -- Verifica se o nome termina com "Car"
-                        table.insert(cars, car)
-                    end
-                end
-                print("Carros encontrados: " .. #cars)
-
-                -- Processa cada carro
-                for _, car in ipairs(cars) do
-                    if not teleportActive then
-                        print("Toggle desativado, parando o loop!")
-                        break
-                    end
-
-                    print("Processando carro: " .. car.Name)
-
-                    -- Procura o VehicleSeat recursivamente dentro do carro
-                    local vehicleSeat = car:FindFirstChildWhichIsA("VehicleSeat", true)
-                    if vehicleSeat then
-                        print("VehicleSeat encontrado no carro: " .. car.Name .. " em " .. vehicleSeat:GetFullName())
-                        -- Verifica se o assento está vazio
-                        if vehicleSeat.Occupant == nil then
-                            print("Assento está vazio, tentando sentar...")
-                            -- Tenta teleportar para o assento
-                            local success = teleportToSeat(vehicleSeat, car)
-                            if success then
-                                -- Teleporta o carro e o jogador para o void
-                                teleportToVoid(car)
-                                -- Força o jogador a sair do carro e voltar à posição original
-                                exitCarAndReturn()
-                                task.wait(1) -- Intervalo antes de passar para o próximo carro
-                            else
-                                warn("Não conseguiu sentar no assento do carro: " .. car.Name)
-                            end
-                        else
-                            print("Assento ocupado no carro: " .. car.Name .. ", passando para o próximo...")
-                        end
-                    else
-                        warn("VehicleSeat não encontrado no carro: " .. car.Name)
-                    end
-                end
-
-                -- Desativa o toggle automaticamente quando terminar
-                if teleportActive then
-                    teleportActive = false
-                    print("Todos os carros foram processados!")
-                    -- Reativa a morte por queda ao terminar
-                    toggleFallDamage(false)
-                end
-            end)
-        else
-            teleportActive = false -- Para o loop quando o toggle é desativado
-            print("Toggle desativado manualmente!")
-            -- Reativa a morte por queda ao desativar o toggle
-            toggleFallDamage(false)
-        end
-    end,
-})
-
--- Garante que a morte por queda seja reativada/desativada ao recarregar o personagem
-local fallDamageDisabled = false
-Players.LocalPlayer.CharacterAdded:Connect(function(character)
-    if fallDamageDisabled then
-        local humanoid = character:WaitForChild("Humanoid")
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, true)
-        humanoid.PlatformStand = false
-        print("Morte por queda desativada após respawn!")
-    else
-        local humanoid = character:WaitForChild("Humanoid")
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
-        humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, true)
-        print("Morte por queda reativada após respawn!")
-    end
-end)
------------------------------------------------------------------------------------------------------
-                                          -- === Tab 4: RGB Color === --
----------------------------------------------------------------------------------------------------------------------------------
-
--- Toggle Nome RGB
-local nameRGBActive = false
-Tab4:Toggle({
-    Title = "Nome RGB",
-    Desc = "Ativa cores RGB",
-    Value = false,
-    Callback = function(state)
-        print("Toggle 'Nome RGB' alterado para: " .. tostring(state)) -- Debug
-        nameRGBActive = state
-        if state then
-            spawn(function()
-                while nameRGBActive do
-                    -- Gera uma cor RGB aleatória
-                    local color = Color3.new(math.random(), math.random(), math.random())
-                    local args = {
-                        [1] = "PickingRPNameColor",
-                        [2] = color
-                    }
-                    local success, errorMessage = pcall(function()
-                        fireServer("1RPNam1eColo1r", args)
-                    end)
-                    if not success then
-                        warn("Erro ao mudar a cor do nome: " .. tostring(errorMessage))
-                    end
-                    wait(1) -- Delay de 1 segundo para evitar detecção
-                end
-            end)
-            print("Nome RGB ativado!")
-        else
-            -- Volta para a cor padrão (ex.: branco)
-            local args = {
-                [1] = "PickingRPNameColor",
-                [2] = Color3.new(1, 1, 1) -- Branco
-            }
-            local success, errorMessage = pcall(function()
-                fireServer("1RPNam1eColo1r", args)
-            end)
-            if success then
-                print("Nome RGB desativado! Cor voltou para branco.")
-            else
-                warn("Erro ao desativar Nome RGB: " .. tostring(errorMessage))
-            end
-        end
-    end,
-})
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
--- Toggle Bio RGB
-local bioRGBActive = false
-Tab4:Toggle({
-    Title = "Bio RGB",
-    Desc = "Ativa cores RGB aleatórias na sua bio",
-    Value = false,
-    Callback = function(state)
-        print("Toggle 'Bio RGB' alterado para: " .. tostring(state)) -- Debug
-        bioRGBActive = state
-        if state then
-            spawn(function()
-                while bioRGBActive do
-                    -- Gera uma cor RGB aleatória
-                    local color = Color3.new(math.random(), math.random(), math.random())
-                    local args = {
-                        [1] = "PickingRPBioColor",
-                        [2] = color
-                    }
-                    local success, errorMessage = pcall(function()
-                        fireServer("1RPNam1eColo1r", args) -- Mesmo evento para bio
-                    end)
-                    if not success then
-                        warn("Erro ao mudar a cor da bio: " .. tostring(errorMessage))
-                    end
-                    wait(1) -- Delay de 1 segundo para evitar detecção
-                end
-            end)
-            print("Bio RGB ativada!")
-        else
-            -- Volta para a cor padrão (ex.: branco)
-            local args = {
-                [1] = "PickingRPBioColor",
-                [2] = Color3.new(1, 1, 1) -- Branco
-            }
-            local success, errorMessage = pcall(function()
-                fireServer("1RPNam1eColo1r", args)
-            end)
-            if success then
-                print("Bio RGB desativada! Cor voltou para branco.")
-            else
-                warn("Erro ao desativar Bio RGB: " .. tostring(errorMessage))
-            end
-        end
-    end,
-})
-
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
--- Toggle RGB Premium (Carro)
-local carRGBActive = false
-local vibrantColors = {
-    Color3.new(1, 0, 0),       -- Vermelho
-    Color3.new(0, 1, 0),       -- Verde
-    Color3.new(0, 0, 1),       -- Azul
-    Color3.new(1, 1, 0),       -- Amarelo
-    Color3.new(1, 0, 1),       -- Magenta
-    Color3.new(0, 1, 1),       -- Ciano
-    Color3.new(1, 0.5, 0),     -- Laranja
-    Color3.new(0.5, 0, 1)      -- Roxo
-}
-
-Tab4:Toggle({
-    Title = "car RGB",
-    Desc = "precisa do premium (atençao pode dar kick!!!! nao recomendo usar!!!)",
-    Value = false,
-    Callback = function(state)
-        print("Toggle 'RGB Premium' alterado para: " .. tostring(state)) -- Debug
-        carRGBActive = state
-        if state then
-            -- Verifica se o jogador está em um carro
-            local character = LocalPlayer.Character
-            if not character then
-                warn("Personagem não encontrado para ativar RGB Premium!")
-                return
-            end
-
-            -- Inicia o loop de mudança de cor
-            spawn(function()
-                while carRGBActive do
-                    -- Escolhe uma cor aleatória da lista de cores chamativas
-                    local color = vibrantColors[math.random(1, #vibrantColors)]
-                    print("Mudando cor do carro para: " .. tostring(color)) -- Debug
-                    local args = {
-                        [1] = "PickingCarColor",
-                        [2] = color
-                    }
-                    local success, errorMessage = pcall(function()
-                        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
-                    end)
-                    if not success then
-                        warn("Erro ao mudar a cor do carro: " .. tostring(errorMessage))
-                    end
-                    wait(1) -- Delay de 1 segundo para evitar detecção
-                end
-            end)
-            print("RGB Premium (Carro) ativado!")
-        else
-            -- Volta para a cor padrão (ex.: branco)
-            local args = {
-                [1] = "PickingCarColor",
-                [2] = Color3.new(1, 1, 1) -- Branco
-            }
-            local success, errorMessage = pcall(function()
-                game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
-            end)
-            if success then
-                print("RGB Premium (Carro) desativado! Cor voltou para branco.")
-            else
-                warn("Erro ao desativar RGB Premium: " .. tostring(errorMessage))
-            end
-        end
-    end,
-})
-
----------------------------------------------------------------------------------------------------------------------------------
-                                          -- === Tab 5: Troll Musica === --
----------------------------------------------------------------------------------------------------------------------------------
-
-
-
-local function tocarMusica(id)
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    
-    local argsCasa = {
-        [1] = "PickHouseMusicText",
-        [2] = id
-    }
-    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sHous1e"):FireServer(unpack(argsCasa))
-
-    local argsCarro = {
-        [1] = "PickingCarMusicText",
-        [2] = id
-    }
-    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(argsCarro))
-
-    local argsScooter = {
-        [1] = "PickingScooterMusicText",
-        [2] = id
-    }
-    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(argsScooter))
-end
-
--- Função auxiliar para validar valores do Dropdown
-local function isValidMusicId(value)
-    return value and value ~= "" and value ~= "Option 1" and not value:match("novas musica adds") and not value:match("musica brasil") and not value:match("musica do meu interece") and not value:match("musica dls por elas") and not value:match("meme abaixo") and not value:match("estourada")
-end
-
-Tab5:Input({
-    Title = "ID da música",
-    Placeholder = "Digite o ID e pressione Enter",
-    Callback = function(value)
-        if value and value ~= "" then
-            tocarMusica(tostring(value))
-        end
-    end,
-})
-
-
--- Tabela de opções de música para o Dropdown "Funk, Phonk, MTG"
-local musicOptions = {
-    ["forro"] = {
-        {name = "forro", id = "4354908569"}, -- Placeholder ID para título
-        {name = "forro ja cançou", id = "74812784884330"},
-        {name = "lenbro ate hoje", id = "71531533552899"},
-        {name = "escolha certa", id = "107088620814881"},
-        {name = "nome na ajenda", id = "140095882383991"},
-        {name = "forro da rezenha", id = "120973520531216"},
-        {name = "forro dudu", id = "74404168179733"},
-        {name = "forro sao joao", id = "106364874935196"},
-        {name = "forro engraçado paia", id = "76524290482399"}
-       
-        
-    }
-}
-
--- Criar listas de nomes e mapeamento de categorias
-local musicNames = {}
-local categoryMap = {}
-for category, sounds in pairs(musicOptions) do
-    for _, music in ipairs(sounds) do
-        table.insert(musicNames, music.name)
-        categoryMap[music.name] = {id = music.id, category = category}
-    end
-end
-
--- Função auxiliar para tocar música
-local function playMusic(soundId)
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local argsScooter = {
-        [1] = "PickingScooterMusicText",
-        [2] = tostring(soundId)
-    }
-    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(argsScooter))
-    
-    local argsCarro = {
-        [1] = "PickingCarMusicText",
-        [2] = tostring(soundId)
-    }
-    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(argsCarro))
-end
-
--- Dropdown para "Funk, Phonk, MTG"
-Tab5:Dropdown({
-    Title = "forro",
-    Desc = "all",
-    Value = "Option 1",
-    Multi = false,
-    AllowNone = true,
-    Values = musicNames,
-    Callback = function(selectedSound)
-        if selectedSound and categoryMap[selectedSound] then
-            local soundId = categoryMap[selectedSound].id
-            if soundId and soundId ~= "" and soundId ~= "4354908569" then
-                playMusic(soundId)
-                print("Música selecionada: " .. selectedSound .. " (ID: " .. soundId .. ")")
-            else
-                print("ID inválido ou título selecionado: " .. tostring(selectedSound))
-            end
-        else
-            print("Nenhuma música selecionada ou ID não encontrado!")
-        end
-    end,
-})
-
-
-
-
-
-
-
--------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
--- Tabela de opções de música para o Dropdown "Funk, Phonk, MTG"
-local musicOptions = {
-    ["Funk"] = {
-        {name = "funks", id = "4354908569"},
-        {name = "sua mulher funk", id = "90844637105538"},
-        {name = "carro ", id = "100788814736643"},
-        {name = "efuga na viatura", id = "131891110268352"},
-        {name = "da queles momentos", id = "123134215207264"},
-        {name = "ela vem para provacar", id = "79916408808299"},
-        {name = "funkphonk fumando verde", id = "112143944982807"},
-        {name = "trippi troop funk", id = "73049389767013"},
-        {name = "bombini funkphonk", id = "88814770244609"},
-        {name = "rachador", id = "109411226739991"},
-        {name = "cauma xmara", id = "95664293972405"},
-        {name = "tipo tasmania phonkfunk", id = "104300546340195"},
-        {name = "que que sharke", id = "129546408528391"},
-        {name = "cappuccino assassino funk", id = "122197083209373"},
-        {name = "kawai funk", id = "130053797131700"},
-        {name = "acordei passando mal", id = "83875675100660"},
-        {name = "mechamou de amor", id = "81791559745283"},
-        {name = "oeee ja ven sentando", id = "130944058486069"},
-        {name = "orror (omega007)", id = "73638649204496"},
-        {name = "que pro", id = "97239186078279"},
-        {name = "3 em um dot funk", id = "92191873659720"},
-        {name = "naved novinha", id = "102930993846348"},
-        {name = "preparaaa raaaaa", id = "98063604604756"},
-        {name = "vagalumes", id = "72026860897382"},
-        {name = "nova geraçao", id = "140065053895542"},
-        {name = "lovezin", id = "130664328738685"},
-        {name = "to voando alto", id = "110475831724424"},
-        {name = "CVVV", id = "94245278418076"},
-        {name = "MW funk", id = "73473695797214"},
-        {name = "menor TV", id = "93993692602344"},
-        {name = "de duplinha", id = "80112997683181"},
-        {name = "tropa da jamaika", id = "104498738218748"},
-        {name = "pre treino", id = "136869502216760"}
-        
-        
-    }
-}
-
--- Criar listas de nomes e mapeamento de categorias
-local musicNames = {}
-local categoryMap = {}
-for category, sounds in pairs(musicOptions) do
-    for _, music in ipairs(sounds) do
-        table.insert(musicNames, music.name)
-        categoryMap[music.name] = {id = music.id, category = category}
-    end
-end
-
--- Função auxiliar para tocar música
-local function playMusic(soundId)
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local argsScooter = {
-        [1] = "PickingScooterMusicText",
-        [2] = tostring(soundId)
-    }
-    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(argsScooter))
-    
-    local argsCarro = {
-        [1] = "PickingCarMusicText",
-        [2] = tostring(soundId)
-    }
-    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(argsCarro))
-end
-
--- Dropdown para "Funk, Phonk, MTG"
-Tab5:Dropdown({
-    Title = "Funk",
-    Desc = "all",
-    Value = "Option 1",
-    Multi = false,
-    AllowNone = true,
-    Values = musicNames,
-    Callback = function(selectedSound)
-        if selectedSound and categoryMap[selectedSound] then
-            local soundId = categoryMap[selectedSound].id
-            if soundId and soundId ~= "" and soundId ~= "4354908569" then
-                playMusic(soundId)
-                print("Música selecionada: " .. selectedSound .. " (ID: " .. soundId .. ")")
-            else
-                print("ID inválido ou título selecionado: " .. tostring(selectedSound))
-            end
-        else
-            print("Nenhuma música selecionada ou ID não encontrado!")
-        end
-    end,
-})
-
-
-
-
-
-
-
--------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
--- Tabela de opções de música para o Dropdown "Funk, Phonk, MTG"
-local musicOptions = {
-    ["phonk"] = {
-        {name = "phonk", id = "4354908569"},
-        {name = "wyles", id = "85385155970460"},
-        {name = "phonk kawai", id = "91502410121438"},
-        {name = "querendo da a bucet@", id = "72720721570850"},
-        {name = "vem no pocpoc", id = "102333419023382"},
-        {name = "tatiu wim", id = "122871512353520"},
-        {name = "novinha sapeca", id = "111668097052966"},
-        {name = "novinha representa", id = "93786060174790"},
-        {name = "phonk1", id = "77501611905348"},
-        {name = "phonk2", id = "126887144190812"},
-        {name = "phonk osadia", id = "88033569921555"},
-        {name = "phonk sarra", id = "132436320685732"},
-        {name = "relaionamento sem crush", id = "105832154444494"},
-        {name = "phonk3", id = "90323407842935"},
-        {name = "novinha dançapanpa", id = "132245626038510"},
-        {name = "phonk sexoagreçivo", id = "111995323199676"},
-        {name = "phonk4", id = "115016589376700"},
-        {name = "phonk5", id = "118740708757685"},
-        {name = "phonk6", id = "139435437308948"},
-        {name = "phonk chapaquente", id = "109189438638906"},
-        {name = "phonk rajada", id = "105126065014034"},
-        {name = "rede globo", id = "138487820505005"},
-        {name = "phonk indiano", id = "87968531262747"},
-        {name = "vapo do vapo", id = "106317184644394"},
-        {name = "tutatatutata", id = "112068892721408"},
-        {name = "phonk slower", id = "122852029094656"},
-        {name = "phonk9", id = "91760524161503"},
-        {name = "phonk10", id = "73140398421340"},
-        {name = "phonk11", id = "137962454483542"},
-        {name = "phonk12", id = "84733736048142"},
-        {name = "phonk12", id = "106322173003761"},
-        {name = "phonk13", id = "94604796823780"},
-        {name = "phonk14", id = "118063577904953"},
-        {name = "phonk15", id = "115567432786512"},
-        {name = "phonk toq", id = "71304501822029"},
-        {name = "phonk hey", id = "132218979961283"},
-        {name = "phonk16", id = "102708912256857"},
-        {name = "phonk17", id = "140642559093189"},
-        {name = "phonk neve", id = "13530439660"},
-        {name = "phonk18", id = "87863924786534"},
-        {name = "phonk19", id = "133135085604736"},
-        {name = "phonk lento", id = "97258811783169"},
-        {name = "phonk20", id = "92308400487695"},
-        {name = "phonk21", id = "104635713368149"},
-        {name = "tipo wym", id = "88064647826500"},
-        {name = "estouradassa1", id = "92175624643620"},
-        {name = "estouradassa2", id = "108099943758978"},
-        {name = "Naaaaa", id = "109784877184952"},
-        {name = "trem", id = "114608169341947"},
-        {name = "eoropa", id = "111346133543699"},
-        {name = "atimosphekika", id = "77857496821844"}
-        
-        
-    }
-}
-
--- Criar listas de nomes e mapeamento de categorias
-local musicNames = {}
-local categoryMap = {}
-for category, sounds in pairs(musicOptions) do
-    for _, music in ipairs(sounds) do
-        table.insert(musicNames, music.name)
-        categoryMap[music.name] = {id = music.id, category = category}
-    end
-end
-
--- Função auxiliar para tocar música
-local function playMusic(soundId)
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local argsScooter = {
-        [1] = "PickingScooterMusicText",
-        [2] = tostring(soundId)
-    }
-    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(argsScooter))
-    
-    local argsCarro = {
-        [1] = "PickingCarMusicText",
-        [2] = tostring(soundId)
-    }
-    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(argsCarro))
-end
-
--- Dropdown para "Funk, Phonk, MTG"
-Tab5:Dropdown({
-    Title = "Phonk",
-    Desc = "all",
-    Value = "Option 1",
-    Multi = false,
-    AllowNone = true,
-    Values = musicNames,
-    Callback = function(selectedSound)
-        if selectedSound and categoryMap[selectedSound] then
-            local soundId = categoryMap[selectedSound].id
-            if soundId and soundId ~= "" and soundId ~= "4354908569" then
-                playMusic(soundId)
-                print("Música selecionada: " .. selectedSound .. " (ID: " .. soundId .. ")")
-            else
-                print("ID inválido ou título selecionado: " .. tostring(selectedSound))
-            end
-        else
-            print("Nenhuma música selecionada ou ID não encontrado!")
-        end
-    end,
-})
-
--- Botão Stop (Carro)
-Tab5:Button({
-    Title = "Stop",
-    Desc = "Car music",
-    Callback = function()
-        tocarMusica("")
-        print("Música do carro parada")
-    end,
-})
-
----------------------------------------------------------------------------------------------------------------------------------
-                                                -- === Tab 6: Music All === --
----------------------------------------------------------------------------------------------------------------------------------
-
-local loopAtivo = false
-local InputID = ""
-
-Tab6:Input({
-    Title = "Insira o ID Audio All",
-    Desc = "Digite o ID do som que deseja tocar",
-    Value = "",
-    PlaceholderText = "Exemplo: 6832470734",
-    ClearTextOnFocus = true,
-    Callback = function(text)
-        InputID = tonumber(text)
-        if not InputID then warn("Por favor, insira um ID válido!") end
-    end,
-})
-
-Tab6:Button({
-    Title = "Tocar Som",
-    Desc = "Clique para tocar a música inserida",
-    Callback = function()
-        if InputID then
-            fireServer("1Gu1nSound1s", {Workspace, InputID, 1})
-            local globalSound = Instance.new("Sound", Workspace)
-            globalSound.SoundId = "rbxassetid://" .. InputID
-            globalSound.Looped = false
-            globalSound:Play()
-            task.wait(3)
-            globalSound:Destroy()
-        else
-            warn("Nenhum ID válido foi inserido!")
-        end
-    end,
-})
-
-Tab6:Toggle({
-    Title = "Loop",
-    Desc = "Ative para colocar o som em loop",
-    Icon = "check",
-    Value = false,
-    Callback = function(state)
-        loopAtivo = state
-        if loopAtivo then
-            print("Loop ativado!")
-            spawn(function()
-                while loopAtivo do
-                    if InputID then
-                        fireServer("1Gu1nSound1s", {Workspace, InputID, 1})
-                        local globalSound = Instance.new("Sound", Workspace)
-                        globalSound.SoundId = "rbxassetid://" .. InputID
-                        globalSound.Looped = false
-                        globalSound:Play()
-                        -- Não espera o áudio terminar, apenas cria e toca
-                        task.spawn(function() -- Usa task.spawn para destruir após 3 segundos sem interferir no loop
-                            task.wait(3)
-                            globalSound:Destroy()
-                        end)
-                    else
-                        warn("Nenhum ID válido foi inserido!")
-                    end
-                    task.wait(1) -- Intervalo de 1 segundo entre cada início de som
-                end
-            end)
-        else
-            print("Loop desativado!")
-        end
-    end,
-})
-
----------------------------------------------------------------------------------------------------------------------------------------------
-
-local musicOptions = {
-    ["Memes"] = {
-        {name = "pankapakan", id = 122547522269143},
-        {name = "gemido", id = 106835463235574},
-        {name = "gemidao v2", id = 112179417472137},
-        {name = "Gemido ultra rápido", id = 128863565301778},
-        {name = "gemido estranho", id = 131219411501419},
-        {name = "gemido kawai", id = 100409245129170},
-        {name = "Hentai gemido", id = 125037339642322},
-        {name = "Hentai wiaaaaan", id = 88332347208779},
-        {name = "iamete cunasai", id = 108494476595033},
-        {name = "___", id = 4354908569},
-        {name = "gemidos acima", id = 4354908569},
-        {name = "___", id = 4354908569},
-        --parte dos gemidos acima 
-        --memes abaixo 
-        {name = "memes abaixo", id = 4354908569},
-        {name = "___", id = 4354908569},
-        {name = "kid bengala", id = 4354908569},
-        {name = "Toma jack", id = 132603645477541},
-        {name = "Toma jackV2", id = 100446887985203},
-        {name = "Toma jack no sol quente", id = 97476487963273},
-        {name = "ifood", id = 133843750864059},
-        {name = "pelo geito ela ta querendo ram", id = 94395705857835},
-        {name = "vai todo mundo se ", id = 136804576009416},
-        {name = "coringa", id = 84663543883498},
-        {name = "shoope", id = 8747441609},
-        {name = "quenojo", id = 103440368630269},
-        {name = "sai dai lava prato", id = 101232400175829},
-        {name = "se e loko numconpeça", id = 78442476709262},
-        {name = "mita sequer que eu too uma", id = 94889439372168},
-        {name = "Hoje vou ser tua mulher e tu", id = 90844637105538},
-        {name = "Deita aqui eu mandei vc deitar sirens", id = 100291188941582},
-        {name = "miau", id = 131804436682424},
-        {name = "deixa os garoto brinca", id = 80291355054807},
-        {name = "famengo", id = 137774355552052},
-        {name = "sai do mei satnas", id = 127944706557246},
-        {name = "namoral agora e a hora", id = 120677947987369},
-        {name = "n pode e chutar pq seu elebro e burro", id = 82284055473737},
-        {name = "deley", id = 102906880476838},
-        {name = "Tu e um beta", id = 130233956349541},
-        {name = "Porfavor n tira eu nao", id = 85321374020324},
-        {name = "Olá beleza vc pode me dá muitos", id = 74235334504693},
-        {name = "Discord sus", id = 122662798976905},
-        {name = "rojao apito", id = 6549021381},
-        {name = "off", id = 1778829098},
-        {name = "Kazuma kazuma", id = 127954653962405},
-        {name = "sometourado", id = 123592956882621},
-        {name = "Estouradoespad", id = 136179020015211},
-        {name = "Alaku bommm", id = 110796593805268},
-        {name = "busss", id = 139841197791567},
-        {name = "Estourado wItb", id = 137478052262430},
-        {name = "sla", id = 116672405522828},
-
-    }
-}
-
-local musicNames = {}
-local categoryMap = {}
-for category, sounds in pairs(musicOptions) do
-    for _, music in ipairs(sounds) do
-        table.insert(musicNames, music.name)
-        categoryMap[music.name] = {id = music.id, category = category}
-    end
-end
-
-local selectedSoundID = nil
-local currentVolume = 1
-local currentPitch = 1
-
-local function playSound(soundId, volume, pitch)
-    fireServer("1Gu1nSound1s", {Workspace, soundId, volume})
-    local globalSound = Instance.new("Sound")
-    globalSound.Parent = Workspace
-    globalSound.SoundId = "rbxassetid://" .. soundId
-    globalSound.Volume = volume
-    globalSound.Pitch = pitch
-    globalSound.Looped = false
-    globalSound:Play()
-    -- Usa task.spawn para destruir após 3 segundos sem bloquear o loop
-    task.spawn(function()
-        task.wait(3)
-        globalSound:Destroy()
-    end)
-end
-
-local MusicDropdown = Tab6:Dropdown({
-    Title = "Selecione um meme",
-    Desc = "Escolha um meme para tocar no servidor",
-    Value = "pankapakan",
-    Multi = false,
-    AllowNone = true,
-    Values = musicNames,
-    Callback = function(selectedSound)
-        if selectedSound and categoryMap[selectedSound] then
-            selectedSoundID = categoryMap[selectedSound].id
-            print("Som selecionado: " .. selectedSound .. " (ID: " .. selectedSoundID .. ")")
-        else
-            warn("Nenhum som selecionado ou ID não encontrado!")
-            selectedSoundID = nil
-        end
-    end,
-})
-
-Tab6:Button({
-    Title = "Tocar Som Selecionado",
-    Desc = "Clique para tocar o som do dropdown",
-    Callback = function()
-        if selectedSoundID then
-            playSound(selectedSoundID, currentVolume, currentPitch)
-        else
-            warn("Nenhum som selecionado no dropdown!")
-        end
-    end,
-})
-
-local dropdownLoopActive = false
-Tab6:Toggle({
-    Title = "Loop",
-    Desc = "Ativa o loop do som selecionado",
-    Value = false,
-    Callback = function(state)
-        dropdownLoopActive = state
-        if state then
-            print("Loop ativado!")
-            task.spawn(function()
-                while dropdownLoopActive do
-                    if selectedSoundID then
-                        playSound(selectedSoundID, currentVolume, currentPitch)
-                    else
-                        warn("Nenhum som selecionado!")
-                    end
-                    task.wait(1) -- Intervalo de 1 segundo entre cada início de som
-                end
-            end)
-        else
-            print("Loop desativado!")
-        end
-    end,
-})
-
-local musicOptions = {
-    ["efeito/terror"] = {
-        {name = "jumpscar", id = 91784486966761},
-        {name = "gritoestourado", id = 7520729342},
-        {name = "Woooo", id = 117521059248354},
-        {name = "gritodoido", id = 7807987190},
-        {name = "gritomedo", id = 113029085566978},
-        {name = "___", id = 4354908569},
-        {name = "gritos acima", id = 4354908569},
-        {name = "___", id = 4354908569}, 
-        {name = "sirens abaixo", id = 4354908569},
-        {name = "___", id = 4354908569},
-        {name = "Nukesiren", id = 9067330158},
-        {name = "nuclear sirenv2", id = 675587093},
-        {name = "Alertescola", id = 6607047008},
-        {name = "Memealertsiren", id = 8379374771},
-        {name = "Sirenhead", id = 5681392074},
-        {name = "Chernobyl5", id = 101927395686044},
-        {name = "Alerta3S", id = 402404861},
-        {name = "Radioxiado", id = 8028069841},
-        {name = "Error", id = 101446887200514},
-        {name = "___", id = 4354908569},
-        {name = "sirens acima", id = 4354908569},
-        {name = "Risada", id = 79191730206814},
-        {name = "Hahahah", id = 90096947219465},
-        {name = "___", id = 4354908569},
-        {name = "efeitos abaixo", id = 4354908569},
-        {name = "___", id = 4354908569},
-        {name = "metal", id = 71251935617451},
-        {name = "tiro", id = 104223019424522},
-        {name = "Golden efect", id = 77773293292155},
-        {name = "Haki sound", id = 91390250645812},
-
-    }
-}
-
-local musicNames = {}
-local categoryMap = {}
-for category, sounds in pairs(musicOptions) do
-    for _, music in ipairs(sounds) do
-        table.insert(musicNames, music.name)
-        categoryMap[music.name] = {id = music.id, category = category}
-    end
-end
-
-local selectedSoundID = nil
-local currentVolume = 1
-local currentPitch = 1
-
-local function playSound(soundId, volume, pitch)
-    fireServer("1Gu1nSound1s", {Workspace, soundId, volume})
-    local globalSound = Instance.new("Sound")
-    globalSound.Parent = Workspace
-    globalSound.SoundId = "rbxassetid://" .. soundId
-    globalSound.Volume = volume
-    globalSound.Pitch = pitch
-    globalSound.Looped = false
-    globalSound:Play()
-    -- Usa task.spawn para destruir após 3 segundos sem bloquear o loop
-    task.spawn(function()
-        task.wait(3)
-        globalSound:Destroy()
-    end)
-end
-
-local MusicDropdown = Tab6:Dropdown({
-    Title = "Selecione um terror ou efeito",
-    Desc = "Escolha umterror ou efeito para tocar no servidor",
-    Value = "jumpscar",
-    Multi = false,
-    AllowNone = true,
-    Values = musicNames,
-    Callback = function(selectedSound)
-        if selectedSound and categoryMap[selectedSound] then
-            selectedSoundID = categoryMap[selectedSound].id
-            print("Som selecionado: " .. selectedSound .. " (ID: " .. selectedSoundID .. ")")
-        else
-            warn("Nenhum som selecionado ou ID não encontrado!")
-            selectedSoundID = nil
-        end
-    end,
-})
-
-Tab6:Button({
-    Title = "Tocar Som Selecionado",
-    Desc = "Clique para tocar o som do dropdown",
-    Callback = function()
-        if selectedSoundID then
-            playSound(selectedSoundID, currentVolume, currentPitch)
-        else
-            warn("Nenhum som selecionado no dropdown!")
-        end
-    end,
-})
-
-local dropdownLoopActive = false
-Tab6:Toggle({
-    Title = "Loop",
-    Desc = "Ativa o loop do som selecionado",
-    Value = false,
-    Callback = function(state)
-        dropdownLoopActive = state
-        if state then
-            print("Loop ativado!")
-            task.spawn(function()
-                while dropdownLoopActive do
-                    if selectedSoundID then
-                        playSound(selectedSoundID, currentVolume, currentPitch)
-                    else
-                        warn("Nenhum som selecionado!")
-                    end
-                    task.wait(1) -- Intervalo de 1 segundo entre cada início de som
-                end
-            end)
-        else
-            print("Loop desativado!")
-        end
-    end,
-})
-
-----------------------------------------------------------------------------------------------------------------------------------------------
-                                               -- === Tab 7: Scripts === --
-----------------------------------------------------------------------------------------------------------------------------------------------
-
-Tab7:Button({
-    Title = "Invisible",
-    Desc = "universal",
-    Callback = function()
-        loadstring(game:HttpGet("https://scriptblox.com/raw/Universal-Script-fe-invisible-4366"))()
-    end,
-})
-
-Tab7:Button({
-    Title = "FE Jerk Off Hub Matrix",
-    Desc = "Universal",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ExploitFin/AquaMatrix/refs/heads/AquaMatrix/AquaMatrix"))()
-    end,
-})
-
-Tab7:Button({
-    Title = "FE HUGG",
-    Desc = "Universal",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/JSFKGBASDJKHIOAFHDGHIUODSGBJKLFGDKSB/fe/refs/heads/main/FEHUGG"))()
-    end,
-})
-
-Tab7:Button({
-    Title = "Auto Piano Panda Hub",
-    Desc = "Universal",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/MADNESSTEST/Pqoeirnfjw/main/AP3-5.lua", true))()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Sgesa/RandomCatsAutoplay/main/Protected_1274635038188005.lua.txt", true))()
-    end,
-})
-
-Tab7:Button({
-    Title = "Buraco Negro",
-    Desc = "Universal",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Bac0nHck/Scripts/main/BringFlingPlayers"))("More Scripts: t.me/arceusxscripts")
-    end,
-})
-
-Tab7:Button({
-    Title = "System Broochk",
-    Desc = "Universal",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/H20CalibreYT/SystemBroken/main/script"))()
-    end,
-})
-
-Tab7:Button({
-    Title = "Roships",
-    Desc = "Universal",
-    Callback = function()
-        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-rochips-universal-18294"))()
-    end,
-})
-
-Tab7:Button({
-    Title = "Sander X",
-    Desc = "Somente para Brookhaven",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/kigredns/SanderXV4.2.2/refs/heads/main/New.lua"))()
-    end,
-})
-
-Tab7:Button({
-    Title = "Reverso",
-    Desc = "Universal",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/0Ben1/fe./main/L"))()
-    end,
-})
-
-Tab7:Button({
-    Title = "RD4",
-    Desc = "Somente para Brookhaven",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/M1ZZ001/BrookhavenR4D/main/Brookhaven%20R4D%20Script"))()
-    end,
-})
+local Tab1 = Window:Tab({ Title = "troll", Icon = "Ball" })
 
 -----------------------------------------------------------------------------------------------------------------------------------------
-                                          -- === Tab 8: Jogadores === --
------------------------------------------------------------------------------------------------------------------------------------------
-
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-
-local LocalPlayer = Players.LocalPlayer
-local isSpectating = false
-local spectatedPlayer = nil
-local characterConnection = nil
-
--- Função para obter os nomes dos jogadores, excluindo o jogador local
-local function getPlayerNames()
-    local playerNames = {}
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            table.insert(playerNames, player.Name)
-        end
-    end
-    return playerNames
-end
-
--- Função para atualizar o dropdown com os nomes dos jogadores
-local function updateDropdown(dropdown)
-    local success, errorMessage = pcall(function()
-        local currentValue = dropdown.Value
-        local playerNames = getPlayerNames()
-        dropdown:Refresh(playerNames)
-        if currentValue and not table.find(playerNames, currentValue) then
-            dropdown:SetValue("")
-            print("Jogador anterior saiu do jogo. Seleção resetada.")
-            if isSpectating then
-                stopSpectating()
-                SpectateToggle:SetValue(false)
-            end
-        end
-    end)
-    if not success then
-        warn("Erro ao atualizar dropdown: " .. tostring(errorMessage))
-    end
-end
-
--- Função para teletransportar para o jogador selecionado
-local function teleportToPlayer(playerName)
-    local targetPlayer = Players:FindFirstChild(playerName)
-    if targetPlayer and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(targetPlayer.Character.HumanoidRootPart.Position))
-        print("Teletransportado para o jogador: " .. playerName)
-    else
-        print("Jogador ou personagem não encontrado para teletransporte.")
-    end
-end
-
--- Função para visualizar um jogador (modo espectador)
-local function spectatePlayer(playerName)
-    if characterConnection then
-        characterConnection:Disconnect()
-        characterConnection = nil
-    end
-
-    local targetPlayer = Players:FindFirstChild(playerName)
-    if targetPlayer and targetPlayer ~= LocalPlayer then
-        spectatedPlayer = targetPlayer
-        isSpectating = true
-        print("Visualizando jogador: " .. targetPlayer.Name)
-
-        local function updateCamera()
-            if not isSpectating or not spectatedPlayer then
-                return
-            end
-            if spectatedPlayer.Character and spectatedPlayer.Character:FindFirstChild("Humanoid") then
-                Workspace.CurrentCamera.CameraSubject = spectatedPlayer.Character.Humanoid
-            else
-                Workspace.CurrentCamera.CameraSubject = nil
-            end
-        end
-
-        updateCamera()
-
-        characterConnection = RunService.Heartbeat:Connect(function()
-            if not isSpectating then
-                characterConnection:Disconnect()
-                characterConnection = nil
-                return
-            end
-            local success, errorMessage = pcall(updateCamera)
-            if not success then
-                warn("Erro ao atualizar câmera no modo visualização: " .. tostring(errorMessage))
-                stopSpectating()
-            end
-        end)
-
-        spectatedPlayer.CharacterAdded:Connect(function()
-            if isSpectating then
-                updateCamera()
-            end
-        end)
-    else
-        print("Jogador inválido ou não encontrado para modo visualização.")
-        isSpectating = false
-        spectatedPlayer = nil
-    end
-end
-
--- Função para parar de visualizar
-local function stopSpectating()
-    if characterConnection then
-        characterConnection:Disconnect()
-        characterConnection = nil
-    end
-
-    isSpectating = false
-    spectatedPlayer = nil
-
-    -- Garante que a câmera volte para o Humanoid do jogador local
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        Workspace.CurrentCamera.CameraSubject = LocalPlayer.Character.Humanoid
-        Workspace.CurrentCamera.CameraType = Enum.CameraType.Custom -- Força o modo de câmera padrão
-        print("Parando de visualizar. Voltando à visão do jogador local.")
-    else
-        Workspace.CurrentCamera.CameraSubject = nil
-        Workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
-        print("Nenhum personagem local encontrado. Câmera redefinida.")
-    end
-end
-
--- Detecta quando o jogador local morre e reseta a câmera
-LocalPlayer.CharacterAdded:Connect(function(character)
-    if isSpectating then
-        stopSpectating()
-        print("Você morreu. Câmera voltou para o seu personagem.")
-    end
-end)
-
-
--- Dropdown para selecionar jogador
-local DropdownPlayer = Tab8:Dropdown({
-    Title = "Selecionar Jogador",
-    Desc = "Selecione o jogador para teletransportar ou visualizar",
-    Value = "",
-    Multi = false,
-    AllowNone = true,
-    Values = getPlayerNames(),
-    Callback = function(selectedPlayerName)
-        if selectedPlayerName == "" or selectedPlayerName == nil then
-            print("Nenhum jogador selecionado.")
-            if isSpectating then
-                stopSpectating()
-                SpectateToggle:SetValue(false)
-            end
-        else
-            print("Jogador selecionado: " .. selectedPlayerName)
-            if isSpectating then
-                stopSpectating()
-                spectatePlayer(selectedPlayerName)
-            end
-        end
-    end,
-})
-
--- Botão de Teleporte
-Tab8:Button({
-    Title = "Teleportar para Jogador",
-    Desc = "Clique para teletransportar para o jogador selecionado",
-    Callback = function()
-        local selectedPlayerName = DropdownPlayer.Value
-        if selectedPlayerName and selectedPlayerName ~= "" then
-            local success, errorMessage = pcall(teleportToPlayer, selectedPlayerName)
-            if not success then
-                warn("Erro ao teletransportar: " .. tostring(errorMessage))
-            end
-        else
-            print("Selecione um jogador antes de teletransportar.")
-        end
-    end,
-})
-
--- Toggle para visualizar jogador
-local SpectateToggle = Tab8:Toggle({
-    Title = "Visualizar Jogador",
-    Desc = "Ativa ou desativa o modo de visualização",
-    Default = false,
-    Callback = function(state)
-        if state then
-            local selectedPlayerName = DropdownPlayer.Value
-            if selectedPlayerName and selectedPlayerName ~= "" then
-                local success, errorMessage = pcall(spectatePlayer, selectedPlayerName)
-                if not success then
-                    warn("Erro ao ativar modo de visualização: " .. tostring(errorMessage))
-                    SpectateToggle:SetValue(false)
-                end
-            else
-                print("Selecione um jogador antes de ativar o modo de visualização.")
-                SpectateToggle:SetValue(false)
-            end
-        else
-            local success, errorMessage = pcall(stopSpectating)
-            if not success then
-                warn("Erro ao desativar modo de visualização: " .. tostring(errorMessage))
-            end
-        end
-    end,
-})
-
--- Atualiza o dropdown quando jogadores entram ou saem
-updateDropdown(DropdownPlayer)
-Players.PlayerAdded:Connect(function()
-    updateDropdown(DropdownPlayer)
-end)
-Players.PlayerRemoving:Connect(function(player)
-    updateDropdown(DropdownPlayer)
-    if spectatedPlayer and spectatedPlayer == player then
-        stopSpectating()
-        SpectateToggle:SetValue(false)
-        DropdownPlayer:SetValue("")
-    end
-end)
-
------------------------------------------------------------------------------------------------------------------------------------------
-                                          -- === Tab 9: Teleportes === --
------------------------------------------------------------------------------------------------------------------------------------------
-
-local player = game.Players.LocalPlayer
-local selectedLocation = "Morro"
-
-
--- Dropdown com as localizações de Brookhaven
-local Dropdown = Tab9:Dropdown({
-    Title = "Locais de Brookhaven",
-    Desc = "Selecione um local para teleportar",
-    Value = "Morro",
-    Multi = false,
-    AllowNone = false,
-    Values = {
-        "Morro",
-        "Praça",
-        "Banco",
-        "Hospital",
-        "Prefeitura",
-        "Fazenda",
-        "Mercado",
-        "Shopping",
-        "Aeroporto",
-        "Hotel",
-        "Beira-mar 1",
-        "Beira-mar 2"
-    },
-    Callback = function(value)
-        selectedLocation = value
-        print("Local selecionado: " .. selectedLocation)
-    end
-})
-
--- Botão para teleportar
-local TeleportButton = Tab9:Button({
-    Title = "Teleportar",
-    Desc = "Teleporta para o local selecionado",
-    Callback = function()
-        print("Teleportando para: " .. selectedLocation)
-        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            local humanoidRootPart = player.Character.HumanoidRootPart
-            local locations = {
-                ["Morro"] = Vector3.new(-348.64, 65.94, -458.08),
-                ["Praça"] = Vector3.new(-26.17, 3.48, -0.93),
-                ["Banco"] = Vector3.new(1.99, 3.32, 236.65),
-                ["Hospital"] = Vector3.new(-303.2, 3.40, 13.74),
-                ["Prefeitura"] = Vector3.new(-354.65, 7.32, -102.16),
-                ["Fazenda"] = Vector3.new(-766.41, 2.92, -61.10),
-                ["Mercado"] = Vector3.new(16.31, 3.32, -107.07),
-                ["Shopping"] = Vector3.new(151.05, 3.52, -190.64),
-                ["Aeroporto"] = Vector3.new(290.23, 4.32, 42.57),
-                ["Hotel"] = Vector3.new(159.10, 3.32, 164.97),
-                ["Beira-mar 1"] = Vector3.new(55.69, 2.94, -1403.60),
-                ["Beira-mar 2"] = Vector3.new(42.39, 2.94, 1336.14)
-            }
-            if locations[selectedLocation] then
-                local success, errorMessage = pcall(function()
-                    humanoidRootPart.CFrame = CFrame.new(locations[selectedLocation])
-                end)
-                if not success then
-                    warn("Erro ao teleportar: " .. tostring(errorMessage))
-                end
-            else
-                print("Local não encontrado!")
-            end
-        else
-            print("Personagem não encontrado!")
-        end
-    end
-})
-
-
-
-
------------------------------------------------------------------------------------------------------------------------------------------
-                                          -- === Tab 10: Troll === --
+                                          -- === Tab 1: Troll === --
 -----------------------------------------------------------------------------------------------------------------------------------------
 
 local Players = game:GetService("Players")
@@ -2317,10 +97,9 @@ end
 -- Função para atualizar o dropdown
 local function updateDropdown(dropdown)
     local success, errorMessage = pcall(function()
-        local currentValue = dropdown.Value
         local playerNames = getPlayerNames()
         dropdown:Refresh(playerNames)
-        if currentValue and not table.find(playerNames, currentValue) then
+        if selectedPlayer and not table.find(playerNames, selectedPlayer.Name) then
             dropdown:SetValue("")
             selectedPlayer = nil
             print("Jogador anterior saiu do jogo. Seleção resetada.")
@@ -2392,7 +171,6 @@ local function stopSpectating()
     isSpectating = false
     spectatedPlayer = nil
 
-    -- Garante que a câmera volte para o Humanoid do jogador local
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         Workspace.CurrentCamera.CameraSubject = LocalPlayer.Character.Humanoid
         Workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
@@ -2412,9 +190,8 @@ LocalPlayer.CharacterAdded:Connect(function(character)
     end
 end)
 
-
 -- Botão System Broken
-Tab10:Button({
+Tab1:Button({
     Title = "System Broken",
     Desc = "Universal",
     Callback = function()
@@ -2427,34 +204,13 @@ Tab10:Button({
     end,
 })
 
-Tab10:Paragraph({ 
+Tab1:Paragraph({ 
     Title = "Execute o System Broken e ative o VoidProtection", 
     Desc = "Faça isso antes de usar as funções abaixo!!!"
 })
 
--- Botão para pegar o sofá
-Tab10:Button({
-    Title = "Pegar Sofá",
-    Desc = "Pegue o sofá antes de usar as opções abaixo",
-    Callback = function()
-        local success, errorMessage = pcall(function()
-            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer("PickingTools", "Couch")
-        end)
-        if success then
-            print("Sofá equipado com sucesso!")
-        else
-            warn("Erro ao pegar o sofá: " .. tostring(errorMessage))
-        end
-    end,
-})
-
-Tab10:Paragraph({ 
-    Title = "Instruções para o Sofá", 
-    Desc = "Pegue o sofá e equipe o sofá na sua mão antes de usar as funções abaixo"
-})
-
--- Dropdown único para selecionar jogador
-local DropdownPlayer = Tab10:Dropdown({
+-- Dropdown para selecionar jogador
+local DropdownPlayer = Tab1:Dropdown({
     Title = "Selecionar Jogador",
     Desc = "Escolha um jogador para matar, puxar ou aplicar fling",
     Value = "",
@@ -2487,64 +243,18 @@ local DropdownPlayer = Tab10:Dropdown({
     end,
 })
 
--- Botão para iniciar matar
-Tab10:Button({
-    Title = "Iniciar Matar com o Sofá",
-    Desc = "Clique para começar a matar o jogador selecionado",
+-- Botão para atualizar a lista de jogadores
+Tab1:Button({
+    Title = "Atualizar Lista de Jogadores",
+    Desc = "Atualiza a lista de jogadores no dropdown",
     Callback = function()
-        if isFollowingKill or isFollowingPull then
-            print("Uma ação (matar ou puxar) já está ativa. Use o botão Parar primeiro.")
-            return
-        end
-        if selectedPlayer and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            isFollowingKill = true
-            originalPosition = LocalPlayer.Character.HumanoidRootPart.Position
-            print("Iniciando matar para: " .. selectedPlayer.Name)
-        else
-            print("Selecione um jogador válido antes de iniciar.")
-        end
-    end,
-})
-
--- Botão para iniciar puxar
-Tab10:Button({
-    Title = "Iniciar Puxar",
-    Desc = "Clique para começar a puxar o jogador selecionado",
-    Callback = function()
-        if isFollowingKill or isFollowingPull then
-            print("Uma ação (matar ou puxar) já está ativa. Use o botão Parar primeiro.")
-            return
-        end
-        if selectedPlayer and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            isFollowingPull = true
-            originalPosition = LocalPlayer.Character.HumanoidRootPart.Position
-            print("Iniciando puxar para: " .. selectedPlayer.Name)
-        else
-            print("Selecione um jogador válido antes de iniciar.")
-        end
-    end,
-})
-
--- Botão para parar ambas as ações
-local ButtonStop = Tab10:Button({
-    Title = "Parar (Matar ou Puxar)",
-    Desc = "Para o movimento de matar ou puxar",
-    Callback = function()
-        isFollowingKill = false
-        isFollowingPull = false
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and originalPosition then
-            LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(originalPosition))
-            if LocalPlayer.Character:FindFirstChild("Humanoid") then
-                LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-            end
-            print("Movimento parado. Personagem voltou à posição original.")
-        end
-        originalPosition = nil
+        updateDropdown(DropdownPlayer)
+        print("Lista de jogadores atualizada!")
     end,
 })
 
 -- Toggle para visualizar jogador
-local SpectateToggle = Tab10:Toggle({
+local SpectateToggle = Tab1:Toggle({
     Title = "Visualizar Jogador",
     Desc = "Ativa/desativa a visualização do jogador selecionado",
     Default = false,
@@ -2566,6 +276,140 @@ local SpectateToggle = Tab10:Toggle({
                 warn("Erro ao desativar modo visualização: " .. tostring(errorMessage))
             end
         end
+    end,
+})
+
+-- Botão para iniciar matar
+Tab1:Button({
+    Title = "Iniciar Matar com o Sofá",
+    Desc = "Clique para começar a matar o jogador selecionado",
+    Callback = function()
+        if isFollowingKill or isFollowingPull then
+            print("Uma ação (matar ou puxar) já está ativa. Use o botão Parar primeiro.")
+            return
+        end
+        if not selectedPlayer or not selectedPlayer.Character or not LocalPlayer.Character then
+            warn("Selecione um jogador válido antes de iniciar!")
+            return
+        end
+
+        -- Verifica se o sofá está no inventário
+        local backpack = LocalPlayer:WaitForChild("Backpack")
+        local sofa = backpack:FindFirstChild("Couch")
+
+        if not sofa then
+            -- Pega o sofá se não estiver na mochila
+            local args = { [1] = "PickingTools", [2] = "Couch" }
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
+
+            repeat
+                sofa = backpack:FindFirstChild("Couch")
+                task.wait()
+            until sofa or task.wait(5) -- Timeout de 5 segundos
+            if not sofa then
+                warn("Falha ao pegar o sofá!")
+                return
+            end
+        end
+
+        -- Equipa o sofá
+        sofa.Parent = LocalPlayer.Character
+        print("Sofá equipado!")
+
+        isFollowingKill = true
+        originalPosition = LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position
+        print("Iniciando matar para: " .. selectedPlayer.Name)
+    end,
+})
+
+-- Botão para iniciar puxar
+Tab1:Button({
+    Title = "Iniciar Puxar",
+    Desc = "Clique para começar a puxar o jogador selecionado",
+    Callback = function()
+        if isFollowingKill or isFollowingPull then
+            print("Uma ação (matar ou puxar) já está ativa. Use o botão Parar primeiro.")
+            return
+        end
+        if not selectedPlayer or not selectedPlayer.Character or not LocalPlayer.Character then
+            warn("Selecione um jogador válido antes de iniciar!")
+            return
+        end
+
+        -- Verifica se o sofá está no inventário
+        local backpack = LocalPlayer:WaitForChild("Backpack")
+        local sofa = backpack:FindFirstChild("Couch")
+
+        if not sofa then
+            -- Pega o sofá se não estiver na mochila
+            local args = { [1] = "PickingTools", [2] = "Couch" }
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
+
+            repeat
+                sofa = backpack:FindFirstChild("Couch")
+                task.wait()
+            until sofa or task.wait(5) -- Timeout de 5 segundos
+            if not sofa then
+                warn("Falha ao pegar o sofá!")
+                return
+            end
+        end
+
+        -- Equipa o sofá
+        sofa.Parent = LocalPlayer.Character
+        print("Sofá equipado!")
+
+        isFollowingPull = true
+        originalPosition = LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position
+        print("Iniciando puxar para: " .. selectedPlayer.Name)
+    end,
+})
+
+-- Botão para parar matar ou puxar
+Tab1:Button({
+    Title = "Parar (Matar ou Puxar)",
+    Desc = "Para o movimento de matar ou puxar",
+    Callback = function()
+        isFollowingKill = false
+        isFollowingPull = false
+
+        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+                part.Velocity = Vector3.zero
+                part.RotVelocity = Vector3.zero
+            end
+        end
+
+        -- Restaura a capacidade de sentar
+        local myHumanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+        if myHumanoid then
+            myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+        end
+
+        for _, seat in ipairs(Workspace:GetDescendants()) do
+            if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
+                seat.Disabled = false
+            end
+        end
+
+        -- Teleporta com segurança
+        if originalPosition then
+            local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if myHRP then
+                myHRP.Anchored = true
+                myHRP.CFrame = CFrame.new(originalPosition + Vector3.new(0, 5, 0))
+                task.wait(0.2)
+                myHRP.Velocity = Vector3.zero
+                myHRP.RotVelocity = Vector3.zero
+                myHRP.Anchored = false
+                if myHumanoid then
+                    myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                end
+            end
+            originalPosition = nil
+        end
+        print("Movimento parado. Personagem voltou à posição original.")
     end,
 })
 
@@ -2612,9 +456,18 @@ sitCheckConnection = RunService.Heartbeat:Connect(function()
                 isFollowingKill = false
                 isFollowingPull = false
                 if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and originalPosition then
-                    LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(originalPosition))
-                    if LocalPlayer.Character:FindFirstChild("Humanoid") then
-                        LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                    local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    local myHumanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+                    if myHRP then
+                        myHRP.Anchored = true
+                        myHRP.CFrame = CFrame.new(originalPosition + Vector3.new(0, 5, 0))
+                        task.wait(0.2)
+                        myHRP.Velocity = Vector3.zero
+                        myHRP.RotVelocity = Vector3.zero
+                        myHRP.Anchored = false
+                        if myHumanoid then
+                            myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                        end
                     end
                     print("Personagem voltou à posição original em pé!")
                 end
@@ -2629,75 +482,8 @@ sitCheckConnection = RunService.Heartbeat:Connect(function()
     end
 end)
 
-sitCheckConnection = RunService.Heartbeat:Connect(function()
-    if (isFollowingKill or isFollowingPull) and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("Humanoid") then
-        local success, errorMessage = pcall(function()
-            if selectedPlayer.Character.Humanoid.Sit then
-                print("Jogador sentado! Interrompendo ação...")
-                
-                if isFollowingKill then
-                    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                        LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(0, -500, 0))
-                        task.wait(0.5)
-                        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer("PickingTools", "Couch")
-                        task.wait(1)
-                    end
-                end
-                
-                isFollowingKill = false
-                isFollowingPull = false
-                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and originalPosition then
-                    LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(originalPosition))
-                    if LocalPlayer.Character:FindFirstChild("Humanoid") then
-                        LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-                    end
-                    print("Personagem voltou à posição original em pé!")
-                end
-                originalPosition = nil
-            end
-        end)
-        if not success then
-            warn("Erro na verificação de assento: " .. tostring(errorMessage))
-            isFollowingKill = false
-            isFollowingPull = false
-        end
-    end
-end)
-
--- Botão para pegar a bola de futebol
-Tab10:Button({
-    Title = "Pegar Bola de Futebol",
-    Desc = "Clique para equipar a bola de futebol",
-    Callback = function()
-        local success, errorMessage = pcall(function()
-            local args = {
-                [1] = "PickingTools",
-                [2] = "SoccerBall"
-            }
-            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
-        end)
-        if success then
-            print("Bola de futebol equipada com sucesso! Aguarde a bola aparecer no Workspace.")
-        else
-            warn("Erro ao pegar a bola de futebol: " .. tostring(errorMessage))
-        end
-    end,
-})
-
-Tab10:Paragraph({ 
-    Title = "Instruções para o Fling", 
-    Desc = "Selecione um jogador, pegue a bola de futebol e clique em 'Iniciar Fling' para começar."
-})
-
--- Variáveis para o sistema de fling
-local soccerBall = nil
-local running = false
-local connection, flingConnection
-local originalProperties = {}
-local savedPosition = nil
-
--- Botão para iniciar o fling
-Tab10:Button({
+-- Botão para iniciar fling
+Tab1:Button({
     Title = "Iniciar Fling",
     Desc = "Inicia o fling no jogador selecionado",
     Callback = function()
@@ -2705,28 +491,45 @@ Tab10:Button({
             print("O fling já está ativo. Use o botão 'Parar Fling' primeiro.")
             return
         end
+
         if not selectedPlayer or not selectedPlayer.Character then
             warn("Selecione um jogador válido antes de iniciar o fling!")
             return
         end
 
+        -- ⚽ Verifica se já tem a bola no inventário
+        local backpack = LocalPlayer:WaitForChild("Backpack")
+        local bola = backpack:FindFirstChild("SoccerBall")
+
+        if not bola then
+            -- Pega a bola se não estiver na mochila
+            local args = { [1] = "PickingTools", [2] = "SoccerBall" }
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
+
+            repeat
+                bola = backpack:FindFirstChild("SoccerBall")
+                task.wait()
+            until bola or task.wait(5) -- Timeout de 5 segundos
+            if not bola then
+                warn("Falha ao pegar a bola!")
+                return
+            end
+        end
+
+        -- Equipa a bola
+        bola.Parent = LocalPlayer.Character
+        print("Bola equipada!")
+
         local workspaceCom = Workspace:FindFirstChild("WorkspaceCom")
-        if not workspaceCom then
-            warn("WorkspaceCom não encontrado!")
-            return
-        end
-        local soccerBalls = workspaceCom:FindFirstChild("001_SoccerBalls")
-        if not soccerBalls then
-            warn("001_SoccerBalls não encontrado!")
-            return
-        end
+        local soccerBalls = workspaceCom and workspaceCom:FindFirstChild("001_SoccerBalls")
+        soccerBall = soccerBalls and soccerBalls:FindFirstChild("Soccer" .. LocalPlayer.Name)
 
-        soccerBall = soccerBalls:FindFirstChild("Soccer" .. LocalPlayer.Name)
         if not soccerBall then
-            warn("Bola de futebol não encontrada! Certifique-se de pegá-la primeiro.")
+            warn("Bola de futebol não encontrada após equipar!")
             return
         end
 
+        -- ⚙️ Configurações iniciais
         originalProperties = {
             Anchored = soccerBall.Anchored,
             CanCollide = soccerBall.CanCollide,
@@ -2738,25 +541,23 @@ Tab10:Button({
         soccerBall.CanTouch = true
         pcall(function() soccerBall:SetNetworkOwner(nil) end)
 
+        -- 🧍 Salva posição atual
         local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if myHRP then
-            savedPosition = myHRP.Position
-        end
+        savedPosition = myHRP and myHRP.Position
 
+        -- 🤸 Ativa NoClip no seu personagem
         for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
             if part:IsA("BasePart") then
                 part.CanCollide = false
             end
         end
 
-        -- Desativar capacidade de sentar para o jogador local
         local myHumanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
         if myHumanoid then
             myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
             myHumanoid.Sit = false
         end
 
-        -- Bloquear interações com assentos
         for _, seat in ipairs(Workspace:GetDescendants()) do
             if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
                 seat.Disabled = true
@@ -2770,6 +571,7 @@ Tab10:Button({
         running = true
         local lastFlingTime = 0
 
+        -- Movimento da bola
         connection = RunService.Heartbeat:Connect(function()
             if not running or not selectedPlayer.Character then return end
             local hrp = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -2782,13 +584,9 @@ Tab10:Button({
             local isSitting = hum.Sit
 
             if isSitting then
-                -- Bola se move rapidamente para cima e para baixo
-                local y = math.sin(tick() * 50) * 2
-                soccerBall.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 0.75 + y, 0))
+                soccerBall.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 0.75 + math.sin(tick() * 50) * 2, 0))
             elseif isStill then
-                -- Bola se move rapidamente para frente e para trás
-                local z = math.sin(tick() * 50) * 3
-                soccerBall.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 0.75, z))
+                soccerBall.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 0.75, math.sin(tick() * 50) * 3))
             else
                 local offset = moveDir.Unit * math.clamp(hrp.Velocity.Magnitude * 0.15, 5, 12)
                 soccerBall.CFrame = CFrame.new(hrp.Position + offset + Vector3.new(0, 0.75, 0))
@@ -2797,6 +595,7 @@ Tab10:Button({
             myHRP.CFrame = CFrame.new(soccerBall.Position + Vector3.new(0, 1, 0))
         end)
 
+        -- Fling
         flingConnection = RunService.Heartbeat:Connect(function()
             if not running or not selectedPlayer.Character then return end
             local hrp = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -2830,8 +629,8 @@ Tab10:Button({
     end,
 })
 
--- Botão para parar o fling
-Tab10:Button({
+-- Botão para parar fling
+Tab1:Button({
     Title = "Parar Fling",
     Desc = "Para o fling no jogador selecionado",
     Callback = function()
@@ -2848,16 +647,17 @@ Tab10:Button({
         for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
             if part:IsA("BasePart") then
                 part.CanCollide = true
+                part.Velocity = Vector3.zero
+                part.RotVelocity = Vector3.zero
             end
         end
 
-        -- Restaurar capacidade de sentar para o jogador local
+        -- Restaura a capacidade de sentar
         local myHumanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
         if myHumanoid then
             myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
         end
 
-        -- Reativar assentos
         for _, seat in ipairs(Workspace:GetDescendants()) do
             if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
                 seat.Disabled = false
@@ -2868,12 +668,21 @@ Tab10:Button({
             ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeUp", 1)
         end)
 
+        -- Teleporta com segurança
         if savedPosition then
             local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
             if myHRP then
+                myHRP.Anchored = true
+                myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
+                task.wait(0.2)
                 myHRP.Velocity = Vector3.zero
-                myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 10, 0))
+                myHRP.RotVelocity = Vector3.zero
+                myHRP.Anchored = false
+                if myHumanoid then
+                    myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                end
             end
         end
+        print("Fling parado. Personagem voltou à posição original.")
     end,
 })
