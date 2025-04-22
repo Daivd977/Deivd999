@@ -2,7 +2,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 local Version = "1.4.0"
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta troll 666",
+    Title = "Lolyta troll 99999",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta 666",
@@ -354,6 +354,16 @@ Tab1:Button({
         -- Espera 0.5 segundos
         task.wait(0.5)
 
+        -- Deleta o sofá do inventário
+        local args = {
+            [1] = "PlayerWantsToDeleteTool",
+            [2] = "Couch"
+        }
+        pcall(function()
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer(unpack(args))
+        end)
+        print("Sofá removido do inventário!")
+
         -- Encontra o sofá no Workspace
         local workspaceCom = Workspace:FindFirstChild("WorkspaceCom")
         if not workspaceCom then
@@ -394,53 +404,43 @@ Tab1:Button({
             end
         end)
 
-        -- Faz o jogador selecionado sentar no sofá
+        -- Teleporta o jogador local para o jogador selecionado
         local targetHRP = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
         local targetHumanoid = selectedPlayer.Character:FindFirstChild("Humanoid")
-        if targetHRP and targetHumanoid then
-            -- Teleporta o jogador selecionado para o sofá
-            targetHRP.CFrame = couch.CFrame + Vector3.new(0, 3, 0)
-            targetHumanoid.Sit = true
-            print("Jogador " .. selectedPlayer.Name .. " sentado no sofá!")
-        else
+        if not targetHRP or not targetHumanoid then
             warn("Jogador selecionado não tem HumanoidRootPart ou Humanoid!")
             running = false
             return
         end
+        myHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, -2) -- Posiciona atrás do jogador selecionado
+        print("Teleportado para o jogador " .. selectedPlayer.Name .. "!")
 
-        -- Deleta o sofá do inventário
-        local args = {
-            [1] = "PlayerWantsToDeleteTool",
-            [2] = "Couch"
-        }
-        pcall(function()
-            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer(unpack(args))
-        end)
-        print("Sofá removido do inventário!")
+        -- Tenta fazer o jogador selecionado sentar no sofá
+        targetHRP.CFrame = couch.CFrame + Vector3.new(0, 3, 0)
+        targetHumanoid.Sit = true
+        print("Tentando fazer " .. selectedPlayer.Name .. " sentar no sofá!")
 
         -- Aplica o fling extremamente forte no jogador selecionado
-        if targetHRP then
+        for _, part in ipairs(selectedPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+
+        local fling = Instance.new("BodyVelocity")
+        fling.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+        fling.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 100000 + Vector3.new(0, 100000, 0)
+        fling.Parent = targetHRP
+
+        task.delay(0.5, function()
+            fling:Destroy()
             for _, part in ipairs(selectedPlayer.Character:GetDescendants()) do
                 if part:IsA("BasePart") then
-                    part.CanCollide = false
+                    part.CanCollide = true
                 end
             end
-
-            local fling = Instance.new("BodyVelocity")
-            fling.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-            fling.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 50000 + Vector3.new(0, 50000, 0)
-            fling.Parent = targetHRP
-
-            task.delay(0.5, function()
-                fling:Destroy()
-                for _, part in ipairs(selectedPlayer.Character:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = true
-                    end
-                end
-            end)
-            print("Fling extremamente forte aplicado em " .. selectedPlayer.Name .. "!")
-        end
+        end)
+        print("Fling extremamente forte aplicado em " .. selectedPlayer.Name .. "!")
 
         -- Teleporta o jogador local de volta à posição inicial
         myHRP.Anchored = true
