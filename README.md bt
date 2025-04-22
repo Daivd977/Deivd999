@@ -2,7 +2,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 local Version = "1.4.0"
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta troll 666",
+    Title = "Lolyta troll 66600000",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta 666",
@@ -354,23 +354,30 @@ Tab1:Button({
         -- Espera 0.5 segundos
         task.wait(0.5)
 
-        -- Encontra o sofá no Workspace
-        local workspaceCom = Workspace:FindFirstChild("WorkspaceCom")
-        if not workspaceCom then
-            warn("WorkspaceCom não encontrado!")
-            return
+        -- Procura o sofá no Workspace ou no personagem
+        local couch
+        for _, obj in ipairs(Workspace:GetDescendants()) do
+            if obj.Name == "Couch" .. LocalPlayer.Name then
+                couch = obj
+                break
+            end
         end
-        local couches = workspaceCom:FindFirstChild("001_Couches")
-        if not couches then
-            warn("001_Couches não encontrado!")
-            return
-        end
-
-        local couch = couches:FindFirstChild("Couch" .. LocalPlayer.Name)
         if not couch then
-            warn("Sofá não encontrado em Workspace.WorkspaceCom.001_Couches.Couch" .. LocalPlayer.Name)
+            -- Verifica no personagem
+            couch = character:FindFirstChild("Couch")
+        end
+        if not couch then
+            warn("Sofá não encontrado no Workspace ou no personagem!")
+            -- Depuração: Lista objetos no Workspace
+            print("Procurando sofá... Objetos no Workspace com 'Couch' no nome:")
+            for _, obj in ipairs(Workspace:GetDescendants()) do
+                if obj.Name:find("Couch") then
+                    print(" - " .. obj.Name .. " (Path: " .. obj:GetFullName() .. ")")
+                end
+            end
             return
         end
+        print("Sofá encontrado: " .. couch.Name .. " (Path: " .. couch:GetFullName() .. ")")
 
         -- Configura o sofá
         originalProperties = {
