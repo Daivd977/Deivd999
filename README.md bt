@@ -2,7 +2,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 local Version = "1.4.0"
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Music",
+    Title = "Lolyta troll 666",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta 666",
@@ -20,7 +20,7 @@ local Window = WindUI:CreateWindow({
 })
 
 Window:EditOpenButton({
-    Title = "Lolyta troll v6000",
+    Title = "Lolyta troll",
     Icon = "align-justify",
     CornerRadius = UDim.new(0, 10),
     StrokeThickness = 3,
@@ -487,18 +487,6 @@ end)
 -----------------------------------------------------------------------------------------------------
 
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local LocalPlayer = Players.LocalPlayer
-
-local selectedPlayer = nil -- Substitua isso pelo sistema do seu dropdown se necessário
-local running = false
-local connection = nil
-local savedPosition = nil
-
-
-
 -- BOTÃO INICIAR FLING
 Tab1:Button({
     Title = "Iniciar Fling",
@@ -578,7 +566,6 @@ Tab1:Button({
                 local targetHRP = target.Character:FindFirstChild("HumanoidRootPart")
                 if not targetHRP then break end
 
-                -- Bola segue o alvo com velocidade alta
                 ball.Handle.CFrame = targetHRP.CFrame * CFrame.new(0, 0, -1)
                 ball.Handle.Velocity = Vector3.new(10000, 10000, 10000)
 
@@ -595,13 +582,11 @@ Tab1:Button({
     Callback = function()
         running = false
 
-        -- Desconecta noclip
         if connection then
             connection:Disconnect()
             connection = nil
         end
 
-        -- Restaurar colisões
         local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
         for _, part in ipairs(character:GetDescendants()) do
             if part:IsA("BasePart") then
@@ -609,7 +594,6 @@ Tab1:Button({
             end
         end
 
-        -- Teleportar com segurança
         local myHRP = character:FindFirstChild("HumanoidRootPart")
         if myHRP and savedPosition then
             myHRP.Anchored = true
