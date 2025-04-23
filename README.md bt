@@ -2,7 +2,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 local Version = "1.4.0"
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta troll 666",
+    Title = "Lolyta troll 6745475",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta 666",
@@ -667,24 +667,35 @@ Tab1:Button({
         -- Espera 0.2 segundos
         task.wait(0.2)
 
-        -- Localiza o ônibus no Workspace
+        -- Localiza o ônibus em Workspace.Vehicles com o nome do jogador local (ex.: rtrt967Car)
         local bus = nil
-        for _, obj in ipairs(Workspace:GetDescendants()) do
-            if obj.Name == "SchoolBus" and obj:IsA("Model") then
-                bus = obj
-                break
-            end
-        end
-        if not bus then
-            warn("Ônibus não encontrado no Workspace!")
+        local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
+        if not vehiclesFolder then
+            warn("Pasta Vehicles não encontrada no Workspace!")
             return
         end
-        print("Ônibus encontrado: " .. bus.Name)
+        local busName = LocalPlayer.Name .. "Car" -- ex.: rtrt967Car
+        bus = vehiclesFolder:FindFirstChild(busName)
+        if not bus then
+            warn("Ônibus não encontrado em Workspace.Vehicles com o nome: " .. busName)
+            print("Procurando ônibus... Objetos em Workspace.Vehicles:")
+            for _, obj in ipairs(vehiclesFolder:GetChildren()) do
+                print(" - " .. obj.Name .. " (Type: " .. obj.ClassName .. ", Path: " .. obj:GetFullName() .. ")")
+            end
+            return
+        end
+        print("Ônibus encontrado: " .. bus.Name .. " (Path: " .. bus:GetFullName() .. ")")
 
         -- Localiza o assento do motorista (Body.VehicleSeat)
         local driverSeat = bus:FindFirstChild("Body") and bus.Body:FindFirstChild("VehicleSeat")
         if not driverSeat then
             warn("Assento do motorista (VehicleSeat) não encontrado no ônibus!")
+            print("Procurando assentos no ônibus...")
+            for _, obj in ipairs(bus:GetDescendants()) do
+                if obj:IsA("VehicleSeat") or obj:IsA("Seat") then
+                    print(" - " .. obj.Name .. " (Path: " .. obj:GetFullName() .. ")")
+                end
+            end
             return
         end
         print("Assento do motorista encontrado: " .. driverSeat:GetFullName())
@@ -693,14 +704,15 @@ Tab1:Button({
         pcall(function()
             humanoid.Sit = true
             driverSeat:Sit(humanoid)
+            humanoid:ChangeState(Enum.HumanoidStateType.Seated)
         end)
         print("Jogador local tentou sentar no assento do motorista!")
 
-        -- Espera até que o jogador local sente no assento do motorista
+        -- Espera até que o jogador local sente no assento do motorista (timeout de 10 segundos)
         local sitStart = tick()
         repeat
             task.wait()
-            if tick() - sitStart > 5 then
+            if tick() - sitStart > 10 then
                 warn("Timeout: Jogador local não conseguiu sentar no assento do motorista!")
                 return
             end
