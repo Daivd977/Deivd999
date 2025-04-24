@@ -2,7 +2,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 local Version = "1.4.0"
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta troll 6667575",
+    Title = "Lolyta troll 86554",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta 666",
@@ -1044,26 +1044,32 @@ Tab1:Button({
             end
         end)
 
-        -- Detecta colisão do jogador selecionado com o barco
-        local touchedConnection
-        touchedConnection = boat.Touched:Connect(function(hit)
-            if not running then return end
-            local hitPlayer = game.Players:GetPlayerFromCharacter(hit.Parent)
-            if hitPlayer and hitPlayer == selectedPlayer then
-                local targetHRP = hit.Parent:FindFirstChild("HumanoidRootPart")
-                if targetHRP then
-                    local flingForce = Instance.new("BodyVelocity")
-                    flingForce.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-                    flingForce.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
-                    flingForce.Parent = targetHRP
-                    task.defer(function()
-                        task.wait(1)
-                        flingForce:Destroy()
-                    end)
-                    print("Jogador " .. selectedPlayer.Name .. " encostou no barco e foi lançado!")
-                end
+        -- Detecta colisão do jogador selecionado com qualquer parte do barco
+        local touchedConnections = {}
+        for _, part in ipairs(boat:GetDescendants()) do
+            if part:IsA("BasePart") then
+                local conn = part.Touched:Connect(function(hit)
+                    if not running then return end
+                    local hitPlayer = game.Players:GetPlayerFromCharacter(hit.Parent)
+                    if hitPlayer and hitPlayer == selectedPlayer then
+                        local targetHRP = hit.Parent:FindFirstChild("HumanoidRootPart")
+                        if targetHRP then
+                            local flingForce = Instance.new("BodyVelocity")
+                            flingForce.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                            flingForce.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
+                            flingForce.Parent = targetHRP
+                            task.defer(function()
+                                task.wait(1)
+                                flingForce:Destroy()
+                            end)
+                            print("Jogador " .. selectedPlayer.Name .. " encostou no barco e foi lançado!")
+                        end
+                    end
+                end)
+                table.insert(touchedConnections, conn)
             end
-        end)
+        end
+        print("Eventos de colisão configurados para todas as partes do barco!")
 
         -- Segue o jogador selecionado com backflips agressivos até o botão "Parar Fling" ser pressionado
         print("Iniciando acompanhamento de " .. selectedPlayer.Name .. " com backflips agressivos!")
@@ -1073,19 +1079,19 @@ Tab1:Button({
         flingConnection = RunService.Heartbeat:Connect(function()
             if not running then
                 print("Loop de acompanhamento interrompido: running = false")
-                if touchedConnection then
-                    touchedConnection:Disconnect()
-                    touchedConnection = nil
+                for _, conn in ipairs(touchedConnections) do
+                    conn:Disconnect()
                 end
+                touchedConnections = {}
                 return
             end
             if not selectedPlayer or not selectedPlayer.Character then
                 warn("Jogador selecionado não está mais disponível!")
                 running = false
-                if touchedConnection then
-                    touchedConnection:Disconnect()
-                    touchedConnection = nil
+                for _, conn in ipairs(touchedConnections) do
+                    conn:Disconnect()
                 end
+                touchedConnections = {}
                 return
             end
             local newTargetHRP = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -1093,19 +1099,19 @@ Tab1:Button({
             if not newTargetHRP or not newTargetHumanoid then
                 warn("HumanoidRootPart ou Humanoid do jogador selecionado não encontrado!")
                 running = false
-                if touchedConnection then
-                    touchedConnection:Disconnect()
-                    touchedConnection = nil
+                for _, conn in ipairs(touchedConnections) do
+                    conn:Disconnect()
                 end
+                touchedConnections = {}
                 return
             end
             if not myHRP or not humanoid then
                 warn("HumanoidRootPart ou Humanoid do jogador local não encontrado!")
                 running = false
-                if touchedConnection then
-                    touchedConnection:Disconnect()
-                    touchedConnection = nil
+                for _, conn in ipairs(touchedConnections) do
+                    conn:Disconnect()
                 end
+                touchedConnections = {}
                 return
             end
 
@@ -1137,10 +1143,10 @@ Tab1:Button({
                 running = false
                 flingConnection:Disconnect()
                 flingConnection = nil
-                if touchedConnection then
-                    touchedConnection:Disconnect()
-                    touchedConnection = nil
+                for _, conn in ipairs(touchedConnections) do
+                    conn:Disconnect()
                 end
+                touchedConnections = {}
 
                 -- Teleporta o barco para a posição do fling anterior (X = -59599.73, Y = 2040070.50, Z = -293391.16)
                 pcall(function()
