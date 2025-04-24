@@ -2,7 +2,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 local Version = "1.4.0"
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta troll 666",
+    Title = "Lolyta troll 9999",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta 666",
@@ -81,6 +81,24 @@ local success, errorMessage = pcall(function()
 end)
 if not success then
     -- warn("Erro ao criar script no servidor: " .. tostring(errorMessage))
+end
+
+-- Função para desativar temporariamente o CarClient
+local function disableCarClient()
+    local backpack = LocalPlayer:WaitForChild("Backpack")
+    local carClient = backpack:FindFirstChild("CarClient")
+    if carClient and carClient:IsA("LocalScript") then
+        carClient.Disabled = true
+    end
+end
+
+-- Função para reativar o CarClient
+local function enableCarClient()
+    local backpack = LocalPlayer:WaitForChild("Backpack")
+    local carClient = backpack:FindFirstChild("CarClient")
+    if carClient and carClient:IsA("LocalScript") then
+        carClient.Disabled = false
+    end
 end
 
 -- Função para obter os nomes dos jogadores, excluindo o jogador local
@@ -258,81 +276,7 @@ Players.PlayerRemoving:Connect(function(player)
     if selectedPlayer == player then
         selectedPlayer = nil
         if isSpectating then
-            stopSpectating()
-        end
-    end
-    updateDropdown(DropdownPlayer)
-end)
-
--- Inicializa o dropdown
-updateDropdown(DropdownPlayer)
-
--- Dropdown para selecionar método de matar/puxar
-local DropdownKillPullMethod = Tab1:Dropdown({
-    Title = "Selecionar Método (Matar/Puxar)",
-    Desc = "Escolha o método para matar ou puxar",
-    Values = {"Sofá", "Ônibus"},
-    Callback = function(value)
-        selectedKillPullMethod = value
-    end
-})
-
--- Função para equipar o sofá
-local function equipSofa()
-    local backpack = LocalPlayer:WaitForChild("Backpack")
-    local sofa = backpack:FindFirstChild("Couch") or LocalPlayer.Character:FindFirstChild("Couch")
-    if not sofa then
-        local args = { [1] = "PickingTools", [2] = "Couch" }
-        local success, err = pcall(function()
-            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
-        end)
-        if not success then
-            -- warn("Erro ao pegar o sofá: " .. tostring(err))
-            return false
-        end
-        repeat
-            sofa = backpack:FindFirstChild("Couch")
-            task.wait()
-        until sofa or task.wait(5)
-        if not sofa then
-            -- warn("Falha ao pegar o sofá!")
-            return false
-        end
-    end
-    if sofa.Parent ~= LocalPlayer.Character then
-        sofa.Parent = LocalPlayer.Character
-    end
-    return true
-end
-
--- Função para matar com sofá
-local function killWithSofa(targetPlayer)
-    if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then
-        -- warn("Selecione um jogador válido antes de iniciar!")
-        return
-    end
-    if not equipSofa() then return end
-    isFollowingKill = true
-    originalPosition = LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position
-end
-
--- Função para puxar com sofá
-local function pullWithSofa(targetPlayer)
-    if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then
-        -- warn("Selecione um jogador válido antes de iniciar!")
-        return
-    end
-    if not equipSofa() then return end
-    isFollowingPull = true
-    originalPosition = LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position
-end
-
--- Função para matar com ônibus
-local function killWithBus(targetPlayer)
-    if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then return end
-    local character = LocalPlayer.Character
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    local myHRP = character:FindFirstChild("HumanoidRootPart")
+            stopSpect myHRP = character:FindFirstChild("HumanoidRootPart")
     if not humanoid or not myHRP then return end
     savedPosition = myHRP.Position
     pcall(function()
@@ -347,6 +291,10 @@ local function killWithBus(targetPlayer)
         end
     end)
     task.wait(0.5)
+    
+    -- Desativar CarClient antes de deletar veículos
+    disableCarClient()
+    
     local args = { [1] = "DeleteAllVehicles" }
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
@@ -442,6 +390,10 @@ local function killWithBus(targetPlayer)
                 bus:PivotTo(CFrame.new(Vector3.new(-76.6, -401.97, -84.26)))
             end)
             task.wait(0.5)
+            
+            -- Desativar CarClient antes de deletar veículos
+            disableCarClient()
+            
             local args = { [1] = "DeleteAllVehicles" }
             pcall(function()
                 ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
@@ -644,6 +596,10 @@ Tab1:Button({
             end
             originalPosition = nil
         end
+        
+        -- Desativar CarClient antes de deletar veículos
+        disableCarClient()
+        
         local args = { [1] = "DeleteAllVehicles" }
         pcall(function()
             ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
@@ -968,6 +924,10 @@ local function flingWithBus(targetPlayer)
         end
     end)
     task.wait(0.5)
+    
+    -- Desativar CarClient antes de deletar veículos
+    disableCarClient()
+    
     local args = { [1] = "DeleteAllVehicles" }
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
@@ -1078,6 +1038,10 @@ local function flingWithBus(targetPlayer)
             walkFlingInstancePlayer.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
             walkFlingInstancePlayer.Parent = myHRP
             task.wait(0.5)
+            
+            -- Desativar CarClient antes de deletar veículos
+            disableCarClient()
+            
             local args = { [1] = "DeleteAllVehicles" }
             pcall(function()
                 ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
@@ -1127,6 +1091,10 @@ local function flingWithBoat(targetPlayer)
             humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
         end
     end)
+    
+    -- Desativar CarClient antes de deletar veículos
+    disableCarClient()
+    
     local args = { [1] = "DeleteAllVehicles" }
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
@@ -1313,6 +1281,10 @@ Tab1:Button({
             couch.CanCollide = originalProperties.CanCollide
             couch.CanTouch = originalProperties.CanTouch
         end
+        
+        -- Desativar CarClient antes de deletar veículos
+        disableCarClient()
+        
         local args = { [1] = "DeleteAllVehicles" }
         pcall(function()
             ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
