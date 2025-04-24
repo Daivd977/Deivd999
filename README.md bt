@@ -2,7 +2,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 local Version = "1.4.0"
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta troll ant mandrake",
+    Title = "Lolyta troll 999",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta 666",
@@ -50,6 +50,9 @@ local selectedKillPullMethod = nil
 local selectedFlingMethod = nil
 local soccerBall = nil
 local couch = nil
+local isSpectating = false
+local spectatedPlayer = nil
+local characterConnection = nil
 
 -- Cria um RemoteEvent para comunicação com o servidor
 local SetNetworkOwnerEvent = Instance.new("RemoteEvent")
@@ -99,6 +102,9 @@ local function updateDropdown(dropdown)
         if selectedPlayer and not table.find(playerNames, selectedPlayer.Name) then
             dropdown:SetValue("")
             selectedPlayer = nil
+            if isSpectating then
+                stopSpectating()
+            end
         end
     end)
     if not success then
@@ -106,10 +112,85 @@ local function updateDropdown(dropdown)
     end
 end
 
+-- Função para visualizar um jogador
+local function spectatePlayer(playerName)
+    if characterConnection then
+        characterConnection:Disconnect()
+        characterConnection = nil
+    end
+
+    local targetPlayer = Players:FindFirstChild(playerName)
+    if targetPlayer and targetPlayer ~= LocalPlayer then
+        spectatedPlayer = targetPlayer
+        isSpectating = true
+
+        local function updateCamera()
+            if not isSpectating or not spectatedPlayer then
+                return
+            end
+            if spectatedPlayer.Character and spectatedPlayer.Character:FindFirstChild("Humanoid") then
+                Workspace.CurrentCamera.CameraSubject = spectatedPlayer.Character.Humanoid
+            else
+                Workspace.CurrentCamera.CameraSubject = nil
+            end
+        end
+
+        updateCamera()
+
+        characterConnection = RunService.Heartbeat:Connect(function()
+            if not isSpectating then
+                characterConnection:Disconnect()
+                characterConnection = nil
+                return
+            end
+            local success, errorMessage = pcall(updateCamera)
+            if not success then
+                warn("Erro ao atualizar câmera no modo visualização: " .. tostring(errorMessage))
+                stopSpectating()
+            end
+        end)
+
+        spectatedPlayer.CharacterAdded:Connect(function()
+            if isSpectating then
+                updateCamera()
+            end
+        end)
+    else
+        isSpectating = false
+        spectatedPlayer = nil
+    end
+end
+
+-- Função para parar de visualizar
+local function stopSpectating()
+    if characterConnection then
+        characterConnection:Disconnect()
+        characterConnection = nil
+    end
+
+    isSpectating = false
+    spectatedPlayer = nil
+
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        Workspace.CurrentCamera.CameraSubject = LocalPlayer.Character.Humanoid
+        Workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
+    else
+        Workspace.CurrentCamera.CameraSubject = nil
+        Workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
+    end
+end
+
+-- Detecta quando o jogador local morre e reseta a câmera
+LocalPlayer.CharacterAdded:Connect(function(character)
+    if isSpectating then
+        stopSpectating()
+    end
+end)
+
 -- Dropdown para selecionar jogador
 local DropdownPlayer = Tab1:Dropdown({
     Title = "Selecionar Jogador",
-    Desc = "Escolha um jogador para matar, puxar ou aplicar fling",
+    Desc = "Escolha um jogador para matar, puxar, visualizar ou aplicar fling",
     Value = "",
     Multi = false,
     AllowNone = true,
@@ -124,8 +205,15 @@ local DropdownPlayer = Tab1:Dropdown({
                 if connection then connection:Disconnect() end
                 if flingConnection then flingConnection:Disconnect() end
             end
+            if isSpectating then
+                stopSpectating()
+            end
         else
             selectedPlayer = Players:FindFirstChild(selectedPlayerName)
+            if isSpectating then
+                stopSpectating()
+                spectatePlayer(selectedPlayerName)
+            end
         end
     end
 })
@@ -139,10 +227,39 @@ Tab1:Button({
     end
 })
 
+-- Toggle para visualizar jogador
+local SpectateToggle = Tab1:Toggle({
+    Title = "Visualizar Jogador",
+    Desc = "Ativa/desativa a visualização do jogador selecionado",
+    Default = false,
+    Callback = function(state)
+        if state then
+            if selectedPlayer then
+                local success, errorMessage = pcall(spectatePlayer, selectedPlayer.Name)
+                if not success then
+                    warn("Erro ao ativar modo visualização: " .. tostring(errorMessage))
+                    SpectateToggle:SetValue(false)
+                end
+            else
+                warn("Selecione um jogador antes de ativar a visualização.")
+                SpectateToggle:SetValue(false)
+            end
+        else
+            local success, errorMessage = pcall(stopSpectating)
+            if not success then
+                warn("Erro ao desativar modo visualização: " .. tostring(errorMessage))
+            end
+        end
+    end
+})
+
 -- Remove jogadores que saem do servidor
 Players.PlayerRemoving:Connect(function(player)
     if selectedPlayer == player then
         selectedPlayer = nil
+        if isSpectating then
+            stopSpectating()
+        end
     end
     updateDropdown(DropdownPlayer)
 end)
@@ -1234,7 +1351,7 @@ Tab1:Button({
                     myHRP.RotVelocity = Vector3.zero
                     myHRP.Anchored = false
                     if myHumanoid then
-                        myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                        humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
                     end
                 end)
             end
