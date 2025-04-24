@@ -2,7 +2,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 local Version = "1.4.0"
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta troll 6745745465",
+    Title = "Lolyta troll 666",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta 666",
@@ -1029,32 +1029,57 @@ Tab1:Button({
             end
         end)
 
-        -- Detecta colisão do jogador selecionado com qualquer parte do barco
+        -- Detecta colisão do jogador selecionado apenas com a parte principal do barco (Body)
         local touchedConnections = {}
-        for _, part in ipairs(boat:GetDescendants()) do
-            if part:IsA("BasePart") then
-                local conn = part.Touched:Connect(function(hit)
-                    if not running then return end
-                    local hitPlayer = game.Players:GetPlayerFromCharacter(hit.Parent)
-                    if hitPlayer and hitPlayer == selectedPlayer then
-                        local targetHRP = hit.Parent:FindFirstChild("HumanoidRootPart")
-                        if targetHRP then
-                            local flingForce = Instance.new("BodyVelocity")
-                            flingForce.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-                            flingForce.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
-                            flingForce.Parent = targetHRP
-                            task.defer(function()
-                                task.wait(1)
-                                flingForce:Destroy()
-                            end)
-                        end
+        local mainPart = boat:FindFirstChild("Body")
+        if mainPart and mainPart:IsA("BasePart") then
+            local conn = mainPart.Touched:Connect(function(hit)
+                if not running then return end
+                local hitPlayer = game.Players:GetPlayerFromCharacter(hit.Parent)
+                if hitPlayer and hitPlayer == selectedPlayer then
+                    local targetHRP = hit.Parent:FindFirstChild("HumanoidRootPart")
+                    if targetHRP then
+                        local flingForce = Instance.new("BodyVelocity")
+                        flingForce.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                        flingForce.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
+                        flingForce.Parent = targetHRP
+                        task.defer(function()
+                            task.wait(1)
+                            flingForce:Destroy()
+                        end)
                     end
-                end)
-                table.insert(touchedConnections, conn)
+                end
+            end)
+            table.insert(touchedConnections, conn)
+        else
+            warn("Parte 'Body' não encontrada no barco! Usando todas as partes...")
+            for _, part in ipairs(boat:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    local conn = part.Touched:Connect(function(hit)
+                        if not running then return end
+                        local hitPlayer = game.Players:GetPlayerFromCharacter(hit.Parent)
+                        if hitPlayer and hitPlayer == selectedPlayer then
+                            local targetHRP = hit.Parent:FindFirstChild("HumanoidRootPart")
+                            if targetHRP then
+                                local flingForce = Instance.new("BodyVelocity")
+                                flingForce.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                                flingForce.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
+                                flingForce.Parent = targetHRP
+                                task.defer(function()
+                                    task.wait(1)
+                                    flingForce:Destroy()
+                                end)
+                            end
+                        end
+                    end)
+                    table.insert(touchedConnections, conn)
+                end
             end
         end
 
         -- Segue o jogador selecionado com mortais girando até o botão "Parar Fling" ser pressionado
+        local lastUpdate = tick()
+        local updateInterval = 0.05 -- Intervalo de atualização para evitar travamentos
         flingConnection = RunService.Heartbeat:Connect(function()
             if not running then
                 for _, conn in ipairs(touchedConnections) do
@@ -1085,6 +1110,12 @@ Tab1:Button({
                 return
             end
 
+            -- Atualiza a cada 0.05 segundos para evitar travamentos
+            if tick() - lastUpdate < updateInterval then
+                return
+            end
+            lastUpdate = tick()
+
             -- Teleporta o barco para o centro do jogador selecionado com mortais girando
             pcall(function()
                 local targetPosition = newTargetHRP.Position
@@ -1105,7 +1136,9 @@ Tab1:Button({
     Title = "Parar Fling",
     Desc = "Para o fling no jogador selecionado",
     Callback = function()
+        -- Para o fling e desconecta todas as conexões
         running = false
+
         if connection then
             connection:Disconnect()
             connection = nil
@@ -1115,11 +1148,22 @@ Tab1:Button({
             flingConnection = nil
         end
 
-        -- Deleta todos os veículos
+        -- Deleta todos os veículos primeiro
         local args = { [1] = "DeleteAllVehicles" }
         pcall(function()
-            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
+            local RE = game:GetService("ReplicatedStorage"):FindFirstChild("RE")
+            if RE then
+                local event = RE:FindFirstChild("1Ca1r")
+                if event then
+                    event:FireServer(unpack(args))
+                else
+                    warn("Evento 1Ca1r não encontrado em ReplicatedStorage.RE!")
+                end
+            else
+                warn("ReplicatedStorage.RE não encontrado!")
+            end
         end)
+        task.wait(0.2) -- Pequena espera para garantir que os veículos sejam deletados
 
         -- Desativa o NoClip
         local character = LocalPlayer.Character
@@ -1148,25 +1192,39 @@ Tab1:Button({
 
         -- Restaura o tamanho do personagem
         pcall(function()
-            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeUp", 1)
+            local RE = ReplicatedStorage:FindFirstChild("RE")
+            if RE then
+                local event = RE:FindFirstChild("1Clothe1s")
+                if event then
+                    event:FireServer("CharacterSizeUp", 1)
+                end
+            end
         end)
 
         -- Teleporta com segurança para a posição inicial
-        if savedPosition then
-            local myHRP = character and character:FindFirstChild("HumanoidRootPart")
+        if character then
+            local myHRP = character:FindFirstChild("HumanoidRootPart")
             if myHRP then
-                pcall(function()
-                    myHRP.Anchored = true
-                    myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
-                    task.wait(0.2)
-                    myHRP.Velocity = Vector3.zero
-                    myHRP.RotVelocity = Vector3.zero
-                    myHRP.Anchored = false
-                    if myHumanoid then
-                        myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-                    end
-                end)
+                if savedPosition then
+                    pcall(function()
+                        myHRP.Anchored = true
+                        myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
+                        task.wait(0.2)
+                        myHRP.Velocity = Vector3.zero
+                        myHRP.RotVelocity = Vector3.zero
+                        myHRP.Anchored = false
+                        if myHumanoid then
+                            myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                        end
+                    end)
+                else
+                    warn("savedPosition não está definida para teleporte de volta!")
+                end
+            else
+                warn("HumanoidRootPart do jogador local não encontrado para teleporte de volta!")
             end
+        else
+            warn("Personagem do jogador local não encontrado para teleporte de volta!")
         end
     end,
 })
