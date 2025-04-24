@@ -2,7 +2,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 local Version = "1.4.0"
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta troll 75457657687888",
+    Title = "Lolyta troll faze final pronta 666",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta 666",
@@ -31,7 +31,7 @@ Window:EditOpenButton({
 local Tab1 = Window:Tab({ Title = "troll", Icon = "Ball" })
 
 -----------------------------------------------------------------------------------------------------------------------------------------
-                                          -- === Tab 1: Troll === --
+-- === Tab 1: Troll === --
 -----------------------------------------------------------------------------------------------------------------------------------------
 
 local Players = game:GetService("Players")
@@ -42,6 +42,8 @@ local LocalPlayer = Players.LocalPlayer
 
 -- Variáveis compartilhadas
 local selectedPlayer = nil
+local selectedKillPullMethod = nil
+local selectedFlingMethod = nil
 local isFollowingKill = false
 local isFollowingPull = false
 local originalPosition = nil
@@ -53,6 +55,7 @@ local running = false
 local connection, flingConnection
 local originalProperties = {}
 local savedPosition = nil
+local couch = nil
 
 -- Cria um RemoteEvent para comunicação com o servidor
 local SetNetworkOwnerEvent = Instance.new("RemoteEvent")
@@ -102,7 +105,6 @@ local function updateDropdown(dropdown)
         if selectedPlayer and not table.find(playerNames, selectedPlayer.Name) then
             dropdown:SetValue("")
             selectedPlayer = nil
-            print("Jogador anterior saiu do jogo. Seleção resetada.")
         end
     end)
     if not success then
@@ -121,7 +123,6 @@ local function spectatePlayer(playerName)
     if targetPlayer and targetPlayer ~= LocalPlayer then
         spectatedPlayer = targetPlayer
         isSpectating = true
-        print("Visualizando jogador: " .. targetPlayer.Name)
 
         local function updateCamera()
             if not isSpectating or not spectatedPlayer then
@@ -155,7 +156,6 @@ local function spectatePlayer(playerName)
             end
         end)
     else
-        print("Jogador inválido ou não encontrado para modo visualização.")
         isSpectating = false
         spectatedPlayer = nil
     end
@@ -174,11 +174,9 @@ local function stopSpectating()
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         Workspace.CurrentCamera.CameraSubject = LocalPlayer.Character.Humanoid
         Workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
-        print("Parando de visualizar. Voltando à visão do jogador local.")
     else
         Workspace.CurrentCamera.CameraSubject = nil
         Workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
-        print("Nenhum personagem local encontrado. Câmera redefinida.")
     end
 end
 
@@ -186,8 +184,15 @@ end
 LocalPlayer.CharacterAdded:Connect(function(character)
     if isSpectating then
         stopSpectating()
-        print("Você morreu. Câmera voltou para o seu personagem.")
     end
+end)
+
+-- Remove jogadores que saem do servidor do dropdown
+Players.PlayerRemoving:Connect(function(player)
+    if selectedPlayer == player then
+        selectedPlayer = nil
+    end
+    updateDropdown(DropdownPlayer)
 end)
 
 -- Botão System Broken
@@ -220,7 +225,6 @@ local DropdownPlayer = Tab1:Dropdown({
     Callback = function(selectedPlayerName)
         if selectedPlayerName == "" or selectedPlayerName == nil then
             selectedPlayer = nil
-            print("Nenhum jogador selecionado.")
             if running then
                 running = false
                 if connection then connection:Disconnect() end
@@ -231,13 +235,12 @@ local DropdownPlayer = Tab1:Dropdown({
             isFollowingPull = false
         else
             selectedPlayer = Players:FindFirstChild(selectedPlayerName)
-            print("Jogador selecionado: " .. selectedPlayerName)
             if isSpectating then
                 stopSpectating()
                 spectatePlayer(selectedPlayerName)
             end
             if running then
-                print("Jogador do fling atualizado para: " .. selectedPlayerName)
+                -- Atualiza o jogador alvo do fling ativo
             end
         end
     end,
@@ -249,7 +252,6 @@ Tab1:Button({
     Desc = "Atualiza a lista de jogadores no dropdown",
     Callback = function()
         updateDropdown(DropdownPlayer)
-        print("Lista de jogadores atualizada!")
     end,
 })
 
@@ -267,7 +269,6 @@ local SpectateToggle = Tab1:Toggle({
                     SpectateToggle:SetValue(false)
                 end
             else
-                print("Selecione um jogador antes de ativar a visualização.")
                 SpectateToggle:SetValue(false)
             end
         else
@@ -279,1132 +280,435 @@ local SpectateToggle = Tab1:Toggle({
     end,
 })
 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Dropdown para selecionar o método de matar/puxar
+local KillPullMethodDropdown = Tab1:Dropdown({
+    Title = "Selecionar Método (Matar/Puxar)",
+    Desc = "Escolha o método para matar ou puxar",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = {"Sofá", "Ônibus"},
+    Callback = function(method)
+        selectedKillPullMethod = method
+    end,
+})
 
--- BOTÃO INICIAR FLING COM SOFÁ
-Tab1:Button({
-    Title = "Iniciar Fling com Sofá",
-    Desc = "Inicia o fling no jogador selecionado usando o sofá",
-    Callback = function()
-        if running then
-            print("O fling já está ativo. Use o botão 'Parar Fling' primeiro.")
+-- Função para equipar o sofá
+local function equipSofa()
+    local backpack = LocalPlayer:WaitForChild("Backpack")
+    local sofa = backpack:FindFirstChild("Couch") or LocalPlayer.Character:FindFirstChild("Couch")
+
+    if not sofa then
+        local args = { [1] = "PickingTools", [2] = "Couch" }
+        local success, err = pcall(function()
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
+        end)
+        if not success then
+            warn("Erro ao pegar o sofá: " .. tostring(err))
+            return false
+        end
+
+        repeat
+            sofa = backpack:FindFirstChild("Couch")
+            task.wait()
+        until sofa or task.wait(5) -- Timeout de 5 segundos
+        if not sofa then
+            warn("Falha ao pegar o sofá!")
+            return false
+        end
+    end
+
+    if sofa.Parent ~= LocalPlayer.Character then
+        sofa.Parent = LocalPlayer.Character
+    end
+    return true
+end
+
+-- Função para matar com o sofá
+local function killWithSofa()
+    if not equipSofa() then
+        return
+    end
+
+    isFollowingKill = true
+    originalPosition = LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position
+end
+
+-- Função para puxar com o sofá
+local function pullWithSofa()
+    if not equipSofa() then
+        return
+    end
+
+    isFollowingPull = true
+    originalPosition = LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position
+end
+
+-- Função para matar com o ônibus
+local function killWithBus()
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local myHRP = character:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not myHRP then
+        return
+    end
+
+    savedPosition = myHRP.Position
+
+    pcall(function()
+        myHRP.Anchored = true
+        myHRP.CFrame = CFrame.new(Vector3.new(1181.83, 76.08, -1158.83))
+        task.wait(0.2)
+        myHRP.Velocity = Vector3.zero
+        myHRP.RotVelocity = Vector3.zero
+        myHRP.Anchored = false
+        if humanoid then
+            humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+        end
+    end)
+
+    task.wait(0.5)
+
+    local args = { [1] = "DeleteAllVehicles" }
+    pcall(function()
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
+    end)
+
+    local args = { [1] = "PickingCar", [2] = "SchoolBus" }
+    pcall(function()
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
+    end)
+
+    task.wait(1)
+
+    local bus = nil
+    local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
+    if not vehiclesFolder then
+        warn("Pasta Vehicles não encontrada no Workspace!")
+        return
+    end
+    local busName = LocalPlayer.Name .. "Car"
+    bus = vehiclesFolder:FindFirstChild(busName)
+    if not bus then
+        warn("Ônibus não encontrado em Workspace.Vehicles com o nome: " .. busName)
+        return
+    end
+
+    pcall(function()
+        myHRP.Anchored = true
+        myHRP.CFrame = CFrame.new(Vector3.new(1171.15, 79.45, -1166.2))
+        task.wait(0.2)
+        myHRP.Velocity = Vector3.zero
+        myHRP.RotVelocity = Vector3.zero
+        myHRP.Anchored = false
+        humanoid:ChangeState(Enum.HumanoidStateType.Seated)
+    end)
+
+    local sitStart = tick()
+    repeat
+        task.wait()
+        if tick() - sitStart > 10 then
+            warn("Timeout: Jogador local não foi detectado como sentado!")
             return
         end
-        if not selectedPlayer or not selectedPlayer.Character or not LocalPlayer.Character then
-            warn("Selecione um jogador válido antes de iniciar!")
-            return
+    until humanoid.Sit
+
+    for _, part in ipairs(bus:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+            pcall(function() part:SetNetworkOwner(nil) end)
         end
+    end
 
-        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        local myHRP = character:FindFirstChild("HumanoidRootPart")
-        if not humanoid or not myHRP then
-            warn("Seu personagem ainda não está totalmente carregado.")
-            return
-        end
-
-        -- Salva a posição inicial
-        savedPosition = myHRP.Position
-
-        -- Função para equipar o sofá
-        local function equipSofa()
-            local backpack = LocalPlayer:WaitForChild("Backpack")
-            local sofa = backpack:FindFirstChild("Couch") or character:FindFirstChild("Couch")
-
-            if not sofa then
-                -- Pega o sofá se não estiver no inventário ou equipado
-                local args = {
-                    [1] = "PickingTools",
-                    [2] = "Couch"
-                }
-                local success, err = pcall(function()
-                    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
-                end)
-                if not success then
-                    warn("Erro ao pegar o sofá: " .. tostring(err))
-                    return false
-                end
-
-                -- Espera o sofá aparecer na mochila
-                repeat
-                    sofa = backpack:FindFirstChild("Couch")
-                    task.wait()
-                until sofa or task.wait(5) -- Timeout de 5 segundos
-                if not sofa then
-                    warn("Falha ao pegar o sofá!")
-                    return false
-                end
+    running = true
+    connection = RunService.Stepped:Connect(function()
+        if not running then return end
+        for _, part in ipairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
             end
-
-            -- Se o sofá não estiver equipado, equipa
-            if sofa.Parent ~= character then
-                sofa.Parent = character
-                print("Sofá equipado!")
-            else
-                print("Sofá já está equipado!")
-            end
-            return true
         end
+    end)
 
-        -- Equipa o sofá
-        if not equipSofa() then
+    local lastUpdate = tick()
+    local updateInterval = 0.05
+    local startTime = tick()
+    flingConnection = RunService.Heartbeat:Connect(function()
+        if not running then
             return
         end
 
-        -- Espera 0.5 segundos
-        task.wait(0.5)
+        local targetCharacter = selectedPlayer.Character
+        if not targetCharacter then
+            targetCharacter = selectedPlayer.CharacterAdded:Wait()
+        end
 
-        -- Procura o sofá no personagem (Tool) ou no Workspace (BasePart)
-        local couch
-        couch = character:FindFirstChild("Couch") -- Prioriza o sofá equipado (Tool)
-        if not couch then
-            for _, obj in ipairs(Workspace:GetDescendants()) do
-                if (obj.Name == "Couch" or obj.Name == "Couch" .. LocalPlayer.Name) and (obj:IsA("BasePart") or obj:IsA("Tool")) then
-                    couch = obj
+        local newTargetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
+        local newTargetHumanoid = targetCharacter:FindFirstChild("Humanoid")
+        if not newTargetHRP or not newTargetHumanoid then
+            return
+        end
+
+        if not myHRP or not humanoid then
+            running = false
+            return
+        end
+
+        if tick() - lastUpdate < updateInterval then
+            return
+        end
+        lastUpdate = tick()
+
+        local offset = Vector3.new(math.random(-10, 10), 0, math.random(-10, 10))
+        pcall(function()
+            local targetPosition = newTargetHRP.Position + offset
+            bus:PivotTo(
+                CFrame.new(targetPosition) * CFrame.Angles(
+                    math.rad(Workspace.DistributedGameTime * 12000),
+                    math.rad(Workspace.DistributedGameTime * 15000),
+                    math.rad(Workspace.DistributedGameTime * 18000)
+                )
+            )
+        end)
+
+        local playerSeated = false
+        for _, seat in ipairs(bus:GetDescendants()) do
+            if (seat:IsA("Seat") or seat:IsA("VehicleSeat")) and seat.Name ~= "VehicleSeat" then
+                if seat.Occupant == newTargetHumanoid then
+                    playerSeated = true
                     break
                 end
             end
         end
-        if not couch then
-            warn("Sofá não encontrado no personagem ou como BasePart/Tool no Workspace!")
-            print("Procurando sofá... Objetos no Workspace com 'Couch' no nome:")
-            for _, obj in ipairs(Workspace:GetDescendants()) do
-                if obj.Name:find("Couch") then
-                    print(" - " .. obj.Name .. " (Type: " .. obj.ClassName .. ", Path: " .. obj:GetFullName() .. ")")
-                end
-            end
-            return
-        end
-        print("Sofá encontrado: " .. couch.Name .. " (Type: " .. couch.ClassName .. ", Path: " .. couch:GetFullName() .. ")")
 
-        -- Configura o sofá apenas se for BasePart
-        originalProperties = {}
-        if couch:IsA("BasePart") then
-            originalProperties = {
-                Anchored = couch.Anchored,
-                CanCollide = couch.CanCollide,
-                CanTouch = couch.CanTouch
-            }
-            couch.Anchored = false
-            couch.CanCollide = true
-            couch.CanTouch = true
-            pcall(function() couch:SetNetworkOwner(nil) end)
-            print("Propriedades do sofá configuradas: Anchored = false, CanCollide = true, CanTouch = true")
-        else
-            print("Sofá é um " .. couch.ClassName .. ", pulando configuração de propriedades.")
-        end
-
-        -- Ativa o NoClip
-        running = true
-        connection = RunService.Stepped:Connect(function()
-            if not running then return end
-            for _, part in ipairs(character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
-                end
+        if playerSeated or tick() - startTime > 10 then
+            running = false
+            if connection then
+                connection:Disconnect()
+                connection = nil
             end
-        end)
-
-        -- Segue o jogador selecionado com backflips caóticos (como no "Matar com o Sofá")
-        print("Iniciando acompanhamento de " .. selectedPlayer.Name .. " com backflips!")
-        local startTime = tick()
-        local walkFlingInstance = nil -- Para armazenar o BodyVelocity do walkfling
-        flingConnection = RunService.Heartbeat:Connect(function()
-            if not running then
-                print("Loop de acompanhamento interrompido: running = false")
-                return
-            end
-            if not selectedPlayer or not selectedPlayer.Character then
-                warn("Jogador selecionado não está mais disponível!")
-                running = false
-                return
-            end
-            local newTargetHRP = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
-            local newTargetHumanoid = selectedPlayer.Character:FindFirstChild("Humanoid")
-            if not newTargetHRP or not newTargetHumanoid then
-                warn("HumanoidRootPart ou Humanoid do jogador selecionado não encontrado!")
-                running = false
-                return
-            end
-            if not myHRP or not humanoid then
-                warn("HumanoidRootPart ou Humanoid do jogador local não encontrado!")
-                running = false
-                return
-            end
-
-            -- Teleporta ao centro do jogador selecionado com backflips caóticos
-            pcall(function()
-                local targetPosition = newTargetHRP.Position -- Centro do jogador selecionado
-                character:SetPrimaryPartCFrame(
-                    CFrame.new(targetPosition) * CFrame.Angles(
-                        math.rad(Workspace.DistributedGameTime * 12000),
-                        math.rad(Workspace.DistributedGameTime * 15000),
-                        math.rad(Workspace.DistributedGameTime * 18000)
-                    )
-                )
-            end)
-            print("Teleportado e aplicando backflips caóticos para " .. selectedPlayer.Name .. " (Posição: " .. tostring(newTargetHRP.Position) .. ")")
-
-            -- Verifica se o jogador selecionado está sentado ou se o tempo limite foi atingido
-            print("Jogador " .. selectedPlayer.Name .. " sentado: " .. tostring(newTargetHumanoid.Sit) .. " | Tempo decorrido: " .. tostring(tick() - startTime))
-            if newTargetHumanoid.Sit or tick() - startTime > 10 then
-                running = false
+            if flingConnection then
                 flingConnection:Disconnect()
                 flingConnection = nil
-
-                -- Aplica o walkfling no jogador local (seu personagem)
-                for _, part in ipairs(character:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
-                        pcall(function() part:SetNetworkOwner(nil) end)
-                    end
-                end
-                walkFlingInstance = Instance.new("BodyVelocity")
-                walkFlingInstance.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-                walkFlingInstance.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
-                walkFlingInstance.Parent = myHRP
-                print("Walkfling ativado no jogador local!")
-
-                -- Teleporta o jogador local para as coordenadas extremas
-                pcall(function()
-                    myHRP.Anchored = true
-                    myHRP.CFrame = CFrame.new(Vector3.new(-59599.73, 2040070.50, -293391.16))
-                    myHRP.Anchored = false
-                end)
-                print("Jogador local teleportado para as coordenadas extremas: X = -59599.73, Y = 2040070.50, Z = -293391.16")
-
-                -- Faz o jogador local girar muito rápido por 0.5 segundos
-                local spinStart = tick()
-                local spinConnection
-                spinConnection = RunService.Heartbeat:Connect(function()
-                    if tick() - spinStart >= 0.5 then
-                        spinConnection:Disconnect()
-                        return
-                    end
-                    pcall(function()
-                        character:SetPrimaryPartCFrame(
-                            myHRP.CFrame * CFrame.Angles(
-                                math.rad(Workspace.DistributedGameTime * 12000),
-                                math.rad(Workspace.DistributedGameTime * 15000),
-                                math.rad(Workspace.DistributedGameTime * 18000)
-                            )
-                        )
-                    end)
-                end)
-                task.wait(0.5)
-                print("Jogador local girou muito rápido por 0.5 segundos!")
-
-                -- Deleta o sofá do inventário
-                local args = {
-                    [1] = "PlayerWantsToDeleteTool",
-                    [2] = "Couch"
-                }
-                pcall(function()
-                    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer(unpack(args))
-                end)
-                print("Sofá removido do inventário!")
-
-                -- Teleporta o jogador local de volta à posição inicial
-                pcall(function()
-                    myHRP.Anchored = true
-                    myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
-                    task.wait(0.2)
-                    myHRP.Velocity = Vector3.zero
-                    myHRP.RotVelocity = Vector3.zero
-                    myHRP.Anchored = false
-                    if humanoid then
-                        humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-                    end
-                end)
-                print("Jogador local retornado à posição inicial!")
-
-                -- Desativa o walkfling do jogador local
-                if walkFlingInstance then
-                    walkFlingInstance:Destroy()
-                    walkFlingInstance = nil
-                    for _, part in ipairs(character:GetDescendants()) do
-                        if part:IsA("BasePart") then
-                            part.CanCollide = true
-                        end
-                    end
-                    print("Walkfling desativado no jogador local!")
-                end
-            end
-        end)
-    end,
-})
-
--- BOTÃO PARAR FLING
-Tab1:Button({
-    Title = "Parar Fling",
-    Desc = "Para o fling no jogador selecionado",
-    Callback = function()
-        running = false
-        if connection then
-            connection:Disconnect()
-            connection = nil
-        end
-        if flingConnection then
-            flingConnection:Disconnect()
-            flingConnection = nil
-        end
-
-        -- Restaura as propriedades do sofá (se for BasePart)
-        if couch and couch:IsA("BasePart") then
-            couch.Anchored = originalProperties.Anchored
-            couch.CanCollide = originalProperties.CanCollide
-            couch.CanTouch = originalProperties.CanTouch
-        end
-
-        -- Desativa o NoClip
-        local character = LocalPlayer.Character
-        if character then
-            for _, part in ipairs(character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = true
-                    part.Velocity = Vector3.zero
-                    part.RotVelocity = Vector3.zero
-                end
-            end
-        end
-
-        -- Restaura a capacidade de sentar
-        local myHumanoid = character and character:FindFirstChild("Humanoid")
-        if myHumanoid then
-            myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
-        end
-
-        -- Reativa assentos
-        for _, seat in ipairs(Workspace:GetDescendants()) do
-            if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
-                seat.Disabled = false
-            end
-        end
-
-        -- Restaura o tamanho do personagem
-        pcall(function()
-            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeUp", 1)
-        end)
-
-        -- Teleporta com segurança
-        if savedPosition then
-            local myHRP = character and character:FindFirstChild("HumanoidRootPart")
-            if myHRP then
-                myHRP.Anchored = true
-                myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
-                task.wait(0.2)
-                myHRP.Velocity = Vector3.zero
-                myHRP.RotVelocity = Vector3.zero
-                myHRP.Anchored = false
-                if myHumanoid then
-                    myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-                end
-            end
-        end
-        print("Fling parado. Personagem voltou à posição original.")
-    end,
-})
-
--------------------------------------------------------------------------------------------------------------------------------------------
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
---grhgijrgjjgjhrjghjgj hgjh g  hgrhg hrghgjhgh jg h grj hj grjhrg hrhr gj rj hj gjrh rgj hjrg hj grj hrg hjg hr hj rj hrg h gj 
-
-
-
--- BOTÃO INICIAR FLING COM ÔNIBUS
-Tab1:Button({
-    Title = "Iniciar Fling com Ônibus",
-    Desc = "Inicia o fling no jogador selecionado usando o ônibus",
-    Callback = function()
-        if running then
-            print("O fling já está ativo. Use o botão 'Parar Fling' primeiro.")
-            return
-        end
-        if not selectedPlayer or not selectedPlayer.Character or not LocalPlayer.Character then
-            warn("Selecione um jogador válido antes de iniciar!")
-            return
-        end
-
-        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        local myHRP = character:FindFirstChild("HumanoidRootPart")
-        if not humanoid or not myHRP then
-            warn("Seu personagem ainda não está totalmente carregado.")
-            return
-        end
-
-        -- Salva a posição inicial
-        savedPosition = myHRP.Position
-
-        -- Teleporte seguro para a posição inicial (X = 1181.83, Y = 76.08, Z = -1158.83)
-        pcall(function()
-            myHRP.Anchored = true
-            myHRP.CFrame = CFrame.new(Vector3.new(1181.83, 76.08, -1158.83))
-            task.wait(0.2)
-            myHRP.Velocity = Vector3.zero
-            myHRP.RotVelocity = Vector3.zero
-            myHRP.Anchored = false
-            if humanoid then
-                humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-            end
-        end)
-        print("Jogador local teleportado para a posição inicial: X = 1181.83, Y = 76.08, Z = -1158.83")
-
-        -- Espera 0.5 segundos
-        task.wait(0.5)
-
-        -- Deleta todos os veículos
-        local args = { [1] = "DeleteAllVehicles" }
-        pcall(function()
-            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
-        end)
-        print("Todos os veículos deletados!")
-
-        -- Spawnar o ônibus (SchoolBus)
-        local args = { [1] = "PickingCar", [2] = "SchoolBus" }
-        pcall(function()
-            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
-        end)
-        print("Ônibus (SchoolBus) spawnado!")
-
-        -- Espera 1 segundo para garantir que o ônibus apareça no Workspace
-        task.wait(1)
-
-        -- Localiza o ônibus em Workspace.Vehicles com o nome do jogador local (ex.: rtrt967Car)
-        local bus = nil
-        local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
-        if not vehiclesFolder then
-            warn("Pasta Vehicles não encontrada no Workspace!")
-            return
-        end
-        local busName = LocalPlayer.Name .. "Car" -- ex.: rtrt967Car
-        bus = vehiclesFolder:FindFirstChild(busName)
-        if not bus then
-            warn("Ônibus não encontrado em Workspace.Vehicles com o nome: " .. busName)
-            print("Procurando ônibus... Objetos em Workspace.Vehicles:")
-            for _, obj in ipairs(vehiclesFolder:GetChildren()) do
-                print(" - " .. obj.Name .. " (Type: " .. obj.ClassName .. ", Path: " .. obj:GetFullName() .. ")")
-            end
-            return
-        end
-        print("Ônibus encontrado: " .. bus.Name .. " (Path: " .. bus:GetFullName() .. ")")
-
-        -- Teleporta o jogador para a posição do assento do motorista (X = 1171.15, Y = 79.45, Z = -1166.2)
-        pcall(function()
-            myHRP.Anchored = true
-            myHRP.CFrame = CFrame.new(Vector3.new(1171.15, 79.45, -1166.2))
-            task.wait(0.2)
-            myHRP.Velocity = Vector3.zero
-            myHRP.RotVelocity = Vector3.zero
-            myHRP.Anchored = false
-            humanoid:ChangeState(Enum.HumanoidStateType.Seated)
-        end)
-        print("Jogador local teleportado para a posição do assento do motorista: X = 1171.15, Y = 79.45, Z = -1166.2")
-
-        -- Espera até que o jogador local esteja sentado (timeout de 10 segundos)
-        local sitStart = tick()
-        repeat
-            task.wait()
-            if tick() - sitStart > 10 then
-                warn("Timeout: Jogador local não foi detectado como sentado!")
-                return
-            end
-        until humanoid.Sit
-        print("Jogador local detectado como sentado!")
-
-        -- Remove colisões do ônibus
-        for _, part in ipairs(bus:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
-                pcall(function() part:SetNetworkOwner(nil) end)
-            end
-        end
-        print("Colisões do ônibus desativadas!")
-
-        -- Ativa o NoClip para o jogador local
-        running = true
-        connection = RunService.Stepped:Connect(function()
-            if not running then return end
-            for _, part in ipairs(character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
-                end
-            end
-        end)
-
-        -- Segue o jogador selecionado com backflips agressivos em todas as direções
-        print("Iniciando acompanhamento de " .. selectedPlayer.Name .. " com backflips agressivos!")
-        local startTime = tick()
-        local walkFlingInstanceBus = nil -- Para o walkfling do ônibus
-        local walkFlingInstancePlayer = nil -- Para o walkfling do jogador local
-        flingConnection = RunService.Heartbeat:Connect(function()
-            if not running then
-                print("Loop de acompanhamento interrompido: running = false")
-                return
-            end
-            if not selectedPlayer or not selectedPlayer.Character then
-                warn("Jogador selecionado não está mais disponível!")
-                running = false
-                return
-            end
-            local newTargetHRP = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
-            local newTargetHumanoid = selectedPlayer.Character:FindFirstChild("Humanoid")
-            if not newTargetHRP or not newTargetHumanoid then
-                warn("HumanoidRootPart ou Humanoid do jogador selecionado não encontrado!")
-                running = false
-                return
-            end
-            if not myHRP or not humanoid then
-                warn("HumanoidRootPart ou Humanoid do jogador local não encontrado!")
-                running = false
-                return
             end
 
-            -- Teleporta o ônibus para diferentes posições ao redor do jogador selecionado com backflips agressivos
-            local offset = Vector3.new(math.random(-10, 10), 0, math.random(-10, 10)) -- Frente, trás, lados
             pcall(function()
-                local targetPosition = newTargetHRP.Position + offset
-                bus:PivotTo(
-                    CFrame.new(targetPosition) * CFrame.Angles(
-                        math.rad(Workspace.DistributedGameTime * 12000),
-                        math.rad(Workspace.DistributedGameTime * 15000),
-                        math.rad(Workspace.DistributedGameTime * 18000)
-                    )
-                )
+                bus:PivotTo(CFrame.new(Vector3.new(-76.6, -401.97, -84.26)))
             end)
-            print("Ônibus teleportado e aplicando backflips agressivos para " .. selectedPlayer.Name .. " (Posição: " .. tostring(newTargetHRP.Position + offset) .. ")")
 
-            -- Verifica se o jogador selecionado sentou em algum assento do ônibus
-            local playerSeated = false
-            for _, seat in ipairs(bus:GetDescendants()) do
-                if (seat:IsA("Seat") or seat:IsA("VehicleSeat")) and seat.Name ~= "VehicleSeat" then -- Exclui o assento do motorista
-                    if seat.Occupant == newTargetHumanoid then
-                        playerSeated = true
-                        break
-                    end
-                end
-            end
-            print("Jogador " .. selectedPlayer.Name .. " sentado no ônibus: " .. tostring(playerSeated) .. " | Tempo decorrido: " .. tostring(tick() - startTime))
-            if playerSeated or tick() - startTime > 10 then
-                running = false
-                flingConnection:Disconnect()
-                flingConnection = nil
+            task.wait(0.5)
 
-                -- Teleporta o ônibus para a posição do fling anterior (X = -59599.73, Y = 2040070.50, Z = -293391.16)
-                pcall(function()
-                    bus:PivotTo(CFrame.new(Vector3.new(-59599.73, 2040070.50, -293391.16)))
-                end)
-                print("Ônibus teleportado para as coordenadas extremas: X = -59599.73, Y = 2040070.50, Z = -293391.16")
-
-                -- Aplica o walkfling no ônibus
-                local busHRP = bus:FindFirstChild("Body") and bus.Body:FindFirstChild("BusBody")
-                if busHRP then
-                    walkFlingInstanceBus = Instance.new("BodyVelocity")
-                    walkFlingInstanceBus.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-                    walkFlingInstanceBus.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
-                    walkFlingInstanceBus.Parent = busHRP
-                    print("Walkfling ativado no ônibus!")
-                else
-                    warn("BusBody não encontrado para aplicar o walkfling!")
-                end
-
-                -- Aplica o walkfling no jogador local
-                walkFlingInstancePlayer = Instance.new("BodyVelocity")
-                walkFlingInstancePlayer.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-                walkFlingInstancePlayer.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
-                walkFlingInstancePlayer.Parent = myHRP
-                print("Walkfling ativado no jogador local!")
-
-                -- Espera 0.5 segundos
-                task.wait(0.5)
-
-                -- Deleta o ônibus (e todos os veículos)
-                local args = { [1] = "DeleteAllVehicles" }
-                pcall(function()
-                    game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
-                end)
-                print("Ônibus deletado! Jogador selecionado deve estar voando para longe!")
-
-                -- Desativa os walkflings
-                if walkFlingInstanceBus then
-                    walkFlingInstanceBus:Destroy()
-                    walkFlingInstanceBus = nil
-                end
-                if walkFlingInstancePlayer then
-                    walkFlingInstancePlayer:Destroy()
-                    walkFlingInstancePlayer = nil
-                    for _, part in ipairs(character:GetDescendants()) do
-                        if part:IsA("BasePart") then
-                            part.CanCollide = true
-                        end
-                    end
-                    print("Walkflings desativados!")
-                end
-
-                -- Teleporta o jogador local de volta à posição inicial com teleporte seguro
-                pcall(function()
-                    myHRP.Anchored = true
-                    myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
-                    task.wait(0.2)
-                    myHRP.Velocity = Vector3.zero
-                    myHRP.RotVelocity = Vector3.zero
-                    myHRP.Anchored = false
-                    if humanoid then
-                        humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-                    end
-                end)
-                print("Jogador local retornado à posição inicial!")
-            end
-        end)
-    end,
-})
-
--- BOTÃO PARAR FLING
-Tab1:Button({
-    Title = "Parar Fling",
-    Desc = "Para o fling no jogador selecionado",
-    Callback = function()
-        running = false
-        if connection then
-            connection:Disconnect()
-            connection = nil
-        end
-        if flingConnection then
-            flingConnection:Disconnect()
-            flingConnection = nil
-        end
-
-        -- Desativa o NoClip
-        local character = LocalPlayer.Character
-        if character then
-            for _, part in ipairs(character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = true
-                    part.Velocity = Vector3.zero
-                    part.RotVelocity = Vector3.zero
-                end
-            end
-        end
-
-        -- Restaura a capacidade de sentar
-        local myHumanoid = character and character:FindFirstChild("Humanoid")
-        if myHumanoid then
-            myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
-        end
-
-        -- Reativa assentos
-        for _, seat in ipairs(Workspace:GetDescendants()) do
-            if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
-                seat.Disabled = false
-            end
-        end
-
-        -- Restaura o tamanho do personagem
-        pcall(function()
-            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeUp", 1)
-        end)
-
-        -- Teleporta com segurança
-        if savedPosition then
-            local myHRP = character and character:FindFirstChild("HumanoidRootPart")
-            if myHRP then
-                myHRP.Anchored = true
-                myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
-                task.wait(0.2)
-                myHRP.Velocity = Vector3.zero
-                myHRP.RotVelocity = Vector3.zero
-                myHRP.Anchored = false
-                if myHumanoid then
-                    myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-                end
-            end
-        end
-        print("Fling parado. Personagem voltou à posição original.")
-    end,
-})
-
---------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
--- BOTÃO INICIAR FLING COM BARCO
-Tab1:Button({
-    Title = "Iniciar Fling com Barco",
-    Desc = "Inicia o fling no jogador selecionado usando o barco",
-    Callback = function()
-        if running then
-            return
-        end
-        if not selectedPlayer or not selectedPlayer.Character or not LocalPlayer.Character then
-            return
-        end
-
-        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        local myHRP = character:FindFirstChild("HumanoidRootPart")
-        if not humanoid or not myHRP then
-            return
-        end
-
-        -- Salva a posição inicial
-        savedPosition = myHRP.Position
-
-        -- Teleporte seguro para a posição inicial (X = -3359.52, Y = -5.05, Z = -501.94)
-        pcall(function()
-            myHRP.Anchored = true
-            myHRP.CFrame = CFrame.new(Vector3.new(-3359.52, -5.05, -501.94))
-            task.wait(0.2)
-            myHRP.Velocity = Vector3.zero
-            myHRP.RotVelocity = Vector3.zero
-            myHRP.Anchored = false
-            if humanoid then
-                humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-            end
-        end)
-
-        -- Deleta todos os veículos
-        local args = { [1] = "DeleteAllVehicles" }
-        pcall(function()
-            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
-        end)
-
-        -- Espera 0.4 segundos
-        task.wait(0.4)
-
-        -- Spawnar o barco (MilitaryBoatFree)
-        local args = { [1] = "PickingBoat", [2] = "MilitaryBoatFree" }
-        pcall(function()
-            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
-        end)
-
-        -- Espera 1.5 segundos para garantir que o barco apareça no Workspace
-        task.wait(1.5)
-
-        -- Localiza o barco em Workspace.Vehicles com o nome do jogador local (ex.: rtrt967Car)
-        local boat = nil
-        local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
-        if not vehiclesFolder then
-            warn("Pasta Vehicles não encontrada no Workspace!")
-            return
-        end
-        local boatName = LocalPlayer.Name .. "Car" -- ex.: rtrt967Car
-        boat = vehiclesFolder:FindFirstChild(boatName)
-        if not boat then
-            warn("Barco não encontrado em Workspace.Vehicles com o nome: " .. boatName)
-            return
-        end
-
-        -- Teleporta o jogador para a posição do assento do motorista (X = -3358.85, Y = 5.25, Z = -521.95)
-        pcall(function()
-            myHRP.Anchored = true
-            myHRP.CFrame = CFrame.new(Vector3.new(-3358.85, 5.25, -521.95))
-            task.wait(0.2)
-            myHRP.Velocity = Vector3.zero
-            myHRP.RotVelocity = Vector3.zero
-            myHRP.Anchored = false
-            humanoid:ChangeState(Enum.HumanoidStateType.Seated)
-        end)
-
-        -- Espera até que o jogador local esteja sentado (timeout de 10 segundos)
-        local sitStart = tick()
-        repeat
-            task.wait()
-            if tick() - sitStart > 10 then
-                break
-            end
-        until humanoid.Sit
-
-        -- Remove colisões do barco para facilitar o movimento, mas mantém para colisão com o jogador
-        for _, part in ipairs(boat:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = true
-                pcall(function() part:SetNetworkOwner(nil) end)
-            end
-        end
-
-        -- Ativa o NoClip para o jogador local
-        running = true
-        connection = RunService.Stepped:Connect(function()
-            if not running then return end
-            for _, part in ipairs(character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
-                end
-            end
-        end)
-
-        -- Detecta colisão do jogador selecionado apenas com a parte principal do barco (Body)
-        local touchedConnections = {}
-        local mainPart = boat:FindFirstChild("Body")
-        if mainPart and mainPart:IsA("BasePart") then
-            local conn = mainPart.Touched:Connect(function(hit)
-                if not running then return end
-                local hitPlayer = game.Players:GetPlayerFromCharacter(hit.Parent)
-                if hitPlayer and hitPlayer == selectedPlayer then
-                    local targetHRP = hit.Parent:FindFirstChild("HumanoidRootPart")
-                    if targetHRP then
-                        local flingForce = Instance.new("BodyVelocity")
-                        flingForce.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-                        flingForce.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
-                        flingForce.Parent = targetHRP
-                        task.defer(function()
-                            task.wait(1)
-                            flingForce:Destroy()
-                        end)
-                    end
-                end
+            local args = { [1] = "DeleteAllVehicles" }
+            pcall(function()
+                game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
             end)
-            table.insert(touchedConnections, conn)
-        else
-            warn("Parte 'Body' não encontrada no barco! Usando todas as partes...")
-            for _, part in ipairs(boat:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    local conn = part.Touched:Connect(function(hit)
-                        if not running then return end
-                        local hitPlayer = game.Players:GetPlayerFromCharacter(hit.Parent)
-                        if hitPlayer and hitPlayer == selectedPlayer then
-                            local targetHRP = hit.Parent:FindFirstChild("HumanoidRootPart")
-                            if targetHRP then
-                                local flingForce = Instance.new("BodyVelocity")
-                                flingForce.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-                                flingForce.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
-                                flingForce.Parent = targetHRP
-                                task.defer(function()
-                                    task.wait(1)
-                                    flingForce:Destroy()
-                                end)
+
+            if character then
+                local myHRP = character:FindFirstChild("HumanoidRootPart")
+                if myHRP then
+                    if savedPosition then
+                        pcall(function()
+                            myHRP.Anchored = true
+                            myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
+                            task.wait(0.2)
+                            myHRP.Velocity = Vector3.zero
+                            myHRP.RotVelocity = Vector3.zero
+                            myHRP.Anchored = false
+                            if humanoid then
+                                humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
                             end
-                        end
-                    end)
-                    table.insert(touchedConnections, conn)
-                end
-            end
-        end
-
-        -- Segue o jogador selecionado com mortais girando até o botão "Parar Fling" ser pressionado
-        local lastUpdate = tick()
-        local updateInterval = 0.05 -- Intervalo de atualização para evitar travamentos
-        flingConnection = RunService.Heartbeat:Connect(function()
-            if not running then
-                for _, conn in ipairs(touchedConnections) do
-                    conn:Disconnect()
-                end
-                touchedConnections = {}
-                return
-            end
-
-            -- Garante que o jogador selecionado tenha um personagem (espera reaparecer se morrer)
-            local targetCharacter = selectedPlayer.Character
-            if not targetCharacter then
-                targetCharacter = selectedPlayer.CharacterAdded:Wait()
-            end
-
-            local newTargetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
-            local newTargetHumanoid = targetCharacter:FindFirstChild("Humanoid")
-            if not newTargetHRP or not newTargetHumanoid then
-                return
-            end
-
-            if not myHRP or not humanoid then
-                running = false
-                for _, conn in ipairs(touchedConnections) do
-                    conn:Disconnect()
-                end
-                touchedConnections = {}
-                return
-            end
-
-            -- Atualiza a cada 0.05 segundos para evitar travamentos
-            if tick() - lastUpdate < updateInterval then
-                return
-            end
-            lastUpdate = tick()
-
-            -- Teleporta o barco para o centro do jogador selecionado com mortais girando
-            pcall(function()
-                local targetPosition = newTargetHRP.Position
-                local time = Workspace.DistributedGameTime
-                local rotationX = math.rad(time * 20000)
-                local rotationY = math.rad(time * 25000)
-                local rotationZ = math.rad(time * 30000)
-                boat:PivotTo(
-                    CFrame.new(targetPosition) * CFrame.Angles(rotationX, rotationY, rotationZ)
-                )
-            end)
-        end)
-    end,
-})
-
--- BOTÃO PARAR FLING
-Tab1:Button({
-    Title = "Parar Fling",
-    Desc = "Para o fling no jogador selecionado",
-    Callback = function()
-        -- Para o fling e desconecta todas as conexões
-        running = false
-
-        if connection then
-            connection:Disconnect()
-            connection = nil
-        end
-        if flingConnection then
-            flingConnection:Disconnect()
-            flingConnection = nil
-        end
-
-        -- Deleta todos os veículos primeiro
-        local args = { [1] = "DeleteAllVehicles" }
-        pcall(function()
-            local RE = game:GetService("ReplicatedStorage"):FindFirstChild("RE")
-            if RE then
-                local event = RE:FindFirstChild("1Ca1r")
-                if event then
-                    event:FireServer(unpack(args))
+                        end)
+                    else
+                        warn("savedPosition não está definida para teleporte de volta!")
+                    end
                 else
-                    warn("Evento 1Ca1r não encontrado em ReplicatedStorage.RE!")
+                    warn("HumanoidRootPart do jogador local não encontrado para teleporte de volta!")
                 end
             else
-                warn("ReplicatedStorage.RE não encontrado!")
+                warn("Personagem do jogador local não encontrado para teleporte de volta!")
             end
-        end)
-        task.wait(0.2) -- Pequena espera para garantir que os veículos sejam deletados
 
-        -- Desativa o NoClip
-        local character = LocalPlayer.Character
-        if character then
-            for _, part in ipairs(character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = true
-                    part.Velocity = Vector3.zero
-                    part.RotVelocity = Vector3.zero
+            if character then
+                for _, part in ipairs(character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = true
+                        part.Velocity = Vector3.zero
+                        part.RotVelocity = Vector3.zero
+                    end
                 end
+            end
+
+            local myHumanoid = character and character:FindFirstChild("Humanoid")
+            if myHumanoid then
+                myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+            end
+
+            for _, seat in ipairs(Workspace:GetDescendants()) do
+                if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
+                    seat.Disabled = false
+                end
+            end
+
+            pcall(function()
+                ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeUp", 1)
+            end)
+        end
+    end)
+end
+
+-- Botão para iniciar matar
+Tab1:Button({
+    Title = "Matar",
+    Desc = "Inicia o método de matar selecionado",
+    Callback = function()
+        if isFollowingKill or isFollowingPull then
+            return
+        end
+        if not selectedPlayer or not selectedPlayer.Character or not LocalPlayer.Character then
+            return
+        end
+        if not selectedKillPullMethod then
+            return
+        end
+
+        if selectedKillPullMethod == "Sofá" then
+            killWithSofa()
+        elseif selectedKillPullMethod == "Ônibus" then
+            killWithBus()
+        end
+    end,
+})
+
+-- Botão para iniciar puxar
+Tab1:Button({
+    Title = "Puxar",
+    Desc = "Inicia o método de puxar selecionado",
+    Callback = function()
+        if isFollowingKill or isFollowingPull then
+            return
+        end
+        if not selectedPlayer or not selectedPlayer.Character or not LocalPlayer.Character then
+            return
+        end
+        if not selectedKillPullMethod then
+            return
+        end
+
+        if selectedKillPullMethod == "Sofá" then
+            pullWithSofa()
+        elseif selectedKillPullMethod == "Ônibus" then
+            -- Ônibus não tem função de puxar, então ignoramos
+        end
+    end,
+})
+
+-- Botão para parar matar ou puxar
+Tab1:Button({
+    Title = "Parar (Matar ou Puxar)",
+    Desc = "Para o movimento de matar ou puxar",
+    Callback = function()
+        isFollowingKill = false
+        isFollowingPull = false
+        running = false
+        if connection then
+            connection:Disconnect()
+            connection = nil
+        end
+        if flingConnection then
+            flingConnection:Disconnect()
+            flingConnection = nil
+        end
+
+        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+                part.Velocity = Vector3.zero
+                part.RotVelocity = Vector3.zero
             end
         end
 
-        -- Restaura a capacidade de sentar
-        local myHumanoid = character and character:FindFirstChild("Humanoid")
+        local myHumanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
         if myHumanoid then
             myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
         end
 
-        -- Reativa assentos
         for _, seat in ipairs(Workspace:GetDescendants()) do
             if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
                 seat.Disabled = false
             end
         end
 
-        -- Restaura o tamanho do personagem
-        pcall(function()
-            local RE = ReplicatedStorage:FindFirstChild("RE")
-            if RE then
-                local event = RE:FindFirstChild("1Clothe1s")
-                if event then
-                    event:FireServer("CharacterSizeUp", 1)
+        if originalPosition then
+            local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if myHRP then
+                myHRP.Anchored = true
+                myHRP.CFrame = CFrame.new(originalPosition + Vector3.new(0, 5, 0))
+                task.wait(0.2)
+                myHRP.Velocity = Vector3.zero
+                myHRP.RotVelocity = Vector3.zero
+                myHRP.Anchored = false
+                if myHumanoid then
+                    myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
                 end
             end
-        end)
+            originalPosition = nil
+        end
 
-        -- Teleporta com segurança para a posição inicial
-        if character then
-            local myHRP = character:FindFirstChild("HumanoidRootPart")
-            if myHRP then
-                if savedPosition then
-                    pcall(function()
+        if selectedKillPullMethod == "Ônibus" then
+            local args = { [1] = "DeleteAllVehicles" }
+            pcall(function()
+                game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
+            end)
+        end
+    end,
+})
+
+-- Lógica de matar e puxar com o sofá
+local followConnection
+if followConnection then followConnection:Disconnect() end
+followConnection = RunService.Heartbeat:Connect(function()
+    if (isFollowingKill or isFollowingPull) and selectedPlayer and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local success, errorMessage = pcall(function()
+            local targetPosition = selectedPlayer.Character.HumanoidRootPart.Position
+            LocalPlayer.Character:SetPrimaryPartCFrame(
+                CFrame.new(targetPosition) * CFrame.Angles(
+                    math.rad(Workspace.DistributedGameTime * 12000),
+                    math.rad(Workspace.DistributedGameTime * 15000),
+                    math.rad(Workspace.DistributedGameTime * 18000)
+                )
+            )
+        end)
+        if not success then
+            warn("Erro no loop de matar/puxar: " .. tostring(errorMessage))
+            isFollowingKill = false
+            isFollowingPull = false
+        end
+    end
+end)
+
+local sitCheckConnection
+if sitCheckConnection then sitCheckConnection:Disconnect() end
+sitCheckConnection = RunService.Heartbeat:Connect(function()
+    if (isFollowingKill or isFollowingPull) and selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("Humanoid") then
+        local success, errorMessage = pcall(function()
+            if selectedPlayer.Character.Humanoid.Sit then
+                if isFollowingKill then
+                    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                        LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(0, -500, 0))
+                        task.wait(0.5)
+                        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer("PickingTools", "Couch")
+                        task.wait(1)
+                    end
+                end
+                
+                isFollowingKill = false
+                isFollowingPull = false
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and originalPosition then
+                    local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    local myHumanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+                    if myHRP then
                         myHRP.Anchored = true
-                        myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
+                        myHRP.CFrame = CFrame.new(originalPosition + Vector3.new(0, 5, 0))
                         task.wait(0.2)
                         myHRP.Velocity = Vector3.zero
                         myHRP.RotVelocity = Vector3.zero
@@ -1412,27 +716,730 @@ Tab1:Button({
                         if myHumanoid then
                             myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
                         end
-                    end)
-                else
-                    warn("savedPosition não está definida para teleporte de volta!")
+                    end
                 end
-            else
-                warn("HumanoidRootPart do jogador local não encontrado para teleporte de volta!")
+                originalPosition = nil
             end
-        else
-            warn("Personagem do jogador local não encontrado para teleporte de volta!")
+        end)
+        if not success then
+            warn("Erro na verificação de assento: " .. tostring(errorMessage))
+            isFollowingKill = false
+            isFollowingPull = false
         end
+    end
+end)
+
+-- Parágrafo "Flings"
+Tab1:Paragraph({ 
+    Title = "Flings", 
+    Desc = ""
+})
+
+-- Dropdown para selecionar o método de fling
+local FlingMethodDropdown = Tab1:Dropdown({
+    Title = "Selecionar Método de Fling",
+    Desc = "Escolha o método para o fling",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = {"Sofá", "Ônibus", "Bola", "Barco"},
+    Callback = function(method)
+        selectedFlingMethod = method
     end,
 })
 
----------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Função para fling com bola
+local function flingWithBall()
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local myHRP = character:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not myHRP then
+        return
+    end
 
+    local function equipBola()
+        local backpack = LocalPlayer:WaitForChild("Backpack")
+        local bola = backpack:FindFirstChild("SoccerBall") or character:FindFirstChild("SoccerBall")
 
+        if not bola then
+            local args = { [1] = "PickingTools", [2] = "SoccerBall" }
+            local success, err = pcall(function()
+                ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
+            end)
+            if not success then
+                warn("Erro ao pegar a bola: " .. tostring(err))
+                return false
+            end
 
--- BOTÃO MATAR JOGADOR COM ÔNIBUS
+            repeat
+                bola = backpack:FindFirstChild("SoccerBall")
+                task.wait()
+            until bola or task.wait(5)
+            if not bola then
+                warn("Falha ao pegar a bola!")
+                return false
+            end
+        end
+
+        if bola.Parent ~= character then
+            bola.Parent = character
+        end
+        return true
+    end
+
+    if not equipBola() then
+        return
+    end
+
+    task.wait(0.5)
+
+    local args = { [1] = "PlayerWantsToDeleteTool", [2] = "SoccerBall" }
+    pcall(function()
+        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer(unpack(args))
+    end)
+
+    local workspaceCom = Workspace:FindFirstChild("WorkspaceCom")
+    if not workspaceCom then
+        warn("WorkspaceCom não encontrado!")
+        return
+    end
+    local soccerBalls = workspaceCom:FindFirstChild("001_SoccerBalls")
+    if not soccerBalls then
+        warn("001_SoccerBalls não encontrado!")
+        return
+    end
+
+    soccerBall = soccerBalls:FindFirstChild("Soccer" .. LocalPlayer.Name)
+    if not soccerBall then
+        warn("Bola de futebol não encontrada em Workspace.WorkspaceCom.001_SoccerBalls.Soccer" .. LocalPlayer.Name)
+        return
+    end
+
+    originalProperties = {
+        Anchored = soccerBall.Anchored,
+        CanCollide = soccerBall.CanCollide,
+        CanTouch = soccerBall.CanTouch
+    }
+    soccerBall.Anchored = false
+    soccerBall.CanCollide = true
+    soccerBall.CanTouch = true
+    pcall(function() soccerBall:SetNetworkOwner(nil) end)
+
+    savedPosition = myHRP.Position
+
+    for _, part in ipairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+        end
+    end
+
+    if humanoid then
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+        humanoid.Sit = false
+    end
+
+    for _, seat in ipairs(Workspace:GetDescendants()) do
+        if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
+            seat.Disabled = true
+        end
+    end
+
+    pcall(function()
+        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeDown", 4)
+    end)
+
+    running = true
+    local lastFlingTime = 0
+
+    connection = RunService.Heartbeat:Connect(function()
+        if not running or not selectedPlayer.Character then return end
+        local hrp = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local hum = selectedPlayer.Character:FindFirstChild("Humanoid")
+        local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if not hrp or not hum or not myHRP then return end
+
+        local moveDir = hum.MoveDirection
+        local isStill = moveDir.Magnitude < 0.1
+        local isSitting = hum.Sit
+
+        if isSitting then
+            local y = math.sin(tick() * 50) * 2
+            soccerBall.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 0.75 + y, 0))
+        elseif isStill then
+            local z = math.sin(tick() * 50 BUD) * 3
+            soccerBall.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 0.75, z))
+        else
+            local offset = moveDir.Unit * math.clamp(hrp.Velocity.Magnitude * 0.15, 5, 12)
+            soccerBall.CFrame = CFrame.new(hrp.Position + offset + Vector3.new(0, 0.75, 0))
+        end
+
+        myHRP.CFrame = CFrame.new(soccerBall.Position + Vector3.new(0, 1, 0))
+    end)
+
+    flingConnection = RunService.Heartbeat:Connect(function()
+        if not running or not selectedPlayer.Character then return end
+        local hrp = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+
+        local dist = (soccerBall.Position - hrp.Position).Magnitude
+        if dist < 4 and tick() - lastFlingTime > 0.4 then
+            lastFlingTime = tick()
+
+            for _, part in ipairs(selectedPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+
+            local fling = Instance.new("BodyVelocity")
+            fling.MaxForce = Vector3.new(1e9, 1e9, 1e9)
+            fling.Velocity = Vector3.new(math.random(-3, 3), 1, math.random(-3, 3)).Unit * 12000 + Vector3.new(0, 12000, 0)
+            fling.Parent = hrp
+
+            task.delay(0.3, function()
+                fling:Destroy()
+                for _, part in ipairs(selectedPlayer.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = true
+                    end
+                end
+            end)
+        end
+    end)
+end
+
+-- Função para fling com sofá
+local function flingWithSofa()
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local myHRP = character:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not myHRP then
+        return
+    end
+
+    savedPosition = myHRP.Position
+
+    if not equipSofa() then
+        return
+    end
+
+    task.wait(0.5)
+
+    couch = character:FindFirstChild("Couch")
+    if not couch then
+        for _, obj in ipairs(Workspace:GetDescendants()) do
+            if (obj.Name == "Couch" or obj.Name == "Couch" .. LocalPlayer.Name) and (obj:IsA("BasePart") or obj:IsA("Tool")) then
+                couch = obj
+                break
+            end
+        end
+    end
+    if not couch then
+        warn("Sofá não encontrado no personagem ou como BasePart/Tool no Workspace!")
+        return
+    end
+
+    originalProperties = {}
+    if couch:IsA("BasePart") then
+        originalProperties = {
+            Anchored = couch.Anchored,
+            CanCollide = couch.CanCollide,
+            CanTouch = couch.CanTouch
+        }
+        couch.Anchored = false
+        couch.CanCollide = true
+        couch.CanTouch = true
+        pcall(function() couch:SetNetworkOwner(nil) end)
+    end
+
+    running = true
+    connection = RunService.Stepped:Connect(function()
+        if not running then return end
+        for _, part in ipairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end)
+
+    local startTime = tick()
+    local walkFlingInstance = nil
+    flingConnection = RunService.Heartbeat:Connect(function()
+        if not running then
+            return
+        end
+        if not selectedPlayer or not selectedPlayer.Character then
+            running = false
+            return
+        end
+        local newTargetHRP = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local newTargetHumanoid = selectedPlayer.Character:FindFirstChild("Humanoid")
+        if not newTargetHRP or not newTargetHumanoid then
+            running = false
+            return
+        end
+        if not myHRP or not humanoid then
+            running = false
+            return
+        end
+
+        pcall(function()
+            local targetPosition = newTargetHRP.Position
+            character:SetPrimaryPartCFrame(
+                CFrame.new(targetPosition) * CFrame.Angles(
+                    math.rad(Workspace.DistributedGameTime * 12000),
+                    math.rad(Workspace.DistributedGameTime * 15000),
+                    math.rad(Workspace.DistributedGameTime * 18000)
+                )
+            )
+        end)
+
+        if newTargetHumanoid.Sit or tick() - startTime > 10 then
+            running = false
+            flingConnection:Disconnect()
+            flingConnection = nil
+
+            for _, part in ipairs(character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                    pcall(function() part:SetNetworkOwner(nil) end)
+                end
+            end
+            walkFlingInstance = Instance.new("BodyVelocity")
+            walkFlingInstance.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+            walkFlingInstance.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
+            walkFlingInstance.Parent = myHRP
+
+            pcall(function()
+                myHRP.Anchored = true
+                myHRP.CFrame = CFrame.new(Vector3.new(-59599.73, 2040070.50, -293391.16))
+                myHRP.Anchored = false
+            end)
+
+            local spinStart = tick()
+            local spinConnection
+            spinConnection = RunService.Heartbeat:Connect(function()
+                if tick() - spinStart >= 0.5 then
+                    spinConnection:Disconnect()
+                    return
+                end
+                pcall(function()
+                    character:SetPrimaryPartCFrame(
+                        myHRP.CFrame * CFrame.Angles(
+                            math.rad(Workspace.DistributedGameTime * 12000),
+                            math.rad(Workspace.DistributedGameTime * 15000),
+                            math.rad(Workspace.DistributedGameTime * 18000)
+                        )
+                    )
+                end)
+            end)
+            task.wait(0.5)
+
+            local args = { [1] = "PlayerWantsToDeleteTool", [2] = "Couch" }
+            pcall(function()
+                ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer(unpack(args))
+            end)
+
+            pcall(function()
+                myHRP.Anchored = true
+                myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
+                task.wait(0.2)
+                myHRP.Velocity = Vector3.zero
+                myHRP.RotVelocity = Vector3.zero
+                myHRP.Anchored = false
+                if humanoid then
+                    humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                end
+            end)
+
+            if walkFlingInstance then
+                walkFlingInstance:Destroy()
+                walkFlingInstance = nil
+                for _, part in ipairs(character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = true
+                    end
+                end
+            end
+        end
+    end)
+end
+
+-- Função para fling com ônibus
+local function flingWithBus()
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local myHRP = character:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not myHRP then
+        return
+    end
+
+    savedPosition = myHRP.Position
+
+    pcall(function()
+        myHRP.Anchored = true
+        myHRP.CFrame = CFrame.new(Vector3.new(1181.83, 76.08, -1158.83))
+        task.wait(0.2)
+        myHRP.Velocity = Vector3.zero
+        myHRP.RotVelocity = Vector3.zero
+        myHRP.Anchored = false
+        if humanoid then
+            humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+        end
+    end)
+
+    task.wait(0.5)
+
+    local args = { [1] = "DeleteAllVehicles" }
+    pcall(function()
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
+    end)
+
+    local args = { [1] = "PickingCar", [2] = "SchoolBus" }
+    pcall(function()
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
+    end)
+
+    task.wait(1)
+
+    local bus = nil
+    local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
+    if not vehiclesFolder then
+        warn("Pasta Vehicles não encontrada no Workspace!")
+        return
+    end
+    local busName = LocalPlayer.Name .. "Car"
+    bus = vehiclesFolder:FindFirstChild(busName)
+    if not bus then
+        warn("Ônibus não encontrado em Workspace.Vehicles com o nome: " .. busName)
+        return
+    end
+
+    pcall(function()
+        myHRP.Anchored = true
+        myHRP.CFrame = CFrame.new(Vector3.new(1171.15, 79.45, -1166.2))
+        task.wait(0.2)
+        myHRP.Velocity = Vector3.zero
+        myHRP.RotVelocity = Vector3.zero
+        myHRP.Anchored = false
+        humanoid:ChangeState(Enum.HumanoidStateType.Seated)
+    end)
+
+    local sitStart = tick()
+    repeat
+        task.wait()
+        if tick() - sitStart > 10 then
+            warn("Timeout: Jogador local não foi detectado como sentado!")
+            return
+        end
+    until humanoid.Sit
+
+    for _, part in ipairs(bus:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+            pcall(function() part:SetNetworkOwner(nil) end)
+        end
+    end
+
+    running = true
+    connection = RunService.Stepped:Connect(function()
+        if not running then return end
+        for _, part in ipairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end)
+
+    local startTime = tick()
+    local walkFlingInstanceBus = nil
+    local walkFlingInstancePlayer = nil
+    flingConnection = RunService.Heartbeat:Connect(function()
+        if not running then
+            return
+        end
+        if not selectedPlayer or not selectedPlayer.Character then
+            running = false
+            return
+        end
+        local newTargetHRP = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local newTargetHumanoid = selectedPlayer.Character:FindFirstChild("Humanoid")
+        if not newTargetHRP or not newTargetHumanoid then
+            running = false
+            return
+        end
+        if not myHRP or not humanoid then
+            running = false
+            return
+        end
+
+        local offset = Vector3.new(math.random(-10, 10), 0, math.random(-10, 10))
+        pcall(function()
+            local targetPosition = newTargetHRP.Position + offset
+            bus:PivotTo(
+                CFrame.new(targetPosition) * CFrame.Angles(
+                    math.rad(Workspace.DistributedGameTime * 12000),
+                    math.rad(Workspace.DistributedGameTime * 15000),
+                    math.rad(Workspace.DistributedGameTime * 18000)
+                )
+            )
+        end)
+
+        local playerSeated = false
+        for _, seat in ipairs(bus:GetDescendants()) do
+            if (seat:IsA("Seat") or seat:IsA("VehicleSeat")) and seat.Name ~= "VehicleSeat" then
+                if seat.Occupant == newTargetHumanoid then
+                    playerSeated = true
+                    break
+                end
+            end
+        end
+
+        if playerSeated or tick() - startTime > 10 then
+            running = false
+            flingConnection:Disconnect()
+            flingConnection = nil
+
+            pcall(function()
+                bus:PivotTo(CFrame.new(Vector3.new(-59599.73, 2040070.50, -293391.16)))
+            end)
+
+            local busHRP = bus:FindFirstChild("Body") and bus.Body:FindFirstChild("BusBody")
+            if busHRP then
+                walkFlingInstanceBus = Instance.new("BodyVelocity")
+                walkFlingInstanceBus.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                walkFlingInstanceBus.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
+                walkFlingInstanceBus.Parent = busHRP
+            else
+                warn("BusBody não encontrado para aplicar o walkfling!")
+            end
+
+            walkFlingInstancePlayer = Instance.new("BodyVelocity")
+            walkFlingInstancePlayer.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+            walkFlingInstancePlayer.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
+            walkFlingInstancePlayer.Parent = myHRP
+
+            task.wait(0.5)
+
+            local args = { [1] = "DeleteAllVehicles" }
+            pcall(function()
+                game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
+            end)
+
+            if walkFlingInstanceBus then
+                walkFlingInstanceBus:Destroy()
+                walkFlingInstanceBus = nil
+            end
+            if walkFlingInstancePlayer then
+                walkFlingInstancePlayer:Destroy()
+                walkFlingInstancePlayer = nil
+                for _, part in ipairs(character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = true
+                    end
+                end
+            end
+
+            pcall(function()
+                myHRP.Anchored = true
+                myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
+                task.wait(0.2)
+                myHRP.Velocity = Vector3.zero
+                myHRP.RotVelocity = Vector3.zero
+                myHRP.Anchored = false
+                if humanoid then
+                    humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                end
+            end)
+        end
+    end)
+end
+
+-- Função para fling com barco
+local function flingWithBoat()
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local myHRP = character:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not myHRP then
+        return
+    end
+
+    savedPosition = myHRP.Position
+
+    pcall(function()
+        myHRP.Anchored = true
+        myHRP.CFrame = CFrame.new(Vector3.new(-3359.52, -5.05, -501.94))
+        task.wait(0.2)
+        myHRP.Velocity = Vector3.zero
+        myHRP.RotVelocity = Vector3.zero
+        myHRP.Anchored = false
+        if humanoid then
+            humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+        end
+    end)
+
+    local args = { [1] = "DeleteAllVehicles" }
+    pcall(function()
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
+    end)
+
+    task.wait(0.4)
+
+    local args = { [1] = "PickingBoat", [2] = "MilitaryBoatFree" }
+    pcall(function()
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
+    end)
+
+    task.wait(1.5)
+
+    local boat = nil
+    local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
+    if not vehiclesFolder then
+        warn("Pasta Vehicles não encontrada no Workspace!")
+        return
+    end
+    local boatName = LocalPlayer.Name .. "Car"
+    boat = vehiclesFolder:FindFirstChild(boatName)
+    if not boat then
+        warn("Barco não encontrado em Workspace.Vehicles com o nome: " .. boatName)
+        return
+    end
+
+    pcall(function()
+        myHRP.Anchored = true
+        myHRP.CFrame = CFrame.new(Vector3.new(-3358.85, 5.25, -521.95))
+        task.wait(0.2)
+        myHRP.Velocity = Vector3.zero
+        myHRP.RotVelocity = Vector3.zero
+        myHRP.Anchored = false
+        humanoid:ChangeState(Enum.HumanoidStateType.Seated)
+    end)
+
+    local sitStart = tick()
+    repeat
+        task.wait()
+        if tick() - sitStart > 10 then
+            break
+        end
+    until humanoid.Sit
+
+    for _, part in ipairs(boat:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = true
+            pcall(function() part:SetNetworkOwner(nil) end)
+        end
+    end
+
+    running = true
+    connection = RunService.Stepped:Connect(function()
+        if not running then return end
+        for _, part in ipairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end)
+
+    local touchedConnections = {}
+    local mainPart = boat:FindFirstChild("Body")
+    if mainPart and mainPart:IsA("BasePart") then
+        local conn = mainPart.Touched:Connect(function(hit)
+            if not running then return end
+            local hitPlayer = game.Players:GetPlayerFromCharacter(hit.Parent)
+            if hitPlayer and hitPlayer == selectedPlayer then
+                local targetHRP = hit.Parent:FindFirstChild("HumanoidRootPart")
+                if targetHRP then
+                    local flingForce = Instance.new("BodyVelocity")
+                    flingForce.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                    flingForce.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
+                    flingForce.Parent = targetHRP
+                    task.defer(function()
+                        task.wait(1)
+                        flingForce:Destroy()
+                    end)
+                end
+            end
+        end)
+        table.insert(touchedConnections, conn)
+    else
+        warn("Parte 'Body' não encontrada no barco! Usando todas as partes...")
+        for _, part in ipairs(boat:GetDescendants()) do
+            if part:IsA("BasePart") then
+                local conn = part.Touched:Connect(function(hit)
+                    if not running then return end
+                    local hitPlayer = game.Players:GetPlayerFromCharacter(hit.Parent)
+                    if hitPlayer and hitPlayer == selectedPlayer then
+                        local targetHRP = hit.Parent:FindFirstChild("HumanoidRootPart")
+                        if targetHRP then
+                            local flingForce = Instance.new("BodyVelocity")
+                            flingForce.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                            flingForce.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
+                            flingForce.Parent = targetHRP
+                            task.defer(function()
+                                task.wait(1)
+                                flingForce:Destroy()
+                            end)
+                        end
+                    end
+                end)
+                table.insert(touchedConnections, conn)
+            end
+        end
+    end
+
+    local lastUpdate = tick()
+    local updateInterval = 0.05
+    flingConnection = RunService.Heartbeat:Connect(function()
+        if not running then
+            for _, conn in ipairs(touchedConnections) do
+                conn:Disconnect()
+            end
+            touchedConnections = {}
+            return
+        end
+
+        local targetCharacter = selectedPlayer.Character
+        if not targetCharacter then
+            targetCharacter = selectedPlayer.CharacterAdded:Wait()
+        end
+
+        local newTargetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
+        local newTargetHumanoid = targetCharacter:FindFirstChild("Humanoid")
+        if not newTargetHRP or not newTargetHumanoid then
+            return
+        end
+
+        if not myHRP or not humanoid then
+            running = false
+            for _, conn in ipairs(touchedConnections) do
+                conn:Disconnect()
+            end
+            touchedConnections = {}
+            return
+        end
+
+        if tick() - lastUpdate < updateInterval then
+            return
+        end
+        lastUpdate = tick()
+
+        pcall(function()
+            local targetPosition = newTargetHRP.Position
+            local time = Workspace.DistributedGameTime
+            local rotationX = math.rad(time * 20000)
+            local rotationY = math.rad(time * 25000)
+            local rotationZ = math.rad(time * 30000)
+            boat:PivotTo(
+                CFrame.new(targetPosition) * CFrame.Angles(rotationX, rotationY, rotationZ)
+            )
+        end)
+    end)
+end
+
+-- Botão para iniciar fling
 Tab1:Button({
-    Title = "Matar Jogador com Ônibus",
-    Desc = "Teleporta o jogador selecionado para o void usando o ônibus",
+    Title = "Iniciar Fling",
+    Desc = "Inicia o fling com o método selecionado",
     Callback = function()
         if running then
             return
@@ -1440,239 +1447,93 @@ Tab1:Button({
         if not selectedPlayer or not selectedPlayer.Character or not LocalPlayer.Character then
             return
         end
-
-        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        local myHRP = character:FindFirstChild("HumanoidRootPart")
-        if not humanoid or not myHRP then
+        if not selectedFlingMethod then
             return
         end
 
-        -- Salva a posição inicial
-        savedPosition = myHRP.Position
-
-        -- Teleporte seguro para a posição inicial (X = 1181.83, Y = 76.08, Z = -1158.83)
-        pcall(function()
-            myHRP.Anchored = true
-            myHRP.CFrame = CFrame.new(Vector3.new(1181.83, 76.08, -1158.83))
-            task.wait(0.2)
-            myHRP.Velocity = Vector3.zero
-            myHRP.RotVelocity = Vector3.zero
-            myHRP.Anchored = false
-            if humanoid then
-                humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-            end
-        end)
-
-        -- Espera 0.5 segundos
-        task.wait(0.5)
-
-        -- Deleta todos os veículos
-        local args = { [1] = "DeleteAllVehicles" }
-        pcall(function()
-            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
-        end)
-
-        -- Spawnar o ônibus (SchoolBus)
-        local args = { [1] = "PickingCar", [2] = "SchoolBus" }
-        pcall(function()
-            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
-        end)
-
-        -- Espera 1 segundo para garantir que o ônibus apareça no Workspace
-        task.wait(1)
-
-        -- Localiza o ônibus em Workspace.Vehicles com o nome do jogador local (ex.: rtrt967Car)
-        local bus = nil
-        local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
-        if not vehiclesFolder then
-            warn("Pasta Vehicles não encontrada no Workspace!")
-            return
+        if selectedFlingMethod == "Bola" then
+            flingWithBall()
+        elseif selectedFlingMethod == "Sofá" then
+            flingWithSofa()
+        elseif selectedFlingMethod == "Ônibus" then
+            flingWithBus()
+        elseif selectedFlingMethod == "Barco" then
+            flingWithBoat()
         end
-        local busName = LocalPlayer.Name .. "Car" -- ex.: rtrt967Car
-        bus = vehiclesFolder:FindFirstChild(busName)
-        if not bus then
-            warn("Ônibus não encontrado em Workspace.Vehicles com o nome: " .. busName)
-            return
+    end,
+})
+
+-- Botão para parar fling
+Tab1:Button({
+    Title = "Parar Fling",
+    Desc = "Para o fling com o método selecionado",
+    Callback = function()
+        running = false
+        if connection then
+            connection:Disconnect()
+            connection = nil
+        end
+        if flingConnection then
+            flingConnection:Disconnect()
+            flingConnection = nil
         end
 
-        -- Teleporta o jogador para a posição do assento do motorista (X = 1171.15, Y = 79.45, Z = -1166.2)
-        pcall(function()
-            myHRP.Anchored = true
-            myHRP.CFrame = CFrame.new(Vector3.new(1171.15, 79.45, -1166.2))
-            task.wait(0.2)
-            myHRP.Velocity = Vector3.zero
-            myHRP.RotVelocity = Vector3.zero
-            myHRP.Anchored = false
-            humanoid:ChangeState(Enum.HumanoidStateType.Seated)
-        end)
-
-        -- Espera até que o jogador local esteja sentado (timeout de 10 segundos)
-        local sitStart = tick()
-        repeat
-            task.wait()
-            if tick() - sitStart > 10 then
-                warn("Timeout: Jogador local não foi detectado como sentado!")
-                return
-            end
-        until humanoid.Sit
-
-        -- Remove colisões do ônibus
-        for _, part in ipairs(bus:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
-                pcall(function() part:SetNetworkOwner(nil) end)
-            end
+        if selectedFlingMethod == "Bola" and soccerBall then
+            soccerBall.Anchored = originalProperties.Anchored
+            soccerBall.CanCollide = originalProperties.CanCollide
+            soccerBall.CanTouch = originalProperties.CanTouch
+        elseif selectedFlingMethod == "Sofá" and couch and couch:IsA("BasePart") then
+            couch.Anchored = originalProperties.Anchored
+            couch.CanCollide = originalProperties.CanCollide
+            couch.CanTouch = originalProperties.CanTouch
         end
 
-        -- Ativa o NoClip para o jogador local
-        running = true
-        connection = RunService.Stepped:Connect(function()
-            if not running then return end
+        local character = LocalPlayer.Character
+        if character then
             for _, part in ipairs(character:GetDescendants()) do
                 if part:IsA("BasePart") then
-                    part.CanCollide = false
+                    part.CanCollide = true
+                    part.Velocity = Vector3.zero
+                    part.RotVelocity = Vector3.zero
                 end
             end
+        end
+
+        local myHumanoid = character and character:FindFirstChild("Humanoid")
+        if myHumanoid then
+            myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+        end
+
+        for _, seat in ipairs(Workspace:GetDescendants()) do
+            if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
+                seat.Disabled = false
+            end
+        end
+
+        pcall(function()
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeUp", 1)
         end)
 
-        -- Segue o jogador selecionado com backflips agressivos até ele sentar no ônibus
-        local lastUpdate = tick()
-        local updateInterval = 0.05 -- Intervalo para evitar travamentos
-        local startTime = tick()
-        flingConnection = RunService.Heartbeat:Connect(function()
-            if not running then
-                return
-            end
-
-            -- Garante que o jogador selecionado tenha um personagem (espera reaparecer se morrer)
-            local targetCharacter = selectedPlayer.Character
-            if not targetCharacter then
-                targetCharacter = selectedPlayer.CharacterAdded:Wait()
-            end
-
-            local newTargetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
-            local newTargetHumanoid = targetCharacter:FindFirstChild("Humanoid")
-            if not newTargetHRP or not newTargetHumanoid then
-                return
-            end
-
-            if not myHRP or not humanoid then
-                running = false
-                return
-            end
-
-            -- Atualiza a cada 0.05 segundos para evitar travamentos
-            if tick() - lastUpdate < updateInterval then
-                return
-            end
-            lastUpdate = tick()
-
-            -- Teleporta o ônibus para diferentes posições ao redor do jogador selecionado com backflips agressivos
-            local offset = Vector3.new(math.random(-10, 10), 0, math.random(-10, 10)) -- Frente, trás, lados
+        if selectedFlingMethod == "Ônibus" or selectedFlingMethod == "Barco" then
+            local args = { [1] = "DeleteAllVehicles" }
             pcall(function()
-                local targetPosition = newTargetHRP.Position + offset
-                bus:PivotTo(
-                    CFrame.new(targetPosition) * CFrame.Angles(
-                        math.rad(Workspace.DistributedGameTime * 12000),
-                        math.rad(Workspace.DistributedGameTime * 15000),
-                        math.rad(Workspace.DistributedGameTime * 18000)
-                    )
-                )
+                game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
             end)
+        end
 
-            -- Verifica se o jogador selecionado sentou no ônibus
-            local playerSeated = false
-            for _, seat in ipairs(bus:GetDescendants()) do
-                if (seat:IsA("Seat") or seat:IsA("VehicleSeat")) and seat.Name ~= "VehicleSeat" then -- Exclui o assento do motorista
-                    if seat.Occupant == newTargetHumanoid then
-                        playerSeated = true
-                        break
-                    end
-                end
-            end
-
-            -- Se o jogador sentar ou o tempo exceder 10 segundos, teletransporta para o void
-            if playerSeated or tick() - startTime > 10 then
-                running = false
-                if connection then
-                    connection:Disconnect()
-                    connection = nil
-                end
-                if flingConnection then
-                    flingConnection:Disconnect()
-                    flingConnection = nil
-                end
-
-                -- Teleporta o ônibus para o void (X = -76.6, Y = -401.97, Z = -84.26) e deixa reto
-                pcall(function()
-                    bus:PivotTo(CFrame.new(Vector3.new(-76.6, -401.97, -84.26))) -- Sem rotação, fica reto
-                end)
-
-                -- Espera 0.5 segundos
-                task.wait(0.5)
-
-                -- Deleta todos os veículos
-                local args = { [1] = "DeleteAllVehicles" }
-                pcall(function()
-                    game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
-                end)
-
-                -- Teleporta o jogador local de volta à posição original com segurança
-                if character then
-                    local myHRP = character:FindFirstChild("HumanoidRootPart")
-                    if myHRP then
-                        if savedPosition then
-                            pcall(function()
-                                myHRP.Anchored = true
-                                myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
-                                task.wait(0.2)
-                                myHRP.Velocity = Vector3.zero
-                                myHRP.RotVelocity = Vector3.zero
-                                myHRP.Anchored = false
-                                if humanoid then
-                                    humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-                                end
-                            end)
-                        else
-                            warn("savedPosition não está definida para teleporte de volta!")
-                        end
-                    else
-                        warn("HumanoidRootPart do jogador local não encontrado para teleporte de volta!")
-                    end
-                else
-                    warn("Personagem do jogador local não encontrado para teleporte de volta!")
-                end
-
-                -- Desativa o NoClip
-                if character then
-                    for _, part in ipairs(character:GetDescendants()) do
-                        if part:IsA("BasePart") then
-                            part.CanCollide = true
-                            part.Velocity = Vector3.zero
-                            part.RotVelocity = Vector3.zero
-                        end
-                    end
-                end
-
-                -- Restaura a capacidade de sentar
-                local myHumanoid = character and character:FindFirstChild("Humanoid")
+        if savedPosition then
+            local myHRP = character and character:FindFirstChild("HumanoidRootPart")
+            if myHRP then
+                myHRP.Anchored = true
+                myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
+                task.wait(0.2)
+                myHRP.Velocity = Vector3.zero
+                myHRP.RotVelocity = Vector3.zero
+                myHRP.Anchored = false
                 if myHumanoid then
-                    myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+                    myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
                 end
-
-                -- Reativa assentos
-                for _, seat in ipairs(Workspace:GetDescendants()) do
-                    if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
-                        seat.Disabled = false
-                    end
-                end
-
-                -- Restaura o tamanho do personagem
-                pcall(function()
-                    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeUp", 1)
-                end)
             end
-        end)
+        end
     end,
 })
