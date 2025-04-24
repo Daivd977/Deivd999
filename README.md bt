@@ -2,7 +2,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 local Version = "1.4.0"
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta troll 6667575999",
+    Title = "Lolyta troll 66485457000",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta 666",
@@ -1083,26 +1083,21 @@ Tab1:Button({
                 touchedConnections = {}
                 return
             end
-            if not selectedPlayer or not selectedPlayer.Character then
-                warn("Jogador selecionado não está mais disponível!")
-                running = false
-                for _, conn in ipairs(touchedConnections) do
-                    conn:Disconnect()
-                end
-                touchedConnections = {}
-                return
+
+            -- Garante que o jogador selecionado tenha um personagem (espera reaparecer se morrer)
+            local targetCharacter = selectedPlayer.Character
+            if not targetCharacter then
+                print("Jogador selecionado morreu, esperando reaparecer...")
+                targetCharacter = selectedPlayer.CharacterAdded:Wait()
             end
-            local newTargetHRP = selectedPlayer.Character:FindFirstChild("HumanoidRootPart")
-            local newTargetHumanoid = selectedPlayer.Character:FindFirstChild("Humanoid")
+
+            local newTargetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
+            local newTargetHumanoid = targetCharacter:FindFirstChild("Humanoid")
             if not newTargetHRP or not newTargetHumanoid then
-                warn("HumanoidRootPart ou Humanoid do jogador selecionado não encontrado!")
-                running = false
-                for _, conn in ipairs(touchedConnections) do
-                    conn:Disconnect()
-                end
-                touchedConnections = {}
+                warn("HumanoidRootPart ou Humanoid do jogador selecionado não encontrado! Aguardando reaparecer...")
                 return
             end
+
             if not myHRP or not humanoid then
                 warn("HumanoidRootPart ou Humanoid do jogador local não encontrado!")
                 running = false
@@ -1145,6 +1140,13 @@ Tab1:Button({
             flingConnection = nil
         end
 
+        -- Deleta todos os veículos
+        local args = { [1] = "DeleteAllVehicles" }
+        pcall(function()
+            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
+        end)
+        print("Todos os veículos deletados após parar o fling!")
+
         -- Desativa o NoClip
         local character = LocalPlayer.Character
         if character then
@@ -1175,20 +1177,27 @@ Tab1:Button({
             ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeUp", 1)
         end)
 
-        -- Teleporta com segurança
+        -- Teleporta com segurança para a posição inicial
         if savedPosition then
             local myHRP = character and character:FindFirstChild("HumanoidRootPart")
             if myHRP then
-                myHRP.Anchored = true
-                myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
-                task.wait(0.2)
-                myHRP.Velocity = Vector3.zero
-                myHRP.RotVelocity = Vector3.zero
-                myHRP.Anchored = false
-                if myHumanoid then
-                    myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-                end
+                pcall(function()
+                    myHRP.Anchored = true
+                    myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
+                    task.wait(0.2)
+                    myHRP.Velocity = Vector3.zero
+                    myHRP.RotVelocity = Vector3.zero
+                    myHRP.Anchored = false
+                    if myHumanoid then
+                        myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                    end
+                end)
+                print("Jogador local teleportado com segurança para a posição inicial: " .. tostring(savedPosition))
+            else
+                warn("HumanoidRootPart do jogador local não encontrado para teleporte de volta!")
             end
+        else
+            warn("savedPosition não está definida!")
         end
         print("Fling parado. Personagem voltou à posição original.")
     end,
