@@ -2,7 +2,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 local Version = "1.4.0"
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta troll 66485457000",
+    Title = "Lolyta troll 9999",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta 666",
@@ -1044,36 +1044,62 @@ Tab1:Button({
             end
         end)
 
-        -- Detecta colisão do jogador selecionado com qualquer parte do barco
+        -- Detecta colisão do jogador selecionado apenas com a parte principal do barco (Body)
         local touchedConnections = {}
-        for _, part in ipairs(boat:GetDescendants()) do
-            if part:IsA("BasePart") then
-                local conn = part.Touched:Connect(function(hit)
-                    if not running then return end
-                    local hitPlayer = game.Players:GetPlayerFromCharacter(hit.Parent)
-                    if hitPlayer and hitPlayer == selectedPlayer then
-                        local targetHRP = hit.Parent:FindFirstChild("HumanoidRootPart")
-                        if targetHRP then
-                            local flingForce = Instance.new("BodyVelocity")
-                            flingForce.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-                            flingForce.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
-                            flingForce.Parent = targetHRP
-                            task.defer(function()
-                                task.wait(1)
-                                flingForce:Destroy()
-                            end)
-                            print("Jogador " .. selectedPlayer.Name .. " encostou no barco e foi lançado!")
-                        end
+        local mainPart = boat:FindFirstChild("Body")
+        if mainPart and mainPart:IsA("BasePart") then
+            local conn = mainPart.Touched:Connect(function(hit)
+                if not running then return end
+                local hitPlayer = game.Players:GetPlayerFromCharacter(hit.Parent)
+                if hitPlayer and hitPlayer == selectedPlayer then
+                    local targetHRP = hit.Parent:FindFirstChild("HumanoidRootPart")
+                    if targetHRP then
+                        local flingForce = Instance.new("BodyVelocity")
+                        flingForce.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                        flingForce.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
+                        flingForce.Parent = targetHRP
+                        task.defer(function()
+                            task.wait(1)
+                            flingForce:Destroy()
+                        end)
+                        print("Jogador " .. selectedPlayer.Name .. " encostou no barco e foi lançado!")
                     end
-                end)
-                table.insert(touchedConnections, conn)
+                end
+            end)
+            table.insert(touchedConnections, conn)
+            print("Evento de colisão configurado para a parte principal do barco (Body)!")
+        else
+            warn("Parte 'Body' não encontrada no barco! Tentando usar todas as partes...")
+            for _, part in ipairs(boat:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    local conn = part.Touched:Connect(function(hit)
+                        if not running then return end
+                        local hitPlayer = game.Players:GetPlayerFromCharacter(hit.Parent)
+                        if hitPlayer and hitPlayer == selectedPlayer then
+                            local targetHRP = hit.Parent:FindFirstChild("HumanoidRootPart")
+                            if targetHRP then
+                                local flingForce = Instance.new("BodyVelocity")
+                                flingForce.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                                flingForce.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
+                                flingForce.Parent = targetHRP
+                                task.defer(function()
+                                    task.wait(1)
+                                    flingForce:Destroy()
+                                end)
+                                print("Jogador " .. selectedPlayer.Name .. " encostou no barco e foi lançado!")
+                            end
+                        end
+                    end)
+                    table.insert(touchedConnections, conn)
+                end
             end
+            print("Eventos de colisão configurados para todas as partes do barco!")
         end
-        print("Eventos de colisão configurados para todas as partes do barco!")
 
         -- Segue o jogador selecionado com mortais girando até o botão "Parar Fling" ser pressionado
         print("Iniciando acompanhamento de " .. selectedPlayer.Name .. " com mortais girando!")
-        local startTime = tick()
+        local lastUpdate = tick()
+        local updateInterval = 0.05 -- Intervalo de atualização (em segundos)
         flingConnection = RunService.Heartbeat:Connect(function()
             if not running then
                 print("Loop de acompanhamento interrompido: running = false")
@@ -1108,14 +1134,20 @@ Tab1:Button({
                 return
             end
 
+            -- Atualiza a cada 0.05 segundos para reduzir travamentos
+            if tick() - lastUpdate < updateInterval then
+                return
+            end
+            lastUpdate = tick()
+
             -- Teleporta o barco para o centro do jogador selecionado com mortais girando
             pcall(function()
                 local targetPosition = newTargetHRP.Position
                 local time = Workspace.DistributedGameTime
-                -- Rotações rápidas e caóticas em todos os eixos para simular mortais girando
-                local rotationX = math.rad(time * 20000) -- Giro rápido no eixo X (mortal frontal/traseiro)
-                local rotationY = math.rad(time * 25000) -- Giro rápido no eixo Y (giro lateral)
-                local rotationZ = math.rad(time * 30000) -- Giro rápido no eixo Z (rolamento)
+                -- Rotações menos intensas para reduzir carga computacional
+                local rotationX = math.rad(time * 5000) -- Reduzido de 20000
+                local rotationY = math.rad(time * 6000) -- Reduzido de 25000
+                local rotationZ = math.rad(time * 7000) -- Reduzido de 30000
                 boat:PivotTo(
                     CFrame.new(targetPosition) * CFrame.Angles(rotationX, rotationY, rotationZ)
                 )
