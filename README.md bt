@@ -1,6 +1,35 @@
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Robojini/Destiny/main/UILIB_V3"))()
-local Window = Library:Create({Name = "Troll Hub", Theme = "Dark"})
-local Tab1 = Window:Tab({Name = "troll"})
+local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
+local Version = "1.4.0"
+
+local Window = WindUI:CreateWindow({
+    Title = "Lolyta troll 8596894575867488888",
+    Icon = "door-open",
+    Author = "Lolycon666",
+    Folder = "Lolyta 666",
+    Size = UDim2.fromOffset(580, 460),
+    KeySystem = {
+        Key = "666",
+        Note = "pode nao man",
+        URL = "",
+        SaveKey = true,
+    },
+    Transparent = true,
+    Theme = "Dark",
+    SideBarWidth = 200,
+    HasOutline = false,
+})
+
+Window:EditOpenButton({
+    Title = "Lolyta troll",
+    Icon = "align-justify",
+    CornerRadius = UDim.new(0, 10),
+    StrokeThickness = 3,
+    Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29"))
+})
+
+-- === Abas da Interface === --
+local Tab1 = Window:Tab({ Title = "troll", Icon = "Ball" })
+
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -213,7 +242,7 @@ local DropdownFlingMethod = Tab1:Dropdown({
 local function flingWithBall(targetPlayer)
     if not targetPlayer or not targetPlayer.Character or not targetPlayer.Character.HumanoidRootPart then return end
     local soccerBalls = Workspace:FindFirstChild("001_SoccerBalls")
-    local soccerBall = soccerBalls and soccerBalls:FindFirstChild("Soccer" .. LocalPlayer.Name)
+    local soccerBall = soccerBalls and soccerJugador:FindFirstChild("Soccer" .. LocalPlayer.Name)
     if not soccerBall then
         warn("Bola não encontrada em Workspace.001_SoccerBalls com o nome: Soccer" .. LocalPlayer.Name)
         return
