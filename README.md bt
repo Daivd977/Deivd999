@@ -15,7 +15,7 @@ local Version = "1.4.0"
 -- Criação da janela principal
 print("Criando a janela principal...")
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta troll 699999",
+    Title = "Lolyta troll 7667676776",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta 666",
@@ -371,7 +371,7 @@ local function pullWithSofa(targetPlayer)
     end
     if not equipSofa() then return end
     isFollowingPull = true
-    originalPosition = LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position -- Corrigido o erro de sintaxe
+    originalPosition = LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position
 end
 
 -- Função para matar com ônibus
@@ -756,7 +756,7 @@ local function equipBola()
     return true
 end
 
--- Função para fling com bola
+-- Função para fling com bola (com potência aumentada)
 local function flingWithBall(targetPlayer)
     if not targetPlayer or not targetPlayer.Character then
         warn("Selecione um jogador válido antes de iniciar o fling!")
@@ -853,8 +853,9 @@ local function flingWithBall(targetPlayer)
                 end
             end
             local fling = Instance.new("BodyVelocity")
-            fling.MaxForce = Vector3.new(1e12, 1e12, 1e12)
-            fling.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 20000 + Vector3.new(0, 20000, 0)
+            fling.MaxForce = Vector3.new(math.huge, math.huge, math.huge) -- Aumentado para garantir que a força seja suficiente
+            -- Aumentando a potência do fling
+            fling.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 100000 + Vector3.new(0, 50000, 0) -- Aumentado de 20000 para 100000 (horizontal) e 20000 para 50000 (vertical)
             fling.Parent = hrp
             task.delay(0.3, function()
                 fling:Destroy()
@@ -1009,7 +1010,7 @@ local function flingWithSofa(targetPlayer)
     end)
 end
 
--- Função para fling com ônibus
+-- Função para fling com ônibus (corrigido para encontrar o chassi)
 local function flingWithBus(targetPlayer)
     if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then
         warn("Selecione um jogador válido antes de iniciar!")
@@ -1137,13 +1138,25 @@ local function flingWithBus(targetPlayer)
             pcall(function()
                 bus:PivotTo(CFrame.new(Vector3.new(-59599.73, 2040070.50, -293391.16)))
             end)
-            local busHRP = bus:FindFirstChild("Body") and bus.Body:FindFirstChild("BusBody")
+            
+            -- Procurar uma parte principal do ônibus para aplicar o fling
+            local busHRP = nil
+            for _, part in ipairs(bus:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    busHRP = part
+                    print("Parte encontrada no ônibus para fling: " .. part.Name .. " (Path: " .. part:GetFullName() .. ")")
+                    break
+                end
+            end
             if busHRP then
                 walkFlingInstanceBus = Instance.new("BodyVelocity")
                 walkFlingInstanceBus.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
                 walkFlingInstanceBus.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
                 walkFlingInstanceBus.Parent = busHRP
+            else
+                warn("Nenhuma parte BasePart encontrada no ônibus para aplicar o fling!")
             end
+            
             walkFlingInstancePlayer = Instance.new("BodyVelocity")
             walkFlingInstancePlayer.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
             walkFlingInstancePlayer.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
