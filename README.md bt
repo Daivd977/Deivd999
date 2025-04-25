@@ -15,7 +15,7 @@ local Version = "1.4.0"
 -- Criação da janela principal
 print("Criando a janela principal...")
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta troll 666",
+    Title = "Lolyta troll 67777777",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta 666",
@@ -862,8 +862,7 @@ local function flingWithBall(targetPlayer)
             end
             local fling = Instance.new("BodyVelocity")
             fling.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-            -- Aumentando a potência do fling para valores absurdamente altos
-            fling.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 500000 + Vector3.new(0, 250000, 0) -- Aumentado de 100000 para 500000 (horizontal) e 50000 para 250000 (vertical)
+            fling.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 500000 + Vector3.new(0, 250000, 0)
             fling.Parent = hrp
             task.delay(0.3, function()
                 fling:Destroy()
@@ -1022,7 +1021,7 @@ local function flingWithSofa(targetPlayer)
     end)
 end
 
--- Função para fling com ônibus (sem busca por chassi)
+-- Função para fling com ônibus
 local function flingWithBus(targetPlayer)
     if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then
         warn("Selecione um jogador válido antes de iniciar!")
@@ -1150,7 +1149,6 @@ local function flingWithBus(targetPlayer)
                 bus:PivotTo(CFrame.new(Vector3.new(-59599.73, 2040070.50, -293391.16)))
             end)
             
-            -- Aplicar fling apenas no jogador, sem buscar chassi no ônibus
             walkFlingInstancePlayer = Instance.new("BodyVelocity")
             walkFlingInstancePlayer.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
             walkFlingInstancePlayer.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
@@ -1191,7 +1189,7 @@ local function flingWithBus(targetPlayer)
     end)
 end
 
--- Função para fling com barco
+-- Função para fling com barco (sem limite de tempo)
 local function flingWithBoat(targetPlayer)
     if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then return end
     local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
@@ -1247,7 +1245,10 @@ local function flingWithBoat(targetPlayer)
     local sitStart = tick()
     repeat
         task.wait()
-        if tick() - sitStart > 10 then break end
+        if tick() - sitStart > 10 then
+            warn("Timeout: Jogador local não foi detectado como sentado!")
+            return
+        end
     until humanoid.Sit
     for _, part in ipairs(boat:GetDescendants()) do
         if part:IsA("BasePart") then
@@ -1347,7 +1348,7 @@ local function flingWithBoat(targetPlayer)
     end)
 end
 
--- Função para parar o fling (usada pelo toggle)
+-- Função para parar o fling (usada pelo toggle) com teleporte seguro
 local function stopFling()
     running = false
     if connection then
@@ -1379,40 +1380,57 @@ local function stopFling()
     task.wait(0.2)
     local character = LocalPlayer.Character
     if character then
+        -- Zerar a física de todas as partes do personagem
         for _, part in ipairs(character:GetDescendants()) do
             if part:IsA("BasePart") then
                 part.CanCollide = true
                 part.Velocity = Vector3.zero
                 part.RotVelocity = Vector3.zero
+                part.Anchored = true -- Ancorar temporariamente para evitar movimento
             end
         end
-    end
-    local myHumanoid = character and character:FindFirstChild("Humanoid")
-    if myHumanoid then
-        myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
-    end
-    for _, seat in ipairs(Workspace:GetDescendants()) do
-        if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
-            seat.Disabled = false
+        -- Zerar estados do Humanoid
+        local myHumanoid = character:FindFirstChild("Humanoid")
+        if myHumanoid then
+            myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+            myHumanoid.Sit = false
+            myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
         end
-    end
-    pcall(function()
-        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeUp", 1)
-    end)
-    if savedPosition then
-        local myHRP = character and character:FindFirstChild("HumanoidRootPart")
-        if myHRP then
-            pcall(function()
-                myHRP.Anchored = true
-                myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
-                task.wait(0.2)
-                myHRP.Velocity = Vector3.zero
-                myHRP.RotVelocity = Vector3.zero
-                myHRP.Anchored = false
-                if myHumanoid then
-                    myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-                end
-            end)
+        -- Restaurar cadeiras no Workspace
+        for _, seat in ipairs(Workspace:GetDescendants()) do
+            if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
+                seat.Disabled = false
+            end
+        end
+        -- Restaurar o tamanho do personagem
+        pcall(function()
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeUp", 1)
+        end)
+        -- Teleportar de volta para a posição original com segurança
+        if savedPosition then
+            local myHRP = character:FindFirstChild("HumanoidRootPart")
+            if myHRP then
+                pcall(function()
+                    -- Garantir que o personagem esteja ancorado durante o teleporte
+                    myHRP.Anchored = true
+                    myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
+                    task.wait(0.2)
+                    myHRP.Velocity = Vector3.zero
+                    myHRP.RotVelocity = Vector3.zero
+                    myHRP.Anchored = false
+                    if myHumanoid then
+                        myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                    end
+                end)
+            end
+        else
+            warn("savedPosition não está definida para teleporte de volta!")
+        end
+        -- Desancorar todas as partes do personagem após o teleporte
+        for _, part in ipairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Anchored = false
+            end
         end
     end
 end
