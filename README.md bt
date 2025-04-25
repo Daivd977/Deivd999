@@ -40,7 +40,7 @@ end
 if not isAllowed then
     game.StarterGui:SetCore("SendNotification", {
         Title = "Acesso Negado",
-        Text = "Você não tem permissão para usar o Lolyta Hub 3.5. Contate o criador para ser adicionado à lista.",
+        Text = "Você não tem permissão para usar o Lolyta Hub 3.1 Contate o criador para ser adicionado à lista.",
         Duration = 5
     })
     return
@@ -63,31 +63,29 @@ if isAllowed then
     background.BackgroundTransparency = 0.3
     background.Parent = screenGui
 
-    -- Adiciona a imagem de anime (menina fofa)
+    -- Adiciona a imagem de anime
     local animeImage = Instance.new("ImageLabel")
-    animeImage.Size = UDim2.new(0, 450, 0, 450) -- Tamanho maior para a imagem
-    animeImage.Position = UDim2.new(0.5, -225, 0.5, -300) -- Centraliza a imagem
-    animeImage.BackgroundTransparency = 0 -- Remove a transparência
-    animeImage.BackgroundColor3 = Color3.new(1, 1, 1) -- Fundo branco para a imagem
-    animeImage.Image = "rbxassetid://18988573978" -- Nova imagem de uma menina de anime fofa (verificada e funcionando)
-    animeImage.ScaleType = Enum.ScaleType.Fit -- Garante que a imagem não seja cortada
+    animeImage.Size = UDim2.new(0, 300, 0, 300) -- Tamanho da imagem
+    animeImage.Position = UDim2.new(0.5, -150, 0.5, -200) -- Centraliza a imagem
+    animeImage.BackgroundTransparency = 1
+    animeImage.Image = "rbxassetid://18355552840" -- ID de uma imagem de anime (garota kawaii)
     animeImage.Parent = background
 
-    -- Cria o texto "Carregando Lolyta Hub, aguarde..." com animação de pontos
+    -- Cria o texto "Carregando..." com animação de pontos
     local loadingText = Instance.new("TextLabel")
-    loadingText.Size = UDim2.new(0, 600, 0, 60)
-    loadingText.Position = UDim2.new(0.5, -300, 0.5, 50)
+    loadingText.Size = UDim2.new(0, 400, 0, 50)
+    loadingText.Position = UDim2.new(0.5, -200, 0.5, 50)
     loadingText.BackgroundTransparency = 1
-    loadingText.Text = "Carregando Lolyta Hub, aguarde..."
+    loadingText.Text = "Carregando..."
     loadingText.TextColor3 = Color3.new(1, 1, 1)
-    loadingText.TextSize = 50
+    loadingText.TextSize = 40
     loadingText.Font = Enum.Font.SourceSansBold
     loadingText.Parent = background
 
     -- Cria a barra de progresso
     local progressBarFrame = Instance.new("Frame")
-    progressBarFrame.Size = UDim2.new(0, 400, 0, 25)
-    progressBarFrame.Position = UDim2.new(0.5, -200, 0.5, 120)
+    progressBarFrame.Size = UDim2.new(0, 300, 0, 20)
+    progressBarFrame.Position = UDim2.new(0.5, -150, 0.5, 120)
     progressBarFrame.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
     progressBarFrame.BorderSizePixel = 0
     progressBarFrame.Parent = background
@@ -98,7 +96,7 @@ if isAllowed then
     progressBarFill.BorderSizePixel = 0
     progressBarFill.Parent = progressBarFrame
 
-    -- Animação dos pontos no texto "Carregando Lolyta Hub, aguarde..."
+    -- Animação dos pontos no texto "Carregando..."
     local dots = 0
     local dotConnection
     dotConnection = RunService.Heartbeat:Connect(function()
@@ -108,7 +106,7 @@ if isAllowed then
         end
         dots = (dots + 1) % 4
         local dotString = string.rep(".", dots)
-        loadingText.Text = "Carregando Lolyta Hub, aguarde" .. dotString
+        loadingText.Text = "Carregando" .. dotString
     end)
 
     -- Animação da barra de progresso
@@ -123,21 +121,9 @@ if isAllowed then
     -- Remove a tela de carregamento após o "carregamento"
     screenGui:Destroy()
     print("Tela de carregamento removida. Hub pronto para uso!")
+end
 
-    -- === Define Nome e Bio Após o Carregamento === --
-    local RE = ReplicatedStorage:WaitForChild("RE", 5)
-
-    -- Função auxiliar para disparar eventos remotos
-    local function fireServer(eventName, args)
-        local event = RE:WaitForChild(eventName, 5)
-        if not event then
-            warn("Evento remoto '" .. eventName .. "' não encontrado!")
-            return false, "Evento remoto não encontrado"
-        end
-        return pcall(function()
-            event:FireServer(unpack(args))
-        end)
-    end
+-- O resto do seu script (hub) continua aqui...
 
     -- Define o nome "Lolyta Hub 💖" com cor rosa escuro
     local argsName = {
@@ -183,10 +169,10 @@ if isAllowed then
     local successBioColor, errorBioColor = fireServer("1RPNam1eColo1r", argsBioColor)
     if successBioColor then
         print("Cor da bio definida como preta com sucesso!")
-    else
-        warn("Erro ao definir a cor da bio: " .. tostring(errorBioColor))
+     else
+       warn("Erro ao definir a cor da bio: " .. tostring(errorBioColor))
     end
-end
+
 
 -- O resto do seu script (hub) continua aqui...
 
@@ -201,7 +187,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 3.1,,",
+    Title = "Lolyta Hub 3.1",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.666",
@@ -2786,7 +2772,7 @@ print("Dropdown para selecionar jogador criado com sucesso!")
 
 -- Botão para atualizar a lista de jogadores
 print("Criando o botão para atualizar a lista de jogadores...")
-Tab1:Button({
+Tab10:Button({
     Title = "Atualizar Lista de Jogadores",
     Desc = "Atualiza a lista de jogadores no dropdown",
     Callback = function()
