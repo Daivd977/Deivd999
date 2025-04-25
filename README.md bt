@@ -40,7 +40,7 @@ end
 if not isAllowed then
     game.StarterGui:SetCore("SendNotification", {
         Title = "Acesso Negado",
-        Text = "Você não tem permissão para usar o Lolyta Hub 3.1 Contate o criador para ser adicionado à lista.",
+        Text = "Você não tem permissão para usar o Lolyta Hub 3.5. Contate o criador para ser adicionado à lista.",
         Duration = 5
     })
     return
@@ -67,25 +67,26 @@ if isAllowed then
     local animeImage = Instance.new("ImageLabel")
     animeImage.Size = UDim2.new(0, 450, 0, 450) -- Tamanho maior para a imagem
     animeImage.Position = UDim2.new(0.5, -225, 0.5, -300) -- Centraliza a imagem
-    animeImage.BackgroundTransparency = 1
-    animeImage.Image = "rbxassetid://14707399145" -- Nova imagem de uma menina de anime fofa
+    animeImage.BackgroundTransparency = 0 -- Remove a transparência
+    animeImage.BackgroundColor3 = Color3.new(1, 1, 1) -- Fundo branco para a imagem
+    animeImage.Image = "rbxassetid://18988573978" -- Nova imagem de uma menina de anime fofa (verificada e funcionando)
     animeImage.ScaleType = Enum.ScaleType.Fit -- Garante que a imagem não seja cortada
     animeImage.Parent = background
 
     -- Cria o texto "Carregando Lolyta Hub, aguarde..." com animação de pontos
     local loadingText = Instance.new("TextLabel")
-    loadingText.Size = UDim2.new(0, 600, 0, 60) -- Tamanho maior para o texto
+    loadingText.Size = UDim2.new(0, 600, 0, 60)
     loadingText.Position = UDim2.new(0.5, -300, 0.5, 50)
     loadingText.BackgroundTransparency = 1
     loadingText.Text = "Carregando Lolyta Hub, aguarde..."
     loadingText.TextColor3 = Color3.new(1, 1, 1)
-    loadingText.TextSize = 50 -- Tamanho da fonte maior
+    loadingText.TextSize = 50
     loadingText.Font = Enum.Font.SourceSansBold
     loadingText.Parent = background
 
     -- Cria a barra de progresso
     local progressBarFrame = Instance.new("Frame")
-    progressBarFrame.Size = UDim2.new(0, 400, 0, 25) -- Barra de progresso maior
+    progressBarFrame.Size = UDim2.new(0, 400, 0, 25)
     progressBarFrame.Position = UDim2.new(0.5, -200, 0.5, 120)
     progressBarFrame.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
     progressBarFrame.BorderSizePixel = 0
@@ -200,7 +201,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 3.1",
+    Title = "Lolyta Hub 3.1,,",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.666",
@@ -1055,18 +1056,16 @@ Tab3:Paragraph({
 
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
 
 Tab3:Toggle({
-    Title = "Matar Todos os Carros do Server",
-    Desc = "Teleporta os carros para o void (continua em loop até desativar)",
+    Title = "matar todos os carros do server",
+    Desc = "teleporta os carrospara o void",
     Value = false,
     Callback = function(state)
         local LocalPlayer = Players.LocalPlayer
         local originalPosition -- Para armazenar a posição original do jogador
         local teleportActive = state -- Estado do toggle
         local fallDamageDisabled = false -- Para controlar se a morte por queda está desativada
-        local loopConnection -- Para armazenar a conexão do loop
 
         -- Função para desativar/reativar a morte por queda
         local function toggleFallDamage(disable)
@@ -1177,84 +1176,72 @@ Tab3:Toggle({
             -- Desativa a morte por queda
             toggleFallDamage(true)
 
-            -- Obtém a pasta Vehicles
-            local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
-            if not vehiclesFolder then
-                warn("Pasta 'Vehicles' não encontrada no Workspace!")
-                return
-            end
-
-            -- Lista para rastrear carros já processados
-            local processedCars = {}
-
-            -- Inicia o loop contínuo para processar os carros usando RunService
-            loopConnection = RunService.Heartbeat:Connect(function()
-                if not teleportActive then
-                    loopConnection:Disconnect()
-                    toggleFallDamage(false)
-                    print("Loop de matar carros interrompido!")
+            -- Inicia o loop para processar os carros
+            spawn(function()
+                -- Obtém todos os carros em Workspace.Vehicles
+                local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
+                if not vehiclesFolder then
+                    warn("Pasta 'Vehicles' não encontrada no Workspace!")
                     return
                 end
 
                 -- Cria uma lista de carros (filtra apenas os que terminam com "Car")
                 local cars = {}
                 for _, car in ipairs(vehiclesFolder:GetChildren()) do
-                    if car.Name:match("Car$") and not processedCars[car] then -- Verifica se o nome termina com "Car" e não foi processado
+                    if car.Name:match("Car$") then -- Verifica se o nome termina com "Car"
                         table.insert(cars, car)
                     end
                 end
+                print("Carros encontrados: " .. #cars)
 
-                if #cars > 0 then
-                    print("Carros encontrados para processar: " .. #cars)
-                    -- Processa cada carro
-                    for _, car in ipairs(cars) do
-                        if not teleportActive then
-                            print("Toggle desativado, parando o loop!")
-                            break
-                        end
+                -- Processa cada carro
+                for _, car in ipairs(cars) do
+                    if not teleportActive then
+                        print("Toggle desativado, parando o loop!")
+                        break
+                    end
 
-                        print("Processando carro: " .. car.Name)
+                    print("Processando carro: " .. car.Name)
 
-                        -- Marca o carro como processado
-                        processedCars[car] = true
-
-                        -- Procura o VehicleSeat recursivamente dentro do carro
-                        local vehicleSeat = car:FindFirstChildWhichIsA("VehicleSeat", true)
-                        if vehicleSeat then
-                            print("VehicleSeat encontrado no carro: " .. car.Name .. " em " .. vehicleSeat:GetFullName())
-                            -- Verifica se o assento está vazio
-                            if vehicleSeat.Occupant == nil then
-                                print("Assento está vazio, tentando sentar...")
-                                -- Tenta teleportar para o assento
-                                local success = teleportToSeat(vehicleSeat, car)
-                                if success then
-                                    -- Teleporta o carro e o jogador para o void
-                                    teleportToVoid(car)
-                                    -- Força o jogador a sair do carro e voltar à posição original
-                                    exitCarAndReturn()
-                                    task.wait(1) -- Intervalo antes de passar para o próximo carro
-                                else
-                                    warn("Não conseguiu sentar no assento do carro: " .. car.Name)
-                                end
+                    -- Procura o VehicleSeat recursivamente dentro do carro
+                    local vehicleSeat = car:FindFirstChildWhichIsA("VehicleSeat", true)
+                    if vehicleSeat then
+                        print("VehicleSeat encontrado no carro: " .. car.Name .. " em " .. vehicleSeat:GetFullName())
+                        -- Verifica se o assento está vazio
+                        if vehicleSeat.Occupant == nil then
+                            print("Assento está vazio, tentando sentar...")
+                            -- Tenta teleportar para o assento
+                            local success = teleportToSeat(vehicleSeat, car)
+                            if success then
+                                -- Teleporta o carro e o jogador para o void
+                                teleportToVoid(car)
+                                -- Força o jogador a sair do carro e voltar à posição original
+                                exitCarAndReturn()
+                                task.wait(1) -- Intervalo antes de passar para o próximo carro
                             else
-                                print("Assento ocupado no carro: " .. car.Name .. ", marcando como processado e aguardando...")
+                                warn("Não conseguiu sentar no assento do carro: " .. car.Name)
                             end
                         else
-                            warn("VehicleSeat não encontrado no carro: " .. car.Name)
+                            print("Assento ocupado no carro: " .. car.Name .. ", passando para o próximo...")
                         end
+                    else
+                        warn("VehicleSeat não encontrado no carro: " .. car.Name)
                     end
-                else
-                    print("Nenhum carro novo encontrado. Aguardando novos carros...")
+                end
+
+                -- Desativa o toggle automaticamente quando terminar
+                if teleportActive then
+                    teleportActive = false
+                    print("Todos os carros foram processados!")
+                    -- Reativa a morte por queda ao terminar
+                    toggleFallDamage(false)
                 end
             end)
         else
             teleportActive = false -- Para o loop quando o toggle é desativado
-            if loopConnection then
-                loopConnection:Disconnect()
-                loopConnection = nil
-            end
+            print("Toggle desativado manualmente!")
+            -- Reativa a morte por queda ao desativar o toggle
             toggleFallDamage(false)
-            print("Toggle desativado manualmente e loop interrompido!")
         end
     end,
 })
