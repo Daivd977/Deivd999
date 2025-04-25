@@ -1,5 +1,3 @@
--- brookhaven script teste funcionando beta
-
 -- === Configurações Iniciais === --
 local AllowedUsers = {
     "rtrt967",
@@ -42,7 +40,7 @@ end
 if not isAllowed then
     game.StarterGui:SetCore("SendNotification", {
         Title = "Acesso Negado",
-        Text = "Você não tem permissão para usar o Lolyta Hub 3.5. Contate o criador para ser adicionado à lista.",
+        Text = "Você não tem permissão para usar o Lolyta Hub 3.1 Contate o criador para ser adicionado à lista.",
         Duration = 5
     })
     return
@@ -65,29 +63,30 @@ if isAllowed then
     background.BackgroundTransparency = 0.3
     background.Parent = screenGui
 
-    -- Adiciona a imagem de anime
+    -- Adiciona a imagem de anime (menina fofa)
     local animeImage = Instance.new("ImageLabel")
-    animeImage.Size = UDim2.new(0, 300, 0, 300) -- Tamanho da imagem
-    animeImage.Position = UDim2.new(0.5, -150, 0.5, -200) -- Centraliza a imagem
+    animeImage.Size = UDim2.new(0, 450, 0, 450) -- Tamanho maior para a imagem
+    animeImage.Position = UDim2.new(0.5, -225, 0.5, -300) -- Centraliza a imagem
     animeImage.BackgroundTransparency = 1
-    animeImage.Image = "rbxassetid://18355552840" -- ID de uma imagem de anime (garota kawaii)
+    animeImage.Image = "rbxassetid://14707399145" -- Nova imagem de uma menina de anime fofa
+    animeImage.ScaleType = Enum.ScaleType.Fit -- Garante que a imagem não seja cortada
     animeImage.Parent = background
 
-    -- Cria o texto "Carregando..." com animação de pontos
+    -- Cria o texto "Carregando Lolyta Hub, aguarde..." com animação de pontos
     local loadingText = Instance.new("TextLabel")
-    loadingText.Size = UDim2.new(0, 400, 0, 50)
-    loadingText.Position = UDim2.new(0.5, -200, 0.5, 50)
+    loadingText.Size = UDim2.new(0, 600, 0, 60) -- Tamanho maior para o texto
+    loadingText.Position = UDim2.new(0.5, -300, 0.5, 50)
     loadingText.BackgroundTransparency = 1
-    loadingText.Text = "Carregando..."
+    loadingText.Text = "Carregando Lolyta Hub, aguarde..."
     loadingText.TextColor3 = Color3.new(1, 1, 1)
-    loadingText.TextSize = 40
+    loadingText.TextSize = 50 -- Tamanho da fonte maior
     loadingText.Font = Enum.Font.SourceSansBold
     loadingText.Parent = background
 
     -- Cria a barra de progresso
     local progressBarFrame = Instance.new("Frame")
-    progressBarFrame.Size = UDim2.new(0, 300, 0, 20)
-    progressBarFrame.Position = UDim2.new(0.5, -150, 0.5, 120)
+    progressBarFrame.Size = UDim2.new(0, 400, 0, 25) -- Barra de progresso maior
+    progressBarFrame.Position = UDim2.new(0.5, -200, 0.5, 120)
     progressBarFrame.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
     progressBarFrame.BorderSizePixel = 0
     progressBarFrame.Parent = background
@@ -98,7 +97,7 @@ if isAllowed then
     progressBarFill.BorderSizePixel = 0
     progressBarFill.Parent = progressBarFrame
 
-    -- Animação dos pontos no texto "Carregando..."
+    -- Animação dos pontos no texto "Carregando Lolyta Hub, aguarde..."
     local dots = 0
     local dotConnection
     dotConnection = RunService.Heartbeat:Connect(function()
@@ -108,7 +107,7 @@ if isAllowed then
         end
         dots = (dots + 1) % 4
         local dotString = string.rep(".", dots)
-        loadingText.Text = "Carregando" .. dotString
+        loadingText.Text = "Carregando Lolyta Hub, aguarde" .. dotString
     end)
 
     -- Animação da barra de progresso
@@ -123,75 +122,73 @@ if isAllowed then
     -- Remove a tela de carregamento após o "carregamento"
     screenGui:Destroy()
     print("Tela de carregamento removida. Hub pronto para uso!")
+
+    -- === Define Nome e Bio Após o Carregamento === --
+    local RE = ReplicatedStorage:WaitForChild("RE", 5)
+
+    -- Função auxiliar para disparar eventos remotos
+    local function fireServer(eventName, args)
+        local event = RE:WaitForChild(eventName, 5)
+        if not event then
+            warn("Evento remoto '" .. eventName .. "' não encontrado!")
+            return false, "Evento remoto não encontrado"
+        end
+        return pcall(function()
+            event:FireServer(unpack(args))
+        end)
+    end
+
+    -- Define o nome "Lolyta Hub 💖" com cor rosa escuro
+    local argsName = {
+        [1] = "RolePlayName",
+        [2] = "Lolyta Hub 💖"
+    }
+    local successName, errorName = fireServer("1RPNam1eTex1t", argsName)
+    if successName then
+        print("Nome definido como 'Lolyta Hub 💖' com sucesso!")
+    else
+        warn("Erro ao definir o nome: " .. tostring(errorName))
+    end
+
+    -- Define a cor do nome como rosa escuro
+    local argsNameColor = {
+        [1] = "PickingRPNameColor",
+        [2] = Color3.new(0.8, 0.2, 0.4) -- Rosa escuro
+    }
+    local successNameColor, errorNameColor = fireServer("1RPNam1eColo1r", argsNameColor)
+    if successNameColor then
+        print("Cor do nome definida como rosa escuro com sucesso!")
+    else
+        warn("Erro ao definir a cor do nome: " .. tostring(errorNameColor))
+    end
+
+    -- Define a bio "scripter" com cor preta
+    local argsBio = {
+        [1] = "RolePlayBio",
+        [2] = "scripter"
+    }
+    local successBio, errorBio = fireServer("1RPNam1eTex1t", argsBio)
+    if successBio then
+        print("Bio definida como 'scripter' com sucesso!")
+    else
+        warn("Erro ao definir a bio: " .. tostring(errorBio))
+    end
+
+    -- Define a cor da bio como preta
+    local argsBioColor = {
+        [1] = "PickingRPBioColor",
+        [2] = Color3.new(0, 0, 0) -- Preto
+    }
+    local successBioColor, errorBioColor = fireServer("1RPNam1eColo1r", argsBioColor)
+    if successBioColor then
+        print("Cor da bio definida como preta com sucesso!")
+    else
+        warn("Erro ao definir a cor da bio: " .. tostring(errorBioColor))
+    end
 end
 
 -- O resto do seu script (hub) continua aqui...
 
----------------------------------------------------------------------------------------------------------------------------------------
-
--- Scripts a serem executados ao iniciar o hub
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RE = ReplicatedStorage:WaitForChild("RE", 5)
-
--- Função auxiliar para disparar eventos remotos
-local function fireServer(eventName, args)
-    local event = RE:WaitForChild(eventName, 5)
-    if not event then
-        warn("Evento remoto '" .. eventName .. "' não encontrado!")
-        return false, "Evento remoto não encontrado"
-    end
-    return pcall(function()
-        event:FireServer(unpack(args))
-    end)
-end
-
--- Define o nome "Lolyta Hub 💖" com cor rosa escuro
-local argsName = {
-    [1] = "RolePlayName",
-    [2] = "Lolyta Hub 💖" -- Adiciona um emoji fofo (coração brilhante)
-}
-local successName, errorName = fireServer("1RPNam1eTex1t", argsName)
-if successName then
-    print("Nome definido como 'Lolyta Hub 💖' com sucesso!")
-else
-    warn("Erro ao definir o nome: " .. tostring(errorName))
-end
-
--- Define a cor do nome como rosa escuro
-local argsNameColor = {
-    [1] = "PickingRPNameColor",
-    [2] = Color3.new(0.8, 0.2, 0.4) -- Rosa escuro
-}
-local successNameColor, errorNameColor = fireServer("1RPNam1eColo1r", argsNameColor)
-if successNameColor then
-    print("Cor do nome definida como rosa escuro com sucesso!")
-else
-    warn("Erro ao definir a cor do nome: " .. tostring(errorNameColor))
-end
-
--- Define a bio "scripter" com cor preta
-local argsBio = {
-    [1] = "RolePlayBio",
-    [2] = "scripter"
-}
-local successBio, errorBio = fireServer("1RPNam1eTex1t", argsBio)
-if successBio then
-    print("Bio definida como 'scripter' com sucesso!")
-else
-    warn("Erro ao definir a bio: " .. tostring(errorBio))
-end
-
--- Define a cor da bio como preta
-local argsBioColor = {
-    [1] = "PickingRPBioColor",
-    [2] = Color3.new(0, 0, 0) -- Preto
-}
-local successBioColor, errorBioColor = fireServer("1RPNam1eColo1r", argsBioColor)
-if successBioColor then
-    print("Cor da bio definida como preta com sucesso!")
-else
-    warn("Erro ao definir a cor da bio: " .. tostring(errorBioColor))
-end
 
 -----------------------------------------------------------------------------------------------------------------------------------
                                     -- === Inicialização da Interface === --
@@ -297,7 +294,7 @@ local RunService = game:GetService("RunService")
 
 Tab1:Toggle({
     Title = "ESP",
-    Desc = "Para visualizar jogadores (atualiza continuamente)",
+    Desc = "Para visualizar jogadores",
     Value = false,
     Callback = function(state)
         local connections = {} -- Tabela para armazenar as conexões dos eventos
@@ -439,6 +436,7 @@ local noclipEnabled = false
 local noclipConnections = {}
 local LocalPlayer = game:GetService("Players").LocalPlayer
 local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
 -- Função para ativar/desativar o noclip
 local function setNoclip(state)
@@ -459,21 +457,17 @@ local function setNoclip(state)
     noclipEnabled = state -- Define o estado do noclip com base no toggle
 
     if noclipEnabled then
-        -- Armazena as propriedades originais do Humanoid
-        local originalWalkSpeed = humanoid.WalkSpeed
-        local originalJumpPower = humanoid.JumpPower
-
-        -- Desativa as colisões do personagem
+        -- Desativa as colisões do personagem para atravessar objetos
         for _, part in pairs(character:GetDescendants()) do
             if part:IsA("BasePart") then
                 part.CanCollide = false
             end
         end
 
-        -- Ajusta a física para uma experiência mais fluida
-        humanoid.WalkSpeed = 50 -- Aumenta a velocidade para facilitar o movimento no Noclip
-        humanoid.JumpPower = 0 -- Desativa o pulo para evitar comportamento estranho
-        humanoid:ChangeState(Enum.HumanoidStateType.Physics) -- Usa física para movimentação mais suave
+        -- Mantém todas as propriedades normais do Humanoid (pulo, movimento, etc.)
+        humanoid.PlatformStand = false -- Garante que o personagem pode se mover normalmente
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true) -- Mantém o estado de queda ativo
+        humanoid:ChangeState(Enum.HumanoidStateType.Running) -- Garante que o personagem pode andar normalmente
 
         -- Loop para manter o noclip ativo e evitar reversão pelo servidor
         local connection = RunService.Heartbeat:Connect(function()
@@ -487,10 +481,28 @@ local function setNoclip(state)
                     part.CanCollide = false
                 end
             end
+            -- Verifica se o personagem está caindo no void e o reposiciona
+            if rootPart.Position.Y < -500 then -- Altura considerada como "void"
+                local rayOrigin = rootPart.Position
+                local rayDirection = Vector3.new(0, 500, 0) -- Raycast para cima
+                local raycastParams = RaycastParams.new()
+                raycastParams.FilterDescendantsInstances = {character}
+                raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+                local raycastResult = Workspace:Raycast(rayOrigin, rayDirection, raycastParams)
+
+                if raycastResult then
+                    rootPart.CFrame = CFrame.new(raycastResult.Position + Vector3.new(0, 3, 0)) -- Reposiciona acima do chão
+                    print("Personagem estava caindo no void, reposicionado acima do chão!")
+                else
+                    -- Se não encontrar o chão, reposiciona em uma posição segura
+                    rootPart.CFrame = CFrame.new(Vector3.new(0, 50, 0))
+                    print("Chão não encontrado, personagem movido para uma posição segura!")
+                end
+            end
         end)
         table.insert(noclipConnections, connection)
 
-        print("Noclip ativado!")
+        print("Noclip ativado! Você pode atravessar objetos e se mover normalmente.")
     else
         -- Desativa o noclip e restaura as propriedades do personagem
         for _, connection in pairs(noclipConnections) do
@@ -517,8 +529,6 @@ local function setNoclip(state)
         -- Restaura o estado do Humanoid
         if humanoid then
             humanoid:ChangeState(Enum.HumanoidStateType.GettingUp) -- Força o personagem a "se levantar"
-            humanoid.WalkSpeed = 16 -- Restaura a velocidade padrão
-            humanoid.JumpPower = 50 -- Restaura o pulo padrão
             humanoid.PlatformStand = false -- Desativa PlatformStand, se ativo
         end
 
@@ -529,7 +539,7 @@ local function setNoclip(state)
             local raycastParams = RaycastParams.new()
             raycastParams.FilterDescendantsInstances = {character}
             raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
-            local raycastResult = workspace:Raycast(rayOrigin, rayDirection, raycastParams)
+            local raycastResult = Workspace:Raycast(rayOrigin, rayDirection, raycastParams)
 
             if raycastResult then
                 rootPart.CFrame = CFrame.new(raycastResult.Position + Vector3.new(0, 3, 0)) -- Coloca o personagem acima do chão
@@ -548,7 +558,7 @@ local function setNoclip(state)
             end
         end
 
-        print("Noclip desativado!")
+        print("Noclip desativado! Comportamento normal restaurado.")
     end
 end
 
@@ -580,7 +590,6 @@ LocalPlayer.CharacterAdded:Connect(function(character)
         end
     end
 end)
-
 ---------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -1046,6 +1055,7 @@ Tab3:Paragraph({
 
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
 
 Tab3:Toggle({
     Title = "Matar Todos os Carros do Server",
@@ -1056,6 +1066,7 @@ Tab3:Toggle({
         local originalPosition -- Para armazenar a posição original do jogador
         local teleportActive = state -- Estado do toggle
         local fallDamageDisabled = false -- Para controlar se a morte por queda está desativada
+        local loopConnection -- Para armazenar a conexão do loop
 
         -- Função para desativar/reativar a morte por queda
         local function toggleFallDamage(disable)
@@ -1166,85 +1177,84 @@ Tab3:Toggle({
             -- Desativa a morte por queda
             toggleFallDamage(true)
 
-            -- Inicia o loop contínuo para processar os carros
-            spawn(function()
-                -- Obtém a pasta Vehicles
-                local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
-                if not vehiclesFolder then
-                    warn("Pasta 'Vehicles' não encontrada no Workspace!")
+            -- Obtém a pasta Vehicles
+            local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
+            if not vehiclesFolder then
+                warn("Pasta 'Vehicles' não encontrada no Workspace!")
+                return
+            end
+
+            -- Lista para rastrear carros já processados
+            local processedCars = {}
+
+            -- Inicia o loop contínuo para processar os carros usando RunService
+            loopConnection = RunService.Heartbeat:Connect(function()
+                if not teleportActive then
+                    loopConnection:Disconnect()
+                    toggleFallDamage(false)
+                    print("Loop de matar carros interrompido!")
                     return
                 end
 
-                -- Lista para rastrear carros já processados
-                local processedCars = {}
-
-                while teleportActive do
-                    -- Cria uma lista de carros (filtra apenas os que terminam com "Car")
-                    local cars = {}
-                    for _, car in ipairs(vehiclesFolder:GetChildren()) do
-                        if car.Name:match("Car$") and not processedCars[car] then -- Verifica se o nome termina com "Car" e não foi processado
-                            table.insert(cars, car)
-                        end
+                -- Cria uma lista de carros (filtra apenas os que terminam com "Car")
+                local cars = {}
+                for _, car in ipairs(vehiclesFolder:GetChildren()) do
+                    if car.Name:match("Car$") and not processedCars[car] then -- Verifica se o nome termina com "Car" e não foi processado
+                        table.insert(cars, car)
                     end
-
-                    if #cars > 0 then
-                        print("Carros encontrados para processar: " .. #cars)
-                        -- Processa cada carro
-                        for _, car in ipairs(cars) do
-                            if not teleportActive then
-                                print("Toggle desativado, parando o loop!")
-                                break
-                            end
-
-                            print("Processando carro: " .. car.Name)
-
-                            -- Marca o carro como processado
-                            processedCars[car] = true
-
-                            -- Procura o VehicleSeat recursivamente dentro do carro
-                            local vehicleSeat = car:FindFirstChildWhichIsA("VehicleSeat", true)
-                            if vehicleSeat then
-                                print("VehicleSeat encontrado no carro: " .. car.Name .. " em " .. vehicleSeat:GetFullName())
-                                -- Verifica se o assento está vazio
-                                if vehicleSeat.Occupant == nil then
-                                    print("Assento está vazio, tentando sentar...")
-                                    -- Tenta teleportar para o assento
-                                    local success = teleportToSeat(vehicleSeat, car)
-                                    if success then
-                                        -- Teleporta o carro e o jogador para o void
-                                        teleportToVoid(car)
-                                        -- Força o jogador a sair do carro e voltar à posição original
-                                        exitCarAndReturn()
-                                        task.wait(1) -- Intervalo antes de passar para o próximo carro
-                                    else
-                                        warn("Não conseguiu sentar no assento do carro: " .. car.Name)
-                                    end
-                                else
-                                    print("Assento ocupado no carro: " .. car.Name .. ", marcando como processado e aguardando...")
-                                end
-                            else
-                                warn("VehicleSeat não encontrado no carro: " .. car.Name)
-                            end
-                        end
-                    else
-                        print("Nenhum carro novo encontrado. Aguardando novos carros...")
-                    end
-
-                    -- Espera antes de verificar novamente
-                    task.wait(2) -- Intervalo de verificação (2 segundos para evitar sobrecarga)
                 end
 
-                -- Reativa a morte por queda ao desativar o loop
-                if not teleportActive then
-                    toggleFallDamage(false)
-                    print("Loop de matar carros finalizado!")
+                if #cars > 0 then
+                    print("Carros encontrados para processar: " .. #cars)
+                    -- Processa cada carro
+                    for _, car in ipairs(cars) do
+                        if not teleportActive then
+                            print("Toggle desativado, parando o loop!")
+                            break
+                        end
+
+                        print("Processando carro: " .. car.Name)
+
+                        -- Marca o carro como processado
+                        processedCars[car] = true
+
+                        -- Procura o VehicleSeat recursivamente dentro do carro
+                        local vehicleSeat = car:FindFirstChildWhichIsA("VehicleSeat", true)
+                        if vehicleSeat then
+                            print("VehicleSeat encontrado no carro: " .. car.Name .. " em " .. vehicleSeat:GetFullName())
+                            -- Verifica se o assento está vazio
+                            if vehicleSeat.Occupant == nil then
+                                print("Assento está vazio, tentando sentar...")
+                                -- Tenta teleportar para o assento
+                                local success = teleportToSeat(vehicleSeat, car)
+                                if success then
+                                    -- Teleporta o carro e o jogador para o void
+                                    teleportToVoid(car)
+                                    -- Força o jogador a sair do carro e voltar à posição original
+                                    exitCarAndReturn()
+                                    task.wait(1) -- Intervalo antes de passar para o próximo carro
+                                else
+                                    warn("Não conseguiu sentar no assento do carro: " .. car.Name)
+                                end
+                            else
+                                print("Assento ocupado no carro: " .. car.Name .. ", marcando como processado e aguardando...")
+                            end
+                        else
+                            warn("VehicleSeat não encontrado no carro: " .. car.Name)
+                        end
+                    end
+                else
+                    print("Nenhum carro novo encontrado. Aguardando novos carros...")
                 end
             end)
         else
             teleportActive = false -- Para o loop quando o toggle é desativado
-            print("Toggle desativado manualmente!")
-            -- Reativa a morte por queda ao desativar o toggle
+            if loopConnection then
+                loopConnection:Disconnect()
+                loopConnection = nil
+            end
             toggleFallDamage(false)
+            print("Toggle desativado manualmente e loop interrompido!")
         end
     end,
 })
@@ -1905,7 +1915,7 @@ local musicOptions = {
         {name = "Toma jack no sol quente", id = 97476487963273},
         {name = "ifood", id = 133843750864059},
         {name = "pelo geito ela ta querendo ram", id = 94395705857835},
-        {name = "vai todo mundo se ", id = 136804576009416},
+        {name = "lula vai todo mundo ", id = 136804576009416},
         {name = "coringa", id = 84663543883498},
         {name = "shoope", id = 8747441609},
         {name = "quenojo", id = 103440368630269},
@@ -1916,10 +1926,10 @@ local musicOptions = {
         {name = "Deita aqui eu mandei vc deitar sirens", id = 100291188941582},
         {name = "miau", id = 131804436682424},
         {name = "deixa os garoto brinca", id = 80291355054807},
-        {name = "famengo", id = 137774355552052},
+        {name = "flamengo", id = 137774355552052},
         {name = "sai do mei satnas", id = 127944706557246},
         {name = "namoral agora e a hora", id = 120677947987369},
-        {name = "n pode e chutar pq seu elebro e burro", id = 82284055473737},
+        {name = "n pode me chutar pq seu celebro e burro", id = 82284055473737},
         {name = "deley", id = 102906880476838},
         {name = "Tu e um beta", id = 130233956349541},
         {name = "Porfavor n tira eu nao", id = 85321374020324},
@@ -2755,7 +2765,7 @@ end)
 
 -- Dropdown para selecionar jogador
 print("Criando o dropdown para selecionar jogador...")
-local DropdownPlayer = Tab1:Dropdown({
+local DropdownPlayer = Tab10:Dropdown({
     Title = "Selecionar Jogador",
     Desc = "Escolha um jogador para matar, puxar, visualizar ou aplicar fling",
     Value = "",
@@ -2800,7 +2810,7 @@ print("Botão para atualizar a lista de jogadores criado com sucesso!")
 
 -- Toggle para visualizar jogador
 print("Criando o toggle para visualizar jogador...")
-local SpectateToggle = Tab1:Toggle({
+local SpectateToggle = Tab10:Toggle({
     Title = "Visualizar Jogador",
     Desc = "Ativa/desativa a visualização do jogador selecionado",
     Default = false,
@@ -2848,7 +2858,7 @@ updateDropdown(DropdownPlayer)
 
 -- Dropdown para selecionar método de matar/puxar
 print("Criando o dropdown para selecionar método de matar/puxar...")
-local DropdownKillPullMethod = Tab1:Dropdown({
+local DropdownKillPullMethod = Tab10:Dropdown({
     Title = "Selecionar Método (Matar/Puxar)",
     Desc = "Escolha o método para matar ou puxar",
     Values = {"Sofá", "Ônibus"},
@@ -3147,7 +3157,7 @@ end)
 
 -- Botão para iniciar matar
 print("Criando o botão para iniciar matar...")
-Tab1:Button({
+Tab10:Button({
     Title = "Matar",
     Desc = "Inicia o matar com o método selecionado",
     Callback = function()
@@ -3174,7 +3184,7 @@ print("Botão para iniciar matar criado com sucesso!")
 
 -- Botão para iniciar puxar
 print("Criando o botão para iniciar puxar...")
-Tab1:Button({
+Tab10:Button({
     Title = "Puxar",
     Desc = "Inicia o puxar com o método selecionado",
     Callback = function()
@@ -3201,7 +3211,7 @@ print("Botão para iniciar puxar criado com sucesso!")
 
 -- Botão para parar matar ou puxar
 print("Criando o botão para parar matar ou puxar...")
-Tab1:Button({
+Tab10:Button({
     Title = "Parar (Matar ou Puxar)",
     Desc = "Para o movimento de matar ou puxar",
     Callback = function()
@@ -3252,7 +3262,7 @@ print("Botão para parar matar ou puxar criado com sucesso!")
 
 -- Dropdown para selecionar método de fling
 print("Criando o dropdown para selecionar método de fling...")
-local DropdownFlingMethod = Tab1:Dropdown({
+local DropdownFlingMethod = Tab10:Dropdown({
     Title = "Selecionar Método de Fling",
     Desc = "Escolha o método para aplicar fling",
     Values = {"Sofá", "Ônibus", "Bola", "Barco"},
@@ -3945,7 +3955,7 @@ end
 
 -- Toggle para ativar/desativar o fling
 print("Criando o toggle para ativar/desativar o fling...")
-flingToggle = Tab1:Toggle({
+flingToggle = Tab10:Toggle({
     Title = "Ativar Fling",
     Desc = "Ativa ou desativa o fling com o método selecionado",
     Default = false,
