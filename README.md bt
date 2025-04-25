@@ -152,7 +152,7 @@ local function loadHub()
     local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
     local Window = WindUI:CreateWindow({
-        Title = "Lolyta Hub 3.1, vesion 3.1 testeee",
+        Title = "Lolyta Hub 3.1,,,,",
         Icon = "door-open",
         Author = "Lolycon666",
         Folder = "Lolyta hub v.1.666",
@@ -1451,17 +1451,8 @@ local musicOptions = {
         {name = "forro da rezenha", id = "120973520531216"},
         {name = "forro dudu", id = "74404168179733"},
         {name = "forro sao joao", id = "106364874935196"},
-        {name = "forro engraçado paia", id = "76524290482399"},
-        {name = "pre treino", id = ""},
-        {name = "pre treino", id = ""},
-        {name = "pre treino", id = ""},
-        {name = "pre treino", id = ""},
-        {name = "pre treino", id = ""},
-        {name = "pre treino", id = ""},
-        {name = "pre treino", id = ""},
-        {name = "pre treino", id = ""},
-        {name = "pre treino", id = ""},
-        {name = "pre treino", id = ""}
+        {name = "forro engraçado paia", id = "76524290482399"}
+        
        
         
     }
@@ -1518,42 +1509,7 @@ Tab5:Dropdown({
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-local function tocarMusica(id)
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    
-    local argsCasa = {
-        [1] = "PickHouseMusicText",
-        [2] = id
-    }
-    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sHous1e"):FireServer(unpack(argsCasa))
 
-    local argsCarro = {
-        [1] = "PickingCarMusicText",
-        [2] = id
-    }
-    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(argsCarro))
-
-    local argsScooter = {
-        [1] = "PickingScooterMusicText",
-        [2] = id
-    }
-    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(argsScooter))
-end
-
--- Função auxiliar para validar valores do Dropdown
-local function isValidMusicId(value)
-    return value and value ~= "" and value ~= "Option 1" and not value:match("novas musica adds") and not value:match("musica brasil") and not value:match("musica do meu interece") and not value:match("musica dls por elas") and not value:match("meme abaixo") and not value:match("estourada")
-end
-
-Tab5:Input({
-    Title = "ID da música",
-    Placeholder = "Digite o ID e pressione Enter",
-    Callback = function(value)
-        if value and value ~= "" then
-            tocarMusica(tostring(value))
-        end
-    end,
-})
 
 
 -- Tabela de opções de música para o Dropdown "Funk, Phonk, MTG"
@@ -1563,14 +1519,8 @@ local musicOptions = {
         {name = "ANXIETY (Amapiano Re-fix)", id = "101483901475189"},
         {name = "Meu corpo, minhas regras", id = "127587901595282"},
         {name = "FALAR (YPKE)", id = "81289143488329"},
-        {name = "$$$$gg$$$$gg", id = "137471775091253"},
-        {name = "", id = ""},
-        {name = "", id = ""},
-        {name = "", id = ""},
-        {name = "", id = ""},
-        {name = "", id = ""},
-        {name = "", id = ""},
-        {name = "", id = ""}
+        {name = "$$$$gg$$$$gg", id = "137471775091253"}
+        
        
         
     }
@@ -1697,16 +1647,8 @@ local musicOptions = {
         {name = "Boladona", id = "96625339070598"},
         {name = "ARROCHA ", id = "103249564479431"},
         {name = "MEGA DOS AUTOMOTIVO", id = "82353927625851"},
-        {name = "escravos do po", id = "108995231462803"},
-        {name = "", id = ""},
-        {name = "", id = ""},
-        {name = "", id = ""},
-        {name = "", id = ""},
-        {name = "", id = ""},
-        {name = "", id = ""},
-        {name = "", id = ""},
-        {name = "", id = ""},
-        {name = "", id = ""}
+        {name = "escravos do po", id = "108995231462803"}
+        
         
         
     }
@@ -1840,13 +1782,8 @@ local musicOptions = {
         {name = "MTG TU VAI SENTAR (Pke Gaz1nh)", id = "115317874112657"},
         {name = "TOMADA PHONK", id = "96610114209889"},
         {name = "riightt rs ", id = "98153718682753"},
-        {name = "SARRA FUNK", id = "96249826607044"},
-        {name = "", id = ""},
-        {name = "", id = ""},
-        {name = "", id = ""},
-        {name = "", id = ""},
-        {name = "", id = ""},
-        {name = "", id = ""}
+        {name = "SARRA FUNK", id = "96249826607044"}
+        
         
         
     }
@@ -2022,10 +1959,6 @@ local musicOptions = {
         {name = "skibidi", id = 128771670035179},
         
         {name = "cavalo!!", id = 78871573440184},
-        {name = "miauçççççççççççççççç", id = 131804436682424},
-        {name = "miauçççççççççççççççç", id = 131804436682424},
-        {name = "miauçççççççççççççççç", id = 131804436682424},
-        {name = "miauçççççççççççççççç", id = 131804436682424},
 
         {name = "deixa os garoto brinca", id = 80291355054807},
         {name = "flamengo", id = 137774355552052},
