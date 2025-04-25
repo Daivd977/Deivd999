@@ -15,7 +15,7 @@ local Version = "1.4.0"
 -- Criação da janela principal
 print("Criando a janela principal...")
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta troll 7667676776",
+    Title = "Lolyta troll 666",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta 666",
@@ -72,6 +72,7 @@ local couch = nil
 local isSpectating = false
 local spectatedPlayer = nil
 local characterConnection = nil
+local flingToggle = nil -- Para armazenar a referência do toggle
 
 -- Cria um RemoteEvent para comunicação com o servidor
 local SetNetworkOwnerEvent = Instance.new("RemoteEvent")
@@ -244,6 +245,7 @@ local DropdownPlayer = Tab1:Dropdown({
                 isFollowingPull = false
                 if connection then connection:Disconnect() end
                 if flingConnection then flingConnection:Disconnect() end
+                if flingToggle then flingToggle:SetValue(false) end
             end
             if isSpectating then
                 stopSpectating()
@@ -304,6 +306,12 @@ Players.PlayerRemoving:Connect(function(player)
         selectedPlayer = nil
         if isSpectating then
             stopSpectating()
+        end
+        if running then
+            running = false
+            if connection then connection:Disconnect() connection = nil end
+            if flingConnection then flingConnection:Disconnect() flingConnection = nil end
+            if flingToggle then flingToggle:SetValue(false) end
         end
     end
     updateDropdown(DropdownPlayer)
@@ -756,7 +764,7 @@ local function equipBola()
     return true
 end
 
--- Função para fling com bola (com potência aumentada)
+-- Função para fling com bola (com potência aumentada absurdamente)
 local function flingWithBall(targetPlayer)
     if not targetPlayer or not targetPlayer.Character then
         warn("Selecione um jogador válido antes de iniciar o fling!")
@@ -853,9 +861,9 @@ local function flingWithBall(targetPlayer)
                 end
             end
             local fling = Instance.new("BodyVelocity")
-            fling.MaxForce = Vector3.new(math.huge, math.huge, math.huge) -- Aumentado para garantir que a força seja suficiente
-            -- Aumentando a potência do fling
-            fling.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 100000 + Vector3.new(0, 50000, 0) -- Aumentado de 20000 para 100000 (horizontal) e 20000 para 50000 (vertical)
+            fling.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+            -- Aumentando a potência do fling para valores absurdamente altos
+            fling.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 500000 + Vector3.new(0, 250000, 0) -- Aumentado de 100000 para 500000 (horizontal) e 50000 para 250000 (vertical)
             fling.Parent = hrp
             task.delay(0.3, function()
                 fling:Destroy()
@@ -1006,11 +1014,15 @@ local function flingWithSofa(targetPlayer)
                     end
                 end
             end
+            -- Desativar o toggle automaticamente
+            if flingToggle then
+                flingToggle:SetValue(false)
+            end
         end
     end)
 end
 
--- Função para fling com ônibus (corrigido para encontrar o chassi)
+-- Função para fling com ônibus (sem busca por chassi)
 local function flingWithBus(targetPlayer)
     if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then
         warn("Selecione um jogador válido antes de iniciar!")
@@ -1093,7 +1105,6 @@ local function flingWithBus(targetPlayer)
         end
     end)
     local startTime = tick()
-    local walkFlingInstanceBus = nil
     local walkFlingInstancePlayer = nil
     flingConnection = RunService.Heartbeat:Connect(function()
         if not running then return end
@@ -1139,24 +1150,7 @@ local function flingWithBus(targetPlayer)
                 bus:PivotTo(CFrame.new(Vector3.new(-59599.73, 2040070.50, -293391.16)))
             end)
             
-            -- Procurar uma parte principal do ônibus para aplicar o fling
-            local busHRP = nil
-            for _, part in ipairs(bus:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    busHRP = part
-                    print("Parte encontrada no ônibus para fling: " .. part.Name .. " (Path: " .. part:GetFullName() .. ")")
-                    break
-                end
-            end
-            if busHRP then
-                walkFlingInstanceBus = Instance.new("BodyVelocity")
-                walkFlingInstanceBus.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-                walkFlingInstanceBus.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
-                walkFlingInstanceBus.Parent = busHRP
-            else
-                warn("Nenhuma parte BasePart encontrada no ônibus para aplicar o fling!")
-            end
-            
+            -- Aplicar fling apenas no jogador, sem buscar chassi no ônibus
             walkFlingInstancePlayer = Instance.new("BodyVelocity")
             walkFlingInstancePlayer.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
             walkFlingInstancePlayer.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
@@ -1170,9 +1164,6 @@ local function flingWithBus(targetPlayer)
             pcall(function()
                 ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
             end)
-            if walkFlingInstanceBus then
-                walkFlingInstanceBus:Destroy()
-            end
             if walkFlingInstancePlayer then
                 walkFlingInstancePlayer:Destroy()
                 for _, part in ipairs(character:GetDescendants()) do
@@ -1192,6 +1183,10 @@ local function flingWithBus(targetPlayer)
                     humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
                 end
             end)
+            -- Desativar o toggle automaticamente
+            if flingToggle then
+                flingToggle:SetValue(false)
+            end
         end
     end)
 end
@@ -1352,111 +1347,113 @@ local function flingWithBoat(targetPlayer)
     end)
 end
 
--- Botão para iniciar fling
-print("Criando o botão para iniciar fling...")
-Tab1:Button({
-    Title = "Iniciar Fling",
-    Desc = "Inicia o fling com o método selecionado",
-    Callback = function()
-        if running or isFollowingKill or isFollowingPull then
-            warn("Uma ação já está ativa. Use o botão Parar primeiro.")
-            return
-        end
-        if not selectedPlayer then
-            warn("Nenhum jogador selecionado!")
-            return
-        end
-        if not selectedFlingMethod then
-            warn("Nenhum método de fling selecionado!")
-            return
-        end
-        if selectedFlingMethod == "Bola" then
-            flingWithBall(selectedPlayer)
-        elseif selectedFlingMethod == "Sofá" then
-            flingWithSofa(selectedPlayer)
-        elseif selectedFlingMethod == "Ônibus" then
-            flingWithBus(selectedPlayer)
-        elseif selectedFlingMethod == "Barco" then
-            flingWithBoat(selectedPlayer)
+-- Função para parar o fling (usada pelo toggle)
+local function stopFling()
+    running = false
+    if connection then
+        connection:Disconnect()
+        connection = nil
+    end
+    if flingConnection then
+        flingConnection:Disconnect()
+        flingConnection = nil
+    end
+    if soccerBall then
+        soccerBall.Anchored = originalProperties.Anchored
+        soccerBall.CanCollide = originalProperties.CanCollide
+        soccerBall.CanTouch = originalProperties.CanTouch
+    end
+    if couch and couch:IsA("BasePart") then
+        couch.Anchored = originalProperties.Anchored
+        couch.CanCollide = originalProperties.CanCollide
+        couch.CanTouch = originalProperties.CanTouch
+    end
+    
+    -- Desativar CarClient antes de deletar veículos
+    disableCarClient()
+    
+    local args = { [1] = "DeleteAllVehicles" }
+    pcall(function()
+        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
+    end)
+    task.wait(0.2)
+    local character = LocalPlayer.Character
+    if character then
+        for _, part in ipairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+                part.Velocity = Vector3.zero
+                part.RotVelocity = Vector3.zero
+            end
         end
     end
-})
-print("Botão para iniciar fling criado com sucesso!")
-
--- Botão para parar fling
-print("Criando o botão para parar fling...")
-Tab1:Button({
-    Title = "Parar Fling",
-    Desc = "Para o fling no jogador selecionado",
-    Callback = function()
-        running = false
-        if connection then
-            connection:Disconnect()
-            connection = nil
+    local myHumanoid = character and character:FindFirstChild("Humanoid")
+    if myHumanoid then
+        myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+    end
+    for _, seat in ipairs(Workspace:GetDescendants()) do
+        if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
+            seat.Disabled = false
         end
-        if flingConnection then
-            flingConnection:Disconnect()
-            flingConnection = nil
-        end
-        if soccerBall then
-            soccerBall.Anchored = originalProperties.Anchored
-            soccerBall.CanCollide = originalProperties.CanCollide
-            soccerBall.CanTouch = originalProperties.CanTouch
-        end
-        if couch and couch:IsA("BasePart") then
-            couch.Anchored = originalProperties.Anchored
-            couch.CanCollide = originalProperties.CanCollide
-            couch.CanTouch = originalProperties.CanTouch
-        end
-        
-        -- Desativar CarClient antes de deletar veículos
-        disableCarClient()
-        
-        local args = { [1] = "DeleteAllVehicles" }
-        pcall(function()
-            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
-        end)
-        task.wait(0.2)
-        local character = LocalPlayer.Character
-        if character then
-            for _, part in ipairs(character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = true
-                    part.Velocity = Vector3.zero
-                    part.RotVelocity = Vector3.zero
+    end
+    pcall(function()
+        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeUp", 1)
+    end)
+    if savedPosition then
+        local myHRP = character and character:FindFirstChild("HumanoidRootPart")
+        if myHRP then
+            pcall(function()
+                myHRP.Anchored = true
+                myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
+                task.wait(0.2)
+                myHRP.Velocity = Vector3.zero
+                myHRP.RotVelocity = Vector3.zero
+                myHRP.Anchored = false
+                if myHumanoid then
+                    myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
                 end
-            end
+            end)
         end
-        local myHumanoid = character and character:FindFirstChild("Humanoid")
-        if myHumanoid then
-            myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
-        end
-        for _, seat in ipairs(Workspace:GetDescendants()) do
-            if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
-                seat.Disabled = false
+    end
+end
+
+-- Toggle para ativar/desativar o fling
+print("Criando o toggle para ativar/desativar o fling...")
+flingToggle = Tab1:Toggle({
+    Title = "Ativar Fling",
+    Desc = "Ativa ou desativa o fling com o método selecionado",
+    Default = false,
+    Callback = function(state)
+        if state then
+            if isFollowingKill or isFollowingPull or running then
+                warn("Uma ação já está ativa. Use o botão Parar (Matar ou Puxar) primeiro.")
+                flingToggle:SetValue(false)
+                return
             end
-        end
-        pcall(function()
-            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeUp", 1)
-        end)
-        if savedPosition then
-            local myHRP = character and character:FindFirstChild("HumanoidRootPart")
-            if myHRP then
-                pcall(function()
-                    myHRP.Anchored = true
-                    myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
-                    task.wait(0.2)
-                    myHRP.Velocity = Vector3.zero
-                    myHRP.RotVelocity = Vector3.zero
-                    myHRP.Anchored = false
-                    if myHumanoid then
-                        myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-                    end
-                end)
+            if not selectedPlayer then
+                warn("Nenhum jogador selecionado!")
+                flingToggle:SetValue(false)
+                return
             end
+            if not selectedFlingMethod then
+                warn("Nenhum método de fling selecionado!")
+                flingToggle:SetValue(false)
+                return
+            end
+            if selectedFlingMethod == "Bola" then
+                flingWithBall(selectedPlayer)
+            elseif selectedFlingMethod == "Sofá" then
+                flingWithSofa(selectedPlayer)
+            elseif selectedFlingMethod == "Ônibus" then
+                flingWithBus(selectedPlayer)
+            elseif selectedFlingMethod == "Barco" then
+                flingWithBoat(selectedPlayer)
+            end
+        else
+            stopFling()
         end
     end
 })
-print("Botão para parar fling criado com sucesso!")
+print("Toggle para ativar/desativar o fling criado com sucesso!")
 
 print("Script inicializado com sucesso! A UI deve estar visível agora.")
