@@ -1,70 +1,44 @@
 -- lolyta hub version olisinal
 
--- Serviços
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local StarterGui = game:GetService("StarterGui")
+-- Tela de carregamento com imagem funcional e texto "Carregando..."
+local imageId = "rbxassetid://76308195683050" -- ✅ imagem testada e garantida funcional
 
--- Jogador local
-local player = Players.LocalPlayer
-local PlayerGui = player:WaitForChild("PlayerGui")
+-- Remove GUI antiga se já existir
+local oldGui = game.CoreGui:FindFirstChild("LoadingScreen")
+if oldGui then oldGui:Destroy() end
 
--- Criação da tela de loading
-local loadingScreen = Instance.new("ScreenGui")
-loadingScreen.Name = "AnimeLoadingScreen"
-loadingScreen.ResetOnSpawn = false
-loadingScreen.Parent = PlayerGui
+-- Cria a nova tela
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "LoadingScreen"
+screenGui.IgnoreGuiInset = true
+screenGui.ResetOnSpawn = false
+pcall(function() syn.protect_gui(screenGui) end) -- proteção se estiver usando Synapse, Delta etc.
+screenGui.Parent = game:GetService("CoreGui")
 
--- Fundo escuro
-local bg = Instance.new("Frame")
-bg.Size = UDim2.new(1, 0, 1, 0)
-bg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-bg.BorderSizePixel = 0
-bg.Parent = loadingScreen
-
--- Imagem animada de anime girl dançando
-local animeGirl = Instance.new("ImageLabel")
-animeGirl.Size = UDim2.new(0, 400, 0, 400)
-animeGirl.Position = UDim2.new(0.5, -200, 0.5, -200)
-animeGirl.BackgroundTransparency = 1
-animeGirl.Image = "rbxassetid://11456055727" -- anime girl dançando (funcionando 2025)
-animeGirl.Parent = bg
+-- Imagem no centro da tela
+local imageLabel = Instance.new("ImageLabel")
+imageLabel.Size = UDim2.new(0, 300, 0, 300)
+imageLabel.Position = UDim2.new(0.5, -150, 0.5, -150)
+imageLabel.BackgroundTransparency = 1
+imageLabel.Image = imageId
+imageLabel.Parent = screenGui
 
 -- Texto "Carregando..."
-local loadingText = Instance.new("TextLabel")
-loadingText.Size = UDim2.new(0, 300, 0, 50)
-loadingText.Position = UDim2.new(0.5, -150, 0.8, 0)
-loadingText.BackgroundTransparency = 1
-loadingText.Text = "Carregando..."
-loadingText.TextColor3 = Color3.fromRGB(255, 182, 193)
-loadingText.TextStrokeTransparency = 0
-loadingText.TextScaled = true
-loadingText.Font = Enum.Font.GothamBold
-loadingText.Parent = bg
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(0, 300, 0, 50)
+textLabel.Position = UDim2.new(0.5, -150, 0.5, 180)
+textLabel.BackgroundTransparency = 1
+textLabel.Text = "Carregando..."
+textLabel.TextColor3 = Color3.new(1, 1, 1)
+textLabel.TextStrokeTransparency = 0
+textLabel.Font = Enum.Font.FredokaOne
+textLabel.TextScaled = true
+textLabel.Parent = screenGui
 
--- Animação de fade no texto
-task.spawn(function()
-	while loadingScreen do
-		TweenService:Create(loadingText, TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-			TextTransparency = 0.5
-		}):Play()
-		wait(1)
-		TweenService:Create(loadingText, TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-			TextTransparency = 0
-		}):Play()
-		wait(1)
-	end
+-- Remove após 5 segundos
+task.delay(5, function()
+	screenGui:Destroy()
 end)
-
--- Simula tempo de carregamento (você pode ajustar aqui)
-task.wait(5) -- tempo de carregamento
-
--- Remove loading e executa o hub
-TweenService:Create(bg, TweenInfo.new(1), {BackgroundTransparency = 1}):Play()
-TweenService:Create(animeGirl, TweenInfo.new(1), {ImageTransparency = 1}):Play()
-TweenService:Create(loadingText, TweenInfo.new(1), {TextTransparency = 1}):Play()
-task.wait(1.2)
-loadingScreen:Destroy()
 
 -- Carrega seu Hub completo
 
@@ -1449,8 +1423,6 @@ Tab4:Toggle({
                                           -- === Tab 5: Troll Musica === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
-
-
 local function tocarMusica(id)
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     
@@ -1500,7 +1472,17 @@ local musicOptions = {
         {name = "forro da rezenha", id = "120973520531216"},
         {name = "forro dudu", id = "74404168179733"},
         {name = "forro sao joao", id = "106364874935196"},
-        {name = "forro engraçado paia", id = "76524290482399"}
+        {name = "forro engraçado paia", id = "76524290482399"},
+        {name = "pre treino", id = ""},
+        {name = "pre treino", id = ""},
+        {name = "pre treino", id = ""},
+        {name = "pre treino", id = ""},
+        {name = "pre treino", id = ""},
+        {name = "pre treino", id = ""},
+        {name = "pre treino", id = ""},
+        {name = "pre treino", id = ""},
+        {name = "pre treino", id = ""},
+        {name = "pre treino", id = ""}
        
         
     }
@@ -1535,6 +1517,115 @@ end
 -- Dropdown para "Funk, Phonk, MTG"
 Tab5:Dropdown({
     Title = "forro",
+    Desc = "all",
+    Value = "Option 1",
+    Multi = false,
+    AllowNone = true,
+    Values = musicNames,
+    Callback = function(selectedSound)
+        if selectedSound and categoryMap[selectedSound] then
+            local soundId = categoryMap[selectedSound].id
+            if soundId and soundId ~= "" and soundId ~= "4354908569" then
+                playMusic(soundId)
+                print("Música selecionada: " .. selectedSound .. " (ID: " .. soundId .. ")")
+            else
+                print("ID inválido ou título selecionado: " .. tostring(selectedSound))
+            end
+        else
+            print("Nenhuma música selecionada ou ID não encontrado!")
+        end
+    end,
+})
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+local function tocarMusica(id)
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    
+    local argsCasa = {
+        [1] = "PickHouseMusicText",
+        [2] = id
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sHous1e"):FireServer(unpack(argsCasa))
+
+    local argsCarro = {
+        [1] = "PickingCarMusicText",
+        [2] = id
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(argsCarro))
+
+    local argsScooter = {
+        [1] = "PickingScooterMusicText",
+        [2] = id
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(argsScooter))
+end
+
+-- Função auxiliar para validar valores do Dropdown
+local function isValidMusicId(value)
+    return value and value ~= "" and value ~= "Option 1" and not value:match("novas musica adds") and not value:match("musica brasil") and not value:match("musica do meu interece") and not value:match("musica dls por elas") and not value:match("meme abaixo") and not value:match("estourada")
+end
+
+Tab5:Input({
+    Title = "ID da música",
+    Placeholder = "Digite o ID e pressione Enter",
+    Callback = function(value)
+        if value and value ~= "" then
+            tocarMusica(tostring(value))
+        end
+    end,
+})
+
+
+-- Tabela de opções de música para o Dropdown "Funk, Phonk, MTG"
+local musicOptions = {
+    ["forro"] = {
+        {name = "musica", id = "4354908569"}, -- Placeholder ID para título
+        {name = "ANXIETY (Amapiano Re-fix)", id = "101483901475189"},
+        {name = "Meu corpo, minhas regras", id = "127587901595282"},
+        {name = "FALAR (YPKE)", id = "81289143488329"},
+        {name = "$$$$gg$$$$gg", id = "137471775091253"},
+        {name = "", id = ""},
+        {name = "", id = ""},
+        {name = "", id = ""},
+        {name = "", id = ""},
+        {name = "", id = ""},
+        {name = "", id = ""},
+        {name = "", id = ""}
+       
+        
+    }
+}
+
+-- Criar listas de nomes e mapeamento de categorias
+local musicNames = {}
+local categoryMap = {}
+for category, sounds in pairs(musicOptions) do
+    for _, music in ipairs(sounds) do
+        table.insert(musicNames, music.name)
+        categoryMap[music.name] = {id = music.id, category = category}
+    end
+end
+
+-- Função auxiliar para tocar música
+local function playMusic(soundId)
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local argsScooter = {
+        [1] = "PickingScooterMusicText",
+        [2] = tostring(soundId)
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(argsScooter))
+    
+    local argsCarro = {
+        [1] = "PickingCarMusicText",
+        [2] = tostring(soundId)
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(argsCarro))
+end
+
+-- Dropdown para "Funk, Phonk, MTG"
+Tab5:Dropdown({
+    Title = "musicas internacionais",
     Desc = "all",
     Value = "Option 1",
     Multi = false,
@@ -1608,7 +1699,35 @@ local musicOptions = {
         {name = "menor TV", id = "93993692602344"},
         {name = "de duplinha", id = "80112997683181"},
         {name = "tropa da jamaika", id = "104498738218748"},
-        {name = "pre treino", id = "136869502216760"}
+        {name = "pre treino", id = "136869502216760"},
+        {name = "Of the king (Omega)", id = "75080131478471"},
+        {name = "CVRL", id = "124244582950595"},
+        {name = "batida Brega Violino (Beat Brega Funk) ", id = "99399643204701"},
+        {name = "Espressora Signora FUNK", id = "123394392737234"},
+        {name = "Dança do Canguru (Pke Gaz1nh)", id = "86876136192157"},
+        {name = "Il Cacto Hipopotamo FUNK", id = "104491656009142"},
+        {name = "Dingo o Bell (Omega)", id = "93847687239132"},
+        {name = "espere 30segundos!! Ondas sonoras", id = "127757321382838"},
+        {name = "MONTAGEM ARABIANA (Pke Gaz1nh)", id = "78076624091098"},
+        {name = "MONTAGEM 15 AN0", id = "82838053504552"},
+        {name = "Clube das Winx", id = "101870752447864"},
+        {name = "MONTAGEM PALHAÇO DAS TREVAS", id = "98342120038327"},
+        {name = "AQUI NO CH.. (GAZ1NH)", id = "132455229546431"},
+        {name = "AUTOMOTIVO DUPLA DINAMICA", id = "73361598376791"},
+        {name = "SENTA, SENTA, SENTA", id = "140417852590557"},
+        {name = "Boladona", id = "96625339070598"},
+        {name = "ARROCHA ", id = "103249564479431"},
+        {name = "MEGA DOS AUTOMOTIVO", id = "82353927625851"},
+        {name = "escravos do po", id = "108995231462803"},
+        {name = "", id = ""},
+        {name = "", id = ""},
+        {name = "", id = ""},
+        {name = "", id = ""},
+        {name = "", id = ""},
+        {name = "", id = ""},
+        {name = "", id = ""},
+        {name = "", id = ""},
+        {name = "", id = ""}
         
         
     }
@@ -1734,7 +1853,21 @@ local musicOptions = {
         {name = "Naaaaa", id = "109784877184952"},
         {name = "trem", id = "114608169341947"},
         {name = "eoropa", id = "111346133543699"},
-        {name = "atimosphekika", id = "77857496821844"}
+        {name = "atimosphekika", id = "77857496821844"},
+        {name = "phonk ALL THE TIME", id = "123809083385992"},
+        {name = "Lifelong Memory", id = "81929101024622"},
+        {name = "Automotivo Blondie (Pke Gaz1nh)", id = "74564219749776"},
+        {name = "สวัสดีคนไทย v2", id = "118225359190317"},
+        {name = "MTG TU VAI SENTAR (Pke Gaz1nh)", id = "115317874112657"},
+        {name = "TOMADA PHONK", id = "96610114209889"},
+        {name = "riightt rs ", id = "98153718682753"},
+        {name = "SARRA FUNK", id = "96249826607044"},
+        {name = "", id = ""},
+        {name = "", id = ""},
+        {name = "", id = ""},
+        {name = "", id = ""},
+        {name = "", id = ""},
+        {name = "", id = ""}
         
         
     }
@@ -1878,6 +2011,7 @@ local musicOptions = {
         {name = "gemido", id = 106835463235574},
         {name = "gemidao v2", id = 112179417472137},
         {name = "Gemido ultra rápido", id = 128863565301778},
+        {name = "sus sex", id = 128137573022197},
         {name = "gemido estranho", id = 131219411501419},
         {name = "gemido kawai", id = 100409245129170},
         {name = "Hentai gemido", id = 125037339642322},
@@ -1906,11 +2040,20 @@ local musicOptions = {
         {name = "Hoje vou ser tua mulher e tu", id = 90844637105538},
         {name = "Deita aqui eu mandei vc deitar sirens", id = 100291188941582},
         {name = "miau", id = 131804436682424},
+        {name = "skibidi", id = 128771670035179},
+        
+        {name = "cavalo!!", id = 78871573440184},
+        {name = "miauçççççççççççççççç", id = 131804436682424},
+        {name = "miauçççççççççççççççç", id = 131804436682424},
+        {name = "miauçççççççççççççççç", id = 131804436682424},
+        {name = "miauçççççççççççççççç", id = 131804436682424},
+
         {name = "deixa os garoto brinca", id = 80291355054807},
         {name = "flamengo", id = 137774355552052},
         {name = "sai do mei satnas", id = 127944706557246},
         {name = "namoral agora e a hora", id = 120677947987369},
         {name = "n pode me chutar pq seu celebro e burro", id = 82284055473737},
+        {name = "vc ta fudido vou te pegar", id = 120214772725166},
         {name = "deley", id = 102906880476838},
         {name = "Tu e um beta", id = 130233956349541},
         {name = "Porfavor n tira eu nao", id = 85321374020324},
@@ -2493,7 +2636,6 @@ end)
 local player = game.Players.LocalPlayer
 local selectedLocation = "Morro"
 
-
 -- Dropdown com as localizações de Brookhaven
 local Dropdown = Tab9:Dropdown({
     Title = "Locais de Brookhaven",
@@ -2529,6 +2671,7 @@ local TeleportButton = Tab9:Button({
         print("Teleportando para: " .. selectedLocation)
         if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             local humanoidRootPart = player.Character.HumanoidRootPart
+            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
             local locations = {
                 ["Morro"] = Vector3.new(-348.64, 65.94, -458.08),
                 ["Praça"] = Vector3.new(-26.17, 3.48, -0.93),
@@ -2543,12 +2686,38 @@ local TeleportButton = Tab9:Button({
                 ["Beira-mar 1"] = Vector3.new(55.69, 2.94, -1403.60),
                 ["Beira-mar 2"] = Vector3.new(42.39, 2.94, 1336.14)
             }
+
             if locations[selectedLocation] then
                 local success, errorMessage = pcall(function()
+                    -- Desativar física (impedir movimento durante o teleporte)
+                    if humanoid then
+                        humanoid:ChangeState(Enum.HumanoidStateType.Physics) -- Forçar estado neutro
+                        humanoid.WalkSpeed = 0 -- Impedir movimento
+                    end
+                    humanoidRootPart.Anchored = true -- Ancorar para evitar física externa
+
+                    -- Realizar o teleporte
                     humanoidRootPart.CFrame = CFrame.new(locations[selectedLocation])
+
+                    -- Manter ancorado por 0,4 segundos
+                    task.wait(0.4)
+
+                    -- Restaurar estado
+                    humanoidRootPart.Anchored = false
+                    if humanoid then
+                        humanoid.WalkSpeed = 16 -- Restaurar velocidade padrão (ajuste conforme necessário)
+                        humanoid:ChangeState(Enum.HumanoidStateType.Running) -- Voltar ao estado normal
+                    end
                 end)
+
                 if not success then
                     warn("Erro ao teleportar: " .. tostring(errorMessage))
+                    -- Garantir que o personagem não fique preso
+                    humanoidRootPart.Anchored = false
+                    if humanoid then
+                        humanoid.WalkSpeed = 16
+                        humanoid:ChangeState(Enum.HumanoidStateType.Running)
+                    end
                 end
             else
                 print("Local não encontrado!")
