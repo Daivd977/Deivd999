@@ -152,7 +152,7 @@ local function loadHub()
     local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
     local Window = WindUI:CreateWindow({
-        Title = "Lolyta Hub 3.1...",
+        Title = "Lolyta Hub 3.1 teste vesion",
         Icon = "door-open",
         Author = "Lolycon666",
         Folder = "Lolyta hub v.1.666",
@@ -197,13 +197,6 @@ local function loadHub()
     local function invokeServer(eventPath, args)
         return ReplicatedStorage:WaitForChild("RE"):WaitForChild(eventPath):InvokeServer(unpack(args))
     end
-end
-
--- Remove a tela de carregamento após 5 segundos e carrega o hub
-task.delay(5, function()
-    screenGui:Destroy()
-    loadHub() -- Chama a função que carrega o hub e os scripts
-end)
 ---------------------------------------------------------------------------------------------------------------------------------
                                                    -- === Tab 1: Main === --
 ---------------------------------------------------------------------------------------------------------------------------------
