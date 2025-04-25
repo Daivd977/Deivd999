@@ -1,8 +1,21 @@
-local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
+-- Carregar a biblioteca WindUI com tratamento de erro e depuração
+print("Tentando carregar a biblioteca WindUI...")
+local success, WindUI = pcall(function()
+    return loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
+end)
+
+if not success or not WindUI then
+    warn("Erro ao carregar a biblioteca WindUI: " .. tostring(WindUI))
+else
+    print("Biblioteca WindUI carregada com sucesso!")
+end
+
 local Version = "1.4.0"
 
+-- Criação da janela principal
+print("Criando a janela principal...")
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta troll 9999",
+    Title = "Lolyta troll 699999",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta 666",
@@ -18,7 +31,10 @@ local Window = WindUI:CreateWindow({
     SideBarWidth = 200,
     HasOutline = false,
 })
+print("Janela principal criada com sucesso!")
 
+-- Editar o botão de abertura
+print("Editando o botão de abertura...")
 Window:EditOpenButton({
     Title = "Lolyta troll",
     Icon = "align-justify",
@@ -26,9 +42,12 @@ Window:EditOpenButton({
     StrokeThickness = 3,
     Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29"))
 })
+print("Botão de abertura editado com sucesso!")
 
 -- === Abas da Interface === --
+print("Criando a aba 'troll'...")
 local Tab1 = Window:Tab({ Title = "troll", Icon = "Ball" })
+print("Aba 'troll' criada com sucesso!")
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -80,7 +99,7 @@ local success, errorMessage = pcall(function()
     loadstring(serverScriptCode)()
 end)
 if not success then
-    -- warn("Erro ao criar script no servidor: " .. tostring(errorMessage))
+    warn("Erro ao criar script no servidor: " .. tostring(errorMessage))
 end
 
 -- Função para desativar temporariamente o CarClient
@@ -89,6 +108,7 @@ local function disableCarClient()
     local carClient = backpack:FindFirstChild("CarClient")
     if carClient and carClient:IsA("LocalScript") then
         carClient.Disabled = true
+        print("CarClient desativado com sucesso!")
     end
 end
 
@@ -98,6 +118,7 @@ local function enableCarClient()
     local carClient = backpack:FindFirstChild("CarClient")
     if carClient and carClient:IsA("LocalScript") then
         carClient.Disabled = false
+        print("CarClient reativado com sucesso!")
     end
 end
 
@@ -126,7 +147,7 @@ local function updateDropdown(dropdown)
         end
     end)
     if not success then
-        -- warn("Erro ao atualizar dropdown: " .. tostring(errorMessage))
+        warn("Erro ao atualizar dropdown: " .. tostring(errorMessage))
     end
 end
 
@@ -163,7 +184,7 @@ local function spectatePlayer(playerName)
             end
             local success, errorMessage = pcall(updateCamera)
             if not success then
-                -- warn("Erro ao atualizar câmera no modo visualização: " .. tostring(errorMessage))
+                warn("Erro ao atualizar câmera no modo visualização: " .. tostring(errorMessage))
                 stopSpectating()
             end
         end)
@@ -206,6 +227,7 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 end)
 
 -- Dropdown para selecionar jogador
+print("Criando o dropdown para selecionar jogador...")
 local DropdownPlayer = Tab1:Dropdown({
     Title = "Selecionar Jogador",
     Desc = "Escolha um jogador para matar, puxar, visualizar ou aplicar fling",
@@ -235,8 +257,10 @@ local DropdownPlayer = Tab1:Dropdown({
         end
     end
 })
+print("Dropdown para selecionar jogador criado com sucesso!")
 
 -- Botão para atualizar a lista de jogadores
+print("Criando o botão para atualizar a lista de jogadores...")
 Tab1:Button({
     Title = "Atualizar Lista de Jogadores",
     Desc = "Atualiza a lista de jogadores no dropdown",
@@ -244,8 +268,10 @@ Tab1:Button({
         updateDropdown(DropdownPlayer)
     end
 })
+print("Botão para atualizar a lista de jogadores criado com sucesso!")
 
 -- Toggle para visualizar jogador
+print("Criando o toggle para visualizar jogador...")
 local SpectateToggle = Tab1:Toggle({
     Title = "Visualizar Jogador",
     Desc = "Ativa/desativa a visualização do jogador selecionado",
@@ -255,28 +281,105 @@ local SpectateToggle = Tab1:Toggle({
             if selectedPlayer then
                 local success, errorMessage = pcall(spectatePlayer, selectedPlayer.Name)
                 if not success then
-                    -- warn("Erro ao ativar modo visualização: " .. tostring(errorMessage))
+                    warn("Erro ao ativar modo visualização: " .. tostring(errorMessage))
                     SpectateToggle:SetValue(false)
                 end
             else
-                -- warn("Selecione um jogador antes de ativar a visualização.")
+                warn("Selecione um jogador antes de ativar a visualização.")
                 SpectateToggle:SetValue(false)
             end
         else
             local success, errorMessage = pcall(stopSpectating)
             if not success then
-                -- warn("Erro ao desativar modo visualização: " .. tostring(errorMessage))
+                warn("Erro ao desativar modo visualização: " .. tostring(errorMessage))
             end
         end
     end
 })
+print("Toggle para visualizar jogador criado com sucesso!")
 
 -- Remove jogadores que saem do servidor
 Players.PlayerRemoving:Connect(function(player)
     if selectedPlayer == player then
         selectedPlayer = nil
         if isSpectating then
-            stopSpect myHRP = character:FindFirstChild("HumanoidRootPart")
+            stopSpectating()
+        end
+    end
+    updateDropdown(DropdownPlayer)
+end)
+
+-- Inicializa o dropdown
+updateDropdown(DropdownPlayer)
+
+-- Dropdown para selecionar método de matar/puxar
+print("Criando o dropdown para selecionar método de matar/puxar...")
+local DropdownKillPullMethod = Tab1:Dropdown({
+    Title = "Selecionar Método (Matar/Puxar)",
+    Desc = "Escolha o método para matar ou puxar",
+    Values = {"Sofá", "Ônibus"},
+    Callback = function(value)
+        selectedKillPullMethod = value
+    end
+})
+print("Dropdown para selecionar método de matar/puxar criado com sucesso!")
+
+-- Função para equipar o sofá
+local function equipSofa()
+    local backpack = LocalPlayer:WaitForChild("Backpack")
+    local sofa = backpack:FindFirstChild("Couch") or LocalPlayer.Character:FindFirstChild("Couch")
+    if not sofa then
+        local args = { [1] = "PickingTools", [2] = "Couch" }
+        local success, err = pcall(function()
+            ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
+        end)
+        if not success then
+            warn("Erro ao pegar o sofá: " .. tostring(err))
+            return false
+        end
+        repeat
+            sofa = backpack:FindFirstChild("Couch")
+            task.wait()
+        until sofa or task.wait(5)
+        if not sofa then
+            warn("Falha ao pegar o sofá!")
+            return false
+        end
+    end
+    if sofa.Parent ~= LocalPlayer.Character then
+        sofa.Parent = LocalPlayer.Character
+    end
+    return true
+end
+
+-- Função para matar com sofá
+local function killWithSofa(targetPlayer)
+    if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then
+        warn("Selecione um jogador válido antes de iniciar!")
+        return
+    end
+    if not equipSofa() then return end
+    isFollowingKill = true
+    originalPosition = LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position
+end
+
+-- Função para puxar com sofá
+local function pullWithSofa(targetPlayer)
+    if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then
+        warn("Selecione um jogador válido antes de iniciar!")
+        return
+    end
+    if not equipSofa() then return end
+    isFollowingPull = true
+    originalPosition = LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position -- Corrigido o erro de sintaxe
+end
+
+-- Função para matar com ônibus
+local function killWithBus(targetPlayer)
+    if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then return end
+    local character = LocalPlayer.Character
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local myHRP = character:FindFirstChild("HumanoidRootPart")
     if not humanoid or not myHRP then return end
     savedPosition = myHRP.Position
     pcall(function()
@@ -306,13 +409,13 @@ Players.PlayerRemoving:Connect(function(player)
     task.wait(1)
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
     if not vehiclesFolder then
-        -- warn("Pasta Vehicles não encontrada no Workspace!")
+        warn("Pasta Vehicles não encontrada no Workspace!")
         return
     end
     local busName = LocalPlayer.Name .. "Car"
     local bus = vehiclesFolder:FindFirstChild(busName)
     if not bus then
-        -- warn("Ônibus não encontrado em Workspace.Vehicles com o nome: " .. busName)
+        warn("Ônibus não encontrado em Workspace.Vehicles com o nome: " .. busName)
         return
     end
     pcall(function()
@@ -328,7 +431,7 @@ Players.PlayerRemoving:Connect(function(player)
     repeat
         task.wait()
         if tick() - sitStart > 10 then
-            -- warn("Timeout: Jogador local não foi detectado como sentado!")
+            warn("Timeout: Jogador local não foi detectado como sentado!")
             return
         end
     until humanoid.Sit
@@ -414,7 +517,7 @@ Players.PlayerRemoving:Connect(function(player)
                             end
                         end)
                     else
-                        -- warn("savedPosition não está definida para teleporte de volta!")
+                        warn("savedPosition não está definida para teleporte de volta!")
                     end
                 end
             end
@@ -459,7 +562,7 @@ followConnection = RunService.Heartbeat:Connect(function()
             )
         end)
         if not success then
-            -- warn("Erro no loop de matar/puxar: " .. tostring(errorMessage))
+            warn("Erro no loop de matar/puxar: " .. tostring(errorMessage))
             isFollowingKill = false
             isFollowingPull = false
         end
@@ -501,7 +604,7 @@ sitCheckConnection = RunService.Heartbeat:Connect(function()
             end
         end)
         if not success then
-            -- warn("Erro na verificação de assento: " .. tostring(errorMessage))
+            warn("Erro na verificação de assento: " .. tostring(errorMessage))
             isFollowingKill = false
             isFollowingPull = false
         end
@@ -509,20 +612,21 @@ sitCheckConnection = RunService.Heartbeat:Connect(function()
 end)
 
 -- Botão para iniciar matar
+print("Criando o botão para iniciar matar...")
 Tab1:Button({
     Title = "Matar",
     Desc = "Inicia o matar com o método selecionado",
     Callback = function()
         if isFollowingKill or isFollowingPull or running then
-            -- warn("Uma ação já está ativa. Use o botão Parar primeiro.")
+            warn("Uma ação já está ativa. Use o botão Parar primeiro.")
             return
         end
         if not selectedPlayer then
-            -- warn("Nenhum jogador selecionado!")
+            warn("Nenhum jogador selecionado!")
             return
         end
         if not selectedKillPullMethod then
-            -- warn("Nenhum método de matar/puxar selecionado!")
+            warn("Nenhum método de matar/puxar selecionado!")
             return
         end
         if selectedKillPullMethod == "Sofá" then
@@ -532,33 +636,37 @@ Tab1:Button({
         end
     end
 })
+print("Botão para iniciar matar criado com sucesso!")
 
 -- Botão para iniciar puxar
+print("Criando o botão para iniciar puxar...")
 Tab1:Button({
     Title = "Puxar",
     Desc = "Inicia o puxar com o método selecionado",
     Callback = function()
         if isFollowingKill or isFollowingPull or running then
-            -- warn("Uma ação já está ativa. Use o botão Parar primeiro.")
+            warn("Uma ação já está ativa. Use o botão Parar primeiro.")
             return
         end
         if not selectedPlayer then
-            -- warn("Nenhum jogador selecionado!")
+            warn("Nenhum jogador selecionado!")
             return
         end
         if not selectedKillPullMethod then
-            -- warn("Nenhum método de matar/puxar selecionado!")
+            warn("Nenhum método de matar/puxar selecionado!")
             return
         end
         if selectedKillPullMethod == "Sofá" then
             pullWithSofa(selectedPlayer)
         else
-            -- warn("Puxar só funciona com Sofá!")
+            warn("Puxar só funciona com Sofá!")
         end
     end
 })
+print("Botão para iniciar puxar criado com sucesso!")
 
 -- Botão para parar matar ou puxar
+print("Criando o botão para parar matar ou puxar...")
 Tab1:Button({
     Title = "Parar (Matar ou Puxar)",
     Desc = "Para o movimento de matar ou puxar",
@@ -606,8 +714,10 @@ Tab1:Button({
         end)
     end
 })
+print("Botão para parar matar ou puxar criado com sucesso!")
 
 -- Dropdown para selecionar método de fling
+print("Criando o dropdown para selecionar método de fling...")
 local DropdownFlingMethod = Tab1:Dropdown({
     Title = "Selecionar Método de Fling",
     Desc = "Escolha o método para aplicar fling",
@@ -616,6 +726,7 @@ local DropdownFlingMethod = Tab1:Dropdown({
         selectedFlingMethod = value
     end
 })
+print("Dropdown para selecionar método de fling criado com sucesso!")
 
 -- Função para equipar a bola
 local function equipBola()
@@ -627,7 +738,7 @@ local function equipBola()
             ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
         end)
         if not success then
-            -- warn("Erro ao pegar a bola: " .. tostring(err))
+            warn("Erro ao pegar a bola: " .. tostring(err))
             return false
         end
         repeat
@@ -635,7 +746,7 @@ local function equipBola()
             task.wait()
         until bola or task.wait(5)
         if not bola then
-            -- warn("Falha ao pegar a bola!")
+            warn("Falha ao pegar a bola!")
             return false
         end
     end
@@ -648,14 +759,14 @@ end
 -- Função para fling com bola
 local function flingWithBall(targetPlayer)
     if not targetPlayer or not targetPlayer.Character then
-        -- warn("Selecione um jogador válido antes de iniciar o fling!")
+        warn("Selecione um jogador válido antes de iniciar o fling!")
         return
     end
     local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     local myHRP = character:FindFirstChild("HumanoidRootPart")
     if not humanoid or not myHRP then
-        -- warn("Seu personagem ainda não está totalmente carregado.")
+        warn("Seu personagem ainda não está totalmente carregado.")
         return
     end
     if not equipBola() then return end
@@ -666,17 +777,17 @@ local function flingWithBall(targetPlayer)
     end)
     local workspaceCom = Workspace:FindFirstChild("WorkspaceCom")
     if not workspaceCom then
-        -- warn("WorkspaceCom não encontrado!")
+        warn("WorkspaceCom não encontrado!")
         return
     end
     local soccerBalls = workspaceCom:FindFirstChild("001_SoccerBalls")
     if not soccerBalls then
-        -- warn("001_SoccerBalls não encontrado!")
+        warn("001_SoccerBalls não encontrado!")
         return
     end
     soccerBall = soccerBalls:FindFirstChild("Soccer" .. LocalPlayer.Name)
     if not soccerBall then
-        -- warn("Bola de futebol não encontrada em Workspace.WorkspaceCom.001_SoccerBalls.Soccer" .. LocalPlayer.Name)
+        warn("Bola de futebol não encontrada em Workspace.WorkspaceCom.001_SoccerBalls.Soccer" .. LocalPlayer.Name)
         return
     end
     originalProperties = {
@@ -760,14 +871,14 @@ end
 -- Função para fling com sofá
 local function flingWithSofa(targetPlayer)
     if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then
-        -- warn("Selecione um jogador válido antes de iniciar!")
+        warn("Selecione um jogador válido antes de iniciar!")
         return
     end
     local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     local myHRP = character:FindFirstChild("HumanoidRootPart")
     if not humanoid or not myHRP then
-        -- warn("Seu personagem ainda não está totalmente carregado.")
+        warn("Seu personagem ainda não está totalmente carregado.")
         return
     end
     savedPosition = myHRP.Position
@@ -783,7 +894,7 @@ local function flingWithSofa(targetPlayer)
         end
     end
     if not couch then
-        -- warn("Sofá não encontrado no personagem ou no Workspace!")
+        warn("Sofá não encontrado no personagem ou no Workspace!")
         return
     end
     if couch:IsA("BasePart") then
@@ -901,14 +1012,14 @@ end
 -- Função para fling com ônibus
 local function flingWithBus(targetPlayer)
     if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then
-        -- warn("Selecione um jogador válido antes de iniciar!")
+        warn("Selecione um jogador válido antes de iniciar!")
         return
     end
     local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     local myHRP = character:FindFirstChild("HumanoidRootPart")
     if not humanoid or not myHRP then
-        -- warn("Seu personagem ainda não está totalmente carregado.")
+        warn("Seu personagem ainda não está totalmente carregado.")
         return
     end
     savedPosition = myHRP.Position
@@ -939,13 +1050,13 @@ local function flingWithBus(targetPlayer)
     task.wait(1)
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
     if not vehiclesFolder then
-        -- warn("Pasta Vehicles não encontrada no Workspace!")
+        warn("Pasta Vehicles não encontrada no Workspace!")
         return
     end
     local busName = LocalPlayer.Name .. "Car"
     local bus = vehiclesFolder:FindFirstChild(busName)
     if not bus then
-        -- warn("Ônibus não encontrado em Workspace.Vehicles com o nome: " .. busName)
+        warn("Ônibus não encontrado em Workspace.Vehicles com o nome: " .. busName)
         return
     end
     pcall(function()
@@ -961,7 +1072,7 @@ local function flingWithBus(targetPlayer)
     repeat
         task.wait()
         if tick() - sitStart > 10 then
-            -- warn("Timeout: Jogador local não foi detectado como sentado!")
+            warn("Timeout: Jogador local não foi detectado como sentado!")
             return
         end
     until humanoid.Sit
@@ -1107,13 +1218,13 @@ local function flingWithBoat(targetPlayer)
     task.wait(1.5)
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
     if not vehiclesFolder then
-        -- warn("Pasta Vehicles não encontrada no Workspace!")
+        warn("Pasta Vehicles não encontrada no Workspace!")
         return
     end
     local boatName = LocalPlayer.Name .. "Car"
     local boat = vehiclesFolder:FindFirstChild(boatName)
     if not boat then
-        -- warn("Barco não encontrado em Workspace.Vehicles com o nome: " .. boatName)
+        warn("Barco não encontrado em Workspace.Vehicles com o nome: " .. boatName)
         return
     end
     pcall(function()
@@ -1167,7 +1278,7 @@ local function flingWithBoat(targetPlayer)
         end)
         table.insert(touchedConnections, conn)
     else
-        -- warn("Parte 'Body' não encontrada no barco! Usando todas as partes...")
+        warn("Parte 'Body' não encontrada no barco! Usando todas as partes...")
         for _, part in ipairs(boat:GetDescendants()) do
             if part:IsA("BasePart") then
                 local conn = part.Touched:Connect(function(hit)
@@ -1229,20 +1340,21 @@ local function flingWithBoat(targetPlayer)
 end
 
 -- Botão para iniciar fling
+print("Criando o botão para iniciar fling...")
 Tab1:Button({
     Title = "Iniciar Fling",
     Desc = "Inicia o fling com o método selecionado",
     Callback = function()
         if running or isFollowingKill or isFollowingPull then
-            -- warn("Uma ação já está ativa. Use o botão Parar primeiro.")
+            warn("Uma ação já está ativa. Use o botão Parar primeiro.")
             return
         end
         if not selectedPlayer then
-            -- warn("Nenhum jogador selecionado!")
+            warn("Nenhum jogador selecionado!")
             return
         end
         if not selectedFlingMethod then
-            -- warn("Nenhum método de fling selecionado!")
+            warn("Nenhum método de fling selecionado!")
             return
         end
         if selectedFlingMethod == "Bola" then
@@ -1256,8 +1368,10 @@ Tab1:Button({
         end
     end
 })
+print("Botão para iniciar fling criado com sucesso!")
 
 -- Botão para parar fling
+print("Criando o botão para parar fling...")
 Tab1:Button({
     Title = "Parar Fling",
     Desc = "Para o fling no jogador selecionado",
@@ -1323,10 +1437,13 @@ Tab1:Button({
                     myHRP.RotVelocity = Vector3.zero
                     myHRP.Anchored = false
                     if myHumanoid then
-                        humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                        myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
                     end
                 end)
             end
         end
     end
 })
+print("Botão para parar fling criado com sucesso!")
+
+print("Script inicializado com sucesso! A UI deve estar visível agora.")
