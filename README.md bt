@@ -125,56 +125,69 @@ end
 
 -- O resto do seu script (hub) continua aqui...
 
-    -- Define o nome "Lolyta Hub 💖" com cor rosa escuro
-    local argsName = {
-        [1] = "RolePlayName",
-        [2] = "Lolyta Hub 💖"
-    }
-    local successName, errorName = fireServer("1RPNam1eTex1t", argsName)
-    if successName then
-        print("Nome definido como 'Lolyta Hub 💖' com sucesso!")
-    else
-        warn("Erro ao definir o nome: " .. tostring(errorName))
+    -- Scripts a serem executados ao iniciar o hub
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RE = ReplicatedStorage:WaitForChild("RE", 5)
+
+-- Função auxiliar para disparar eventos remotos
+local function fireServer(eventName, args)
+    local event = RE:WaitForChild(eventName, 5)
+    if not event then
+        warn("Evento remoto '" .. eventName .. "' não encontrado!")
+        return false, "Evento remoto não encontrado"
     end
+    return pcall(function()
+        event:FireServer(unpack(args))
+    end)
+end
 
-    -- Define a cor do nome como rosa escuro
-    local argsNameColor = {
-        [1] = "PickingRPNameColor",
-        [2] = Color3.new(0.8, 0.2, 0.4) -- Rosa escuro
-    }
-    local successNameColor, errorNameColor = fireServer("1RPNam1eColo1r", argsNameColor)
-    if successNameColor then
-        print("Cor do nome definida como rosa escuro com sucesso!")
-    else
-        warn("Erro ao definir a cor do nome: " .. tostring(errorNameColor))
-    end
+-- Define o nome "Lolyta Hub 💖" com cor rosa escuro
+local argsName = {
+    [1] = "RolePlayName",
+    [2] = "Lolyta Hub 💖" -- Adiciona um emoji fofo (coração brilhante)
+}
+local successName, errorName = fireServer("1RPNam1eTex1t", argsName)
+if successName then
+    print("Nome definido como 'Lolyta Hub 💖' com sucesso!")
+else
+    warn("Erro ao definir o nome: " .. tostring(errorName))
+end
 
-    -- Define a bio "scripter" com cor preta
-    local argsBio = {
-        [1] = "RolePlayBio",
-        [2] = "scripter"
-    }
-    local successBio, errorBio = fireServer("1RPNam1eTex1t", argsBio)
-    if successBio then
-        print("Bio definida como 'scripter' com sucesso!")
-    else
-        warn("Erro ao definir a bio: " .. tostring(errorBio))
-    end
+-- Define a cor do nome como rosa escuro
+local argsNameColor = {
+    [1] = "PickingRPNameColor",
+    [2] = Color3.new(0.8, 0.2, 0.4) -- Rosa escuro
+}
+local successNameColor, errorNameColor = fireServer("1RPNam1eColo1r", argsNameColor)
+if successNameColor then
+    print("Cor do nome definida como rosa escuro com sucesso!")
+else
+    warn("Erro ao definir a cor do nome: " .. tostring(errorNameColor))
+end
 
-    -- Define a cor da bio como preta
-    local argsBioColor = {
-        [1] = "PickingRPBioColor",
-        [2] = Color3.new(0, 0, 0) -- Preto
-    }
-    local successBioColor, errorBioColor = fireServer("1RPNam1eColo1r", argsBioColor)
-    if successBioColor then
-        print("Cor da bio definida como preta com sucesso!")
-     else
-       warn("Erro ao definir a cor da bio: " .. tostring(errorBioColor))
-    end
+-- Define a bio "scripter" com cor preta
+local argsBio = {
+    [1] = "RolePlayBio",
+    [2] = "scripter"
+}
+local successBio, errorBio = fireServer("1RPNam1eTex1t", argsBio)
+if successBio then
+    print("Bio definida como 'scripter' com sucesso!")
+else
+    warn("Erro ao definir a bio: " .. tostring(errorBio))
+end
 
-
--- O resto do seu script (hub) continua aqui...
+-- Define a cor da bio como preta
+local argsBioColor = {
+    [1] = "PickingRPBioColor",
+    [2] = Color3.new(0, 0, 0) -- Preto
+}
+local successBioColor, errorBioColor = fireServer("1RPNam1eColo1r", argsBioColor)
+if successBioColor then
+    print("Cor da bio definida como preta com sucesso!")
+else
+    warn("Erro ao definir a cor da bio: " .. tostring(errorBioColor))
+end
 
 
 -----------------------------------------------------------------------------------------------------------------------------------
@@ -187,7 +200,7 @@ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindU
 
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 3.1",
+    Title = "Lolyta Hub 3.1,,,",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.666",
