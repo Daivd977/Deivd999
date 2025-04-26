@@ -18,7 +18,7 @@ local AllowedUsers = {
     "RED_MIGZINN",  --bf
     "Davilorenzopro123",  --vamp
     "Xxfriend03",  --vini
-    "Davilorenzopro123",
+    
 }
 
 -- Serviços do Roblox
@@ -203,9 +203,18 @@ screenGui:Destroy()
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+Tab1:Button({
+    Title = "Pegar sofá1",
+    Desc = "Brookhaven",
+    Callback = function()
+        invokeServer("1Too1l", {"PickingTools", "Couch"})
+    end,
+})
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Tab1:Button({
-    Title = "Pegar sofá",
+    Title = "Pegar sofá2",
     Desc = "Brookhaven",
     Callback = function()
         invokeServer("1Too1l", {"PickingTools", "Couch"})
