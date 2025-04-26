@@ -546,6 +546,168 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 end)
 ---------------------------------------------------------------------------------------------------------------------------------------------
 
+Tab1:Paragraph({ Title = "Jogador", Desc = "funçoes paara o jogador no caso voçe" })
+
+-- Variáveis para o noclip
+local noclipEnabled = false
+local noclipConnections = {}
+local LocalPlayer = game:GetService("Players").LocalPlayer
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+
+-- Função para ativar/desativar o noclip
+local function setNoclip(state)
+    local character = LocalPlayer.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then
+        print("Personagem ou HumanoidRootPart não encontrado ao tentar ativar/desativar o Noclip!")
+        return
+    end
+
+    local humanoid = character:FindFirstChild("Humanoid")
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+
+    if not humanoid or not rootPart then
+        print("Humanoid ou RootPart não encontrado ao tentar ativar/desativar o Noclip!")
+        return
+    end
+
+    noclipEnabled = state -- Define o estado do noclip com base no toggle
+
+    if noclipEnabled then
+        -- Desativa as colisões do personagem para atravessar objetos
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+
+        -- Mantém todas as propriedades normais do Humanoid (pulo, movimento, etc.)
+        humanoid.PlatformStand = false -- Garante que o personagem pode se mover normalmente
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true) -- Mantém o estado de queda ativo
+        humanoid:ChangeState(Enum.HumanoidStateType.Running) -- Garante que o personagem pode andar normalmente
+
+        -- Loop para manter o noclip ativo e evitar reversão pelo servidor
+        local connection = RunService.Heartbeat:Connect(function()
+            if not noclipEnabled or not character or not character.Parent then
+                connection:Disconnect()
+                return
+            end
+            -- Garante que as colisões permaneçam desativadas
+            for _, part in pairs(character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+            -- Verifica se o personagem está caindo no void e o reposiciona
+            if rootPart.Position.Y < -500 then -- Altura considerada como "void"
+                local rayOrigin = rootPart.Position
+                local rayDirection = Vector3.new(0, 500, 0) -- Raycast para cima
+                local raycastParams = RaycastParams.new()
+                raycastParams.FilterDescendantsInstances = {character}
+                raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+                local raycastResult = Workspace:Raycast(rayOrigin, rayDirection, raycastParams)
+
+                if raycastResult then
+                    rootPart.CFrame = CFrame.new(raycastResult.Position + Vector3.new(0, 3, 0)) -- Reposiciona acima do chão
+                    print("Personagem estava caindo no void, reposicionado acima do chão!")
+                else
+                    -- Se não encontrar o chão, reposiciona em uma posição segura
+                    rootPart.CFrame = CFrame.new(Vector3.new(0, 50, 0))
+                    print("Chão não encontrado, personagem movido para uma posição segura!")
+                end
+            end
+        end)
+        table.insert(noclipConnections, connection)
+
+        print("Noclip ativado! Você pode atravessar objetos e se mover normalmente.")
+    else
+        -- Desativa o noclip e restaura as propriedades do personagem
+        for _, connection in pairs(noclipConnections) do
+            connection:Disconnect()
+        end
+        noclipConnections = {}
+
+        -- Ancorar temporariamente para evitar quedas ou movimento indesejado
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Anchored = true
+            end
+        end
+
+        -- Restaura as colisões e corrige a física
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true -- Reativa colisões
+                part.Velocity = Vector3.new(0, 0, 0) -- Zera a velocidade
+                part.RotVelocity = Vector3.new(0, 0, 0) -- Zera a rotação
+            end
+        end
+
+        -- Restaura o estado do Humanoid
+        if humanoid then
+            humanoid:ChangeState(Enum.HumanoidStateType.GettingUp) -- Força o personagem a "se levantar"
+            humanoid.PlatformStand = false -- Desativa PlatformStand, se ativo
+        end
+
+        -- Corrige a posição para evitar ficar preso
+        if rootPart then
+            local rayOrigin = rootPart.Position
+            local rayDirection = Vector3.new(0, -50, 0) -- Raycast mais longo para baixo
+            local raycastParams = RaycastParams.new()
+            raycastParams.FilterDescendantsInstances = {character}
+            raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+            local raycastResult = Workspace:Raycast(rayOrigin, rayDirection, raycastParams)
+
+            if raycastResult then
+                rootPart.CFrame = CFrame.new(raycastResult.Position + Vector3.new(0, 3, 0)) -- Coloca o personagem acima do chão
+                print("Personagem reposicionado acima do chão após desativar o Noclip!")
+            else
+                -- Se não encontrar o chão, tenta encontrar uma posição segura acima
+                rootPart.CFrame = CFrame.new(rootPart.Position + Vector3.new(0, 10, 0))
+                print("Chão não encontrado, personagem movido para uma posição segura!")
+            end
+        end
+
+        -- Desancora o personagem após reposicionar
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Anchored = false
+            end
+        end
+
+        print("Noclip desativado! Comportamento normal restaurado.")
+    end
+end
+
+-- Garante que o noclip comece desativado ao carregar o hub
+setNoclip(false)
+
+-- Toggle para ativar/desativar o noclip
+Tab1:Toggle({
+    Title = "Noclip",
+    Desc = "Ativa/desativa o noclip para atravessar paredes",
+    Default = false,
+    Callback = function(value)
+        setNoclip(value)
+    end,
+})
+
+-- Reconecta o noclip ao respawn do personagem
+LocalPlayer.CharacterAdded:Connect(function(character)
+    if noclipEnabled then
+        -- Espera o personagem carregar completamente
+        local humanoid = character:WaitForChild("Humanoid", 5)
+        local rootPart = character:WaitForChild("HumanoidRootPart", 5)
+        if humanoid and rootPart then
+            task.wait(0.2) -- Atraso maior para garantir que o personagem esteja pronto
+            setNoclip(true) -- Reaplica o noclip se estava ativado
+            print("Noclip reaplicado após respawn!")
+        else
+            print("Humanoid ou RootPart não encontrado ao reaplicar Noclip após respawn!")
+        end
+    end
+end)
+
 
 -- Botão para executar o script de fly
 Tab1:Button({
