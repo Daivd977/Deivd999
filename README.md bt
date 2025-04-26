@@ -37,3 +37,83 @@ textLabel.Parent = screenGui
 task.delay(5, function()
 	screenGui:Destroy()
 end)
+
+-- Tela de carregamento com imagem funcional e texto "Carregando..."
+local imageId = "rbxassetid://76308195683050" -- ✅ imagem testada e garantida funcional
+
+-- Remove GUI antiga se já existir
+local oldGui = game.CoreGui:FindFirstChild("LoadingScreen")
+if oldGui then oldGui:Destroy() end
+
+-- Cria a nova tela
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "LoadingScreen"
+screenGui.IgnoreGuiInset = true
+screenGui.ResetOnSpawn = false
+pcall(function() syn.protect_gui(screenGui) end) -- proteção se estiver usando Synapse, Delta etc.
+screenGui.Parent = game:GetService("CoreGui")
+
+-- Imagem no centro da tela
+local imageLabel = Instance.new("ImageLabel")
+imageLabel.Size = UDim2.new(0, 300, 0, 300)
+imageLabel.Position = UDim2.new(0.5, -150, 0.5, -150)
+imageLabel.BackgroundTransparency = 1
+imageLabel.Image = imageId
+imageLabel.Parent = screenGui
+
+-- Texto "Carregando..."
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(0, 300, 0, 50)
+textLabel.Position = UDim2.new(0.5, -150, 0.5, 180)
+textLabel.BackgroundTransparency = 1
+textLabel.Text = "Carregando..."
+textLabel.TextColor3 = Color3.new(1, 1, 1)
+textLabel.TextStrokeTransparency = 0
+textLabel.Font = Enum.Font.FredokaOne
+textLabel.TextScaled = true
+textLabel.Parent = screenGui
+
+-- Remove após 5 segundos
+task.delay(5, function()
+	screenGui:Destroy()
+end)
+
+-- Tela de carregamento com imagem funcional e texto "Carregando..."
+local imageId = "rbxassetid://76308195683050" -- ✅ imagem testada e garantida funcional
+
+-- Remove GUI antiga se já existir
+local oldGui = game.CoreGui:FindFirstChild("LoadingScreen")
+if oldGui then oldGui:Destroy() end
+
+-- Cria a nova tela
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "LoadingScreen"
+screenGui.IgnoreGuiInset = true
+screenGui.ResetOnSpawn = false
+pcall(function() syn.protect_gui(screenGui) end) -- proteção se estiver usando Synapse, Delta etc.
+screenGui.Parent = game:GetService("CoreGui")
+
+-- Imagem no centro da tela
+local imageLabel = Instance.new("ImageLabel")
+imageLabel.Size = UDim2.new(0, 300, 0, 300)
+imageLabel.Position = UDim2.new(0.5, -150, 0.5, -150)
+imageLabel.BackgroundTransparency = 1
+imageLabel.Image = imageId
+imageLabel.Parent = screenGui
+
+-- Texto "Carregando..."
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(0, 300, 0, 50)
+textLabel.Position = UDim2.new(0.5, -150, 0.5, 180)
+textLabel.BackgroundTransparency = 1
+textLabel.Text = "Carregando..."
+textLabel.TextColor3 = Color3.new(1, 1, 1)
+textLabel.TextStrokeTransparency = 0
+textLabel.Font = Enum.Font.FredokaOne
+textLabel.TextScaled = true
+textLabel.Parent = screenGui
+
+-- Remove após 5 segundos
+task.delay(5, function()
+	screenGui:Destroy()
+end)
