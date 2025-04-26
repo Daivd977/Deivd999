@@ -98,6 +98,14 @@ local function loadHub()
         end
     end
 
+-- fhgufhghfgfgfhfhidhfguyhrueugjfuhguirejufjugiruiekgfujg
+
+--fgijdfugjufduhjudfhjudhdfhgyhuihehy8fsuidjgjrghfujhuifkhif
+
+--difjgfjugjufdjhi90ei8s9udgkflgh0foh0-çfdlijh78ryh67ghfgj78rhg7
+
+--fkjhjfuidugjfikhikrikidjiifjgifkhikriidjksifjughuhusidkjghu
+
     -- Define o nome "Lolyta Hub 💖" com cor rosa escuro
     local argsName = {
         [1] = "RolePlayName",
@@ -140,7 +148,7 @@ screenGui:Destroy()
     local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
     local Window = WindUI:CreateWindow({
-        Title = "Lolyta Hub 3.1,,,,",
+        Title = "Lolyta Hub 3.1,,,,,",
         Icon = "door-open",
         Author = "Lolycon666",
         Folder = "Lolyta hub v.1.666",
