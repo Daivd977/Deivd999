@@ -10,12 +10,12 @@ local AllowedUsers = {
     "pzinrlk929",
     "Tataizin_021",
     "Lolytateste666",
-    "rafainha4002",
-    "Tiago_RJ4",         
-    "lacradoor123",
-    "enzin12346BR",
-    "RED_MIGZINN",
-    "davilorenzopro123",  --vamp
+    "rafainha4002", --77
+    "Tiago_RJ4",    --yy     
+    "lacradoor123",  --hg
+    "enzin12346BR",--hg
+    "RED_MIGZINN",  --bf
+    "Davilorenzopro123",  --vamp
     "Xxfriend03",  --vini
 }
 
@@ -140,7 +140,7 @@ screenGui:Destroy()
     local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
     local Window = WindUI:CreateWindow({
-        Title = "Lolyta Hub 3.1,",
+        Title = "Lolyta Hub 3.1,,,,",
         Icon = "door-open",
         Author = "Lolycon666",
         Folder = "Lolyta hub v.1.666",
