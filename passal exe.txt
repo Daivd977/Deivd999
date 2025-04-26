@@ -2,22 +2,22 @@
 
 -- === Configurações Iniciais === --
 local AllowedUsers = {
-    "Lolytave2",
+    "Lolytave2",  --hgydhfyg
     "rtrt967",  --dev
     "kaio_lg1",  --kaio
     "Higor_hg5", --higo
     "QUEROBOVO",  --pain
-    "guga_10plays",
-    "pzinrlk929",
-    "Tataizin_021",
-    "Lolytateste666",
+    "guga_10plays",  --ifdhguhdf
+    "pzinrlk929", --jjjjhghjg
+    "Tataizin_021", --fdugjfudhghf
+    "Lolytateste666", --hhh gfdgdf
     "rafainha4002", --77
     "Tiago_RJ4",    --yy     
     "lacradoor123",  --hg
     "enzin12346BR",--hg
     "RED_MIGZINN",  --bf
     "Davilorenzopro123",  --vamp
-    "Xxfriend03",  --vini
+    "XxFriend03",  --vini
     
 }
 
@@ -150,7 +150,7 @@ screenGui:Destroy()
     local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
     local Window = WindUI:CreateWindow({
-        Title = "Lolyta Hub 3.1__________",
+        Title = "Lolyta Hub 3.1,,__._.__",
         Icon = "door-open",
         Author = "Lolycon666",
         Folder = "Lolyta hub v.1.666",
@@ -203,18 +203,10 @@ screenGui:Destroy()
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-Tab1:Button({
-    Title = "Pegar sofá1",
-    Desc = "Brookhaven",
-    Callback = function()
-        invokeServer("1Too1l", {"PickingTools", "Couch"})
-    end,
-})
-
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Tab1:Button({
-    Title = "Pegar sofá2",
+    Title = "Pegar sofá",
     Desc = "Brookhaven",
     Callback = function()
         invokeServer("1Too1l", {"PickingTools", "Couch"})
