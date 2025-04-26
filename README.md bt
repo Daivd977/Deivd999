@@ -83,19 +83,17 @@ textLabel.Parent = screenGui
 -- Função que carrega o hub e os scripts após a tela de carregamento
 local function loadHub()
     -- === Scripts a serem executados ao iniciar o hub === --
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local RE = ReplicatedStorage:WaitForChild("RE", 5)
+    local RE = ReplicatedStorage:FindFirstChild("RE")
+    if not RE then return end
 
     -- Função auxiliar para disparar eventos remotos
     local function fireServer(eventName, args)
-        local event = RE:WaitForChild(eventName, 5)
-        if not event then
-            warn("Evento remoto '" .. eventName .. "' não encontrado!")
-            return false, "Evento remoto não encontrado"
+        local event = RE:FindFirstChild(eventName)
+        if event then
+            pcall(function()
+                event:FireServer(unpack(args))
+            end)
         end
-        return pcall(function()
-            event:FireServer(unpack(args))
-        end)
     end
 
     -- Define o nome "Lolyta Hub 💖" com cor rosa escuro
@@ -103,48 +101,36 @@ local function loadHub()
         [1] = "RolePlayName",
         [2] = "Lolyta Hub 💖" -- Adiciona um emoji fofo (coração brilhante)
     }
-    local successName, errorName = fireServer("1RPNam1eTex1t", argsName)
-    if successName then
-        print("Nome definido como 'Lolyta Hub 💖' com sucesso!")
-    else
-        warn("Erro ao definir o nome: " .. tostring(errorName))
-    end
+    fireServer("1RPNam1eTex1t", argsName)
 
     -- Define a cor do nome como rosa escuro
     local argsNameColor = {
         [1] = "PickingRPNameColor",
         [2] = Color3.new(0.8, 0.2, 0.4) -- Rosa escuro
     }
-    local successNameColor, errorNameColor = fireServer("1RPNam1eColo1r", argsNameColor)
-    if successNameColor then
-        print("Cor do nome definida como rosa escuro com sucesso!")
-    else
-        warn("Erro ao definir a cor do nome: " .. tostring(errorNameColor))
-    end
+    fireServer("1RPNam1eColo1r", argsNameColor)
 
     -- Define a bio "scripter" com cor preta
     local argsBio = {
         [1] = "RolePlayBio",
         [2] = "scripter"
     }
-    local successBio, errorBio = fireServer("1RPNam1eTex1t", argsBio)
-    if successBio then
-        print("Bio definida como 'scripter' com sucesso!")
-    else
-        warn("Erro ao definir a bio: " .. tostring(errorBio))
-    end
+    fireServer("1RPNam1eTex1t", argsBio)
 
     -- Define a cor da bio como preta
     local argsBioColor = {
         [1] = "PickingRPBioColor",
         [2] = Color3.new(0, 0, 0) -- Preto
     }
-    local successBioColor, errorBioColor = fireServer("1RPNam1eColo1r", argsBioColor)
-    if successBioColor then
-        print("Cor da bio definida como preta com sucesso!")
-    else
-        warn("Erro ao definir a cor da bio: " .. tostring(errorBioColor))
-    end
+    fireServer("1RPNam1eColo1r", argsBioColor)
+end
+
+-- Executa a função de carregamento
+loadHub()
+
+-- Remove a tela de carregamento após 3 segundos
+task.wait(3)
+screenGui:Destroy()
 
     -- === Inicialização da Interface === --
     local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
@@ -152,7 +138,7 @@ local function loadHub()
     local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
     local Window = WindUI:CreateWindow({
-        Title = "Lolyta Hub 3.1,,,",
+        Title = "Lolyta Hub 3.1uuu",
         Icon = "door-open",
         Author = "Lolycon666",
         Folder = "Lolyta hub v.1.666",
@@ -251,8 +237,7 @@ Tab1:Toggle({
 
         -- Função para criar ou atualizar o ESP de um jogador
         local function updateESP(player)
-            if player == Players.LocalPlayer then return end -- Ignora o jogador local
-            if not espEnabled then return end -- Evita criar ESP se desativado
+            if player == Players.LocalPlayer or not espEnabled then return end
 
             local character = player.Character
             if character then
@@ -307,18 +292,14 @@ Tab1:Toggle({
 
         if state then
             -- Loop para atualizar o ESP continuamente
-            local updateConnection = RunService.Heartbeat:Connect(function()
-                if not espEnabled then
-                    updateConnection:Disconnect()
-                    return
-                end
-
-                -- Atualiza o ESP para todos os jogadores
-                for _, player in pairs(Players:GetPlayers()) do
-                    updateESP(player)
+            task.spawn(function()
+                while espEnabled do
+                    for _, player in pairs(Players:GetPlayers()) do
+                        updateESP(player)
+                    end
+                    RunService.RenderStepped:Wait() -- Atualiza suavemente
                 end
             end)
-            table.insert(connections, updateConnection)
 
             -- Conecta evento para novos jogadores
             local playerAddedConnection = Players.PlayerAdded:Connect(function(player)
@@ -351,8 +332,6 @@ Tab1:Toggle({
             for _, player in pairs(Players:GetPlayers()) do
                 updateESP(player)
             end
-
-            print("ESP ativado!")
         else
             -- Remove o ESP de todos os jogadores
             for _, player in pairs(Players:GetPlayers()) do
@@ -369,7 +348,6 @@ Tab1:Toggle({
             billboardGuis = {}
 
             espEnabled = false -- Garante que o estado está desativado
-            print("ESP desativado!")
         end
     end,
 })
@@ -390,7 +368,6 @@ local Workspace = game:GetService("Workspace")
 local function setNoclip(state)
     local character = LocalPlayer.Character
     if not character or not character:FindFirstChild("HumanoidRootPart") then
-        print("Personagem ou HumanoidRootPart não encontrado ao tentar ativar/desativar o Noclip!")
         return
     end
 
@@ -398,7 +375,6 @@ local function setNoclip(state)
     local rootPart = character:FindFirstChild("HumanoidRootPart")
 
     if not humanoid or not rootPart then
-        print("Humanoid ou RootPart não encontrado ao tentar ativar/desativar o Noclip!")
         return
     end
 
@@ -440,17 +416,13 @@ local function setNoclip(state)
 
                 if raycastResult then
                     rootPart.CFrame = CFrame.new(raycastResult.Position + Vector3.new(0, 3, 0)) -- Reposiciona acima do chão
-                    print("Personagem estava caindo no void, reposicionado acima do chão!")
                 else
                     -- Se não encontrar o chão, reposiciona em uma posição segura
                     rootPart.CFrame = CFrame.new(Vector3.new(0, 50, 0))
-                    print("Chão não encontrado, personagem movido para uma posição segura!")
                 end
             end
         end)
         table.insert(noclipConnections, connection)
-
-        print("Noclip ativado! Você pode atravessar objetos e se mover normalmente.")
     else
         -- Desativa o noclip e restaura as propriedades do personagem
         for _, connection in pairs(noclipConnections) do
@@ -491,11 +463,9 @@ local function setNoclip(state)
 
             if raycastResult then
                 rootPart.CFrame = CFrame.new(raycastResult.Position + Vector3.new(0, 3, 0)) -- Coloca o personagem acima do chão
-                print("Personagem reposicionado acima do chão após desativar o Noclip!")
             else
                 -- Se não encontrar o chão, tenta encontrar uma posição segura acima
                 rootPart.CFrame = CFrame.new(rootPart.Position + Vector3.new(0, 10, 0))
-                print("Chão não encontrado, personagem movido para uma posição segura!")
             end
         end
 
@@ -505,8 +475,6 @@ local function setNoclip(state)
                 part.Anchored = false
             end
         end
-
-        print("Noclip desativado! Comportamento normal restaurado.")
     end
 end
 
@@ -526,16 +494,14 @@ Tab1:Toggle({
 -- Reconecta o noclip ao respawn do personagem
 LocalPlayer.CharacterAdded:Connect(function(character)
     if noclipEnabled then
-        -- Espera o personagem carregar completamente
-        local humanoid = character:WaitForChild("Humanoid", 5)
-        local rootPart = character:WaitForChild("HumanoidRootPart", 5)
-        if humanoid and rootPart then
-            task.wait(0.2) -- Atraso maior para garantir que o personagem esteja pronto
-            setNoclip(true) -- Reaplica o noclip se estava ativado
-            print("Noclip reaplicado após respawn!")
-        else
-            print("Humanoid ou RootPart não encontrado ao reaplicar Noclip após respawn!")
-        end
+        task.spawn(function()
+            local humanoid = character:FindFirstChild("Humanoid")
+            local rootPart = character:FindFirstChild("HumanoidRootPart")
+            if humanoid and rootPart then
+                task.wait(0.2) -- Atraso para garantir que o personagem esteja pronto
+                setNoclip(true) -- Reaplica o noclip se estava ativado
+            end
+        end)
     end
 end)
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -1228,7 +1194,13 @@ local vibrantColors = {
 
 -- Função auxiliar para disparar eventos (reutilizada por todos os toggles)
 local function fireServer(eventName, args)
-    game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild(eventName):FireServer(unpack(args))
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local event = ReplicatedStorage:FindFirstChild("RE") and ReplicatedStorage.RE:FindFirstChild(eventName)
+    if event then
+        pcall(function()
+            event:FireServer(unpack(args))
+        end)
+    end
 end
 
 -- Novo Toggle: Nome e Bio RGB Sincronizado (em primeiro lugar)
@@ -1238,48 +1210,21 @@ Tab4:Toggle({
     Desc = "Ativa cores RGB sincronizadas para Nome e Bio",
     Value = false,
     Callback = function(state)
-        print("Toggle 'Nome e Bio RGB Sincronizado' alterado para: " .. tostring(state)) -- Debug
         nameAndBioRGBActive = state
         if state then
-            spawn(function()
-                while nameAndBioRGBActive do
-                    -- Escolhe uma cor aleatória da lista de cores vibrantes
+            task.spawn(function()
+                while nameAndBioRGBActive and LocalPlayer.Character do
                     local color = vibrantColors[math.random(1, #vibrantColors)]
-                    print("Mudando cor do Nome e Bio para: " .. tostring(color)) -- Debug
-
-                    -- Aplica a mesma cor ao Nome
-                    local nameArgs = {
-                        [1] = "PickingRPNameColor",
-                        [2] = color
-                    }
-                    local successName, errorMessageName = pcall(function()
-                        fireServer("1RPNam1eColo1r", nameArgs)
-                    end)
-                    if not successName then
-                        warn("Erro ao mudar a cor do nome: " .. tostring(errorMessageName))
-                    end
-
-                    -- Aplica a mesma cor à Bio
-                    local bioArgs = {
-                        [1] = "PickingRPBioColor",
-                        [2] = color
-                    }
-                    local successBio, errorMessageBio = pcall(function()
-                        fireServer("1RPNam1eColo1r", bioArgs)
-                    end)
-                    if not successBio then
-                        warn("Erro ao mudar a cor da bio: " .. tostring(errorMessageBio))
-                    end
-
-                    wait(1) -- Delay de 1 segundo para evitar detecção
+                    local nameArgs = { [1] = "PickingRPNameColor", [2] = color }
+                    local bioArgs = { [1] = "PickingRPBioColor", [2] = color }
+                    fireServer("1RPNam1eColo1r", nameArgs)
+                    fireServer("1RPNam1eColo1r", bioArgs)
+                    wait(1)
+                    task.wait() -- Pequena pausa para aliviar a carga
                 end
             end)
-            print("Nome e Bio RGB Sincronizado ativado!")
-        else
-            print("Nome e Bio RGB Sincronizado desativado! Mantendo a última cor.")
-            -- Não redefinimos para branco; a última cor permanece
         end
-    end,
+    end
 })
 
 -- Toggle Nome RGB
@@ -1289,33 +1234,19 @@ Tab4:Toggle({
     Desc = "Ativa cores RGB para o Nome",
     Value = false,
     Callback = function(state)
-        print("Toggle 'Nome RGB' alterado para: " .. tostring(state)) -- Debug
         nameRGBActive = state
         if state then
-            spawn(function()
-                while nameRGBActive do
-                    -- Escolhe uma cor aleatória da lista de cores vibrantes
+            task.spawn(function()
+                while nameRGBActive and LocalPlayer.Character do
                     local color = vibrantColors[math.random(1, #vibrantColors)]
-                    print("Mudando cor do Nome para: " .. tostring(color)) -- Debug
-                    local args = {
-                        [1] = "PickingRPNameColor",
-                        [2] = color
-                    }
-                    local success, errorMessage = pcall(function()
-                        fireServer("1RPNam1eColo1r", args)
-                    end)
-                    if not success then
-                        warn("Erro ao mudar a cor do nome: " .. tostring(errorMessage))
-                    end
-                    wait(1) -- Delay de 1 segundo para evitar detecção
+                    local args = { [1] = "PickingRPNameColor", [2] = color }
+                    fireServer("1RPNam1eColo1r", args)
+                    wait(1)
+                    task.wait() -- Pequena pausa para aliviar a carga
                 end
             end)
-            print("Nome RGB ativado!")
-        else
-            print("Nome RGB desativado! Mantendo a última cor.")
-            -- Não redefinimos para branco; a última cor permanece
         end
-    end,
+    end
 })
 
 -- Toggle Bio RGB
@@ -1325,33 +1256,19 @@ Tab4:Toggle({
     Desc = "Ativa cores RGB aleatórias na sua bio",
     Value = false,
     Callback = function(state)
-        print("Toggle 'Bio RGB' alterado para: " .. tostring(state)) -- Debug
         bioRGBActive = state
         if state then
-            spawn(function()
-                while bioRGBActive do
-                    -- Escolhe uma cor aleatória da lista de cores vibrantes
+            task.spawn(function()
+                while bioRGBActive and LocalPlayer.Character do
                     local color = vibrantColors[math.random(1, #vibrantColors)]
-                    print("Mudando cor da Bio para: " .. tostring(color)) -- Debug
-                    local args = {
-                        [1] = "PickingRPBioColor",
-                        [2] = color
-                    }
-                    local success, errorMessage = pcall(function()
-                        fireServer("1RPNam1eColo1r", args)
-                    end)
-                    if not success then
-                        warn("Erro ao mudar a cor da bio: " .. tostring(errorMessage))
-                    end
-                    wait(1) -- Delay de 1 segundo para evitar detecção
+                    local args = { [1] = "PickingRPBioColor", [2] = color }
+                    fireServer("1RPNam1eColo1r", args)
+                    wait(1)
+                    task.wait() -- Pequena pausa para aliviar a carga
                 end
             end)
-            print("Bio RGB ativada!")
-        else
-            print("Bio RGB desativada! Mantendo a última cor.")
-            -- Não redefinimos para branco; a última cor permanece
         end
-    end,
+    end
 })
 
 -- Toggle RGB Premium (Carro)
@@ -1361,41 +1278,30 @@ Tab4:Toggle({
     Desc = "Precisa do premium (atenção, pode dar kick!!!! Não recomendo usar!!!)",
     Value = false,
     Callback = function(state)
-        print("Toggle 'Car RGB' alterado para: " .. tostring(state)) -- Debug
         carRGBActive = state
         if state then
-            -- Verifica se o jogador está em um carro
             local character = LocalPlayer.Character
             if not character then
-                warn("Personagem não encontrado para ativar Car RGB!")
+                carRGBActive = false
                 return
             end
-
-            -- Inicia o loop de mudança de cor
-            spawn(function()
-                while carRGBActive do
-                    -- Escolhe uma cor aleatória da lista de cores vibrantes
+            task.spawn(function()
+                while carRGBActive and LocalPlayer.Character do
                     local color = vibrantColors[math.random(1, #vibrantColors)]
-                    print("Mudando cor do carro para: " .. tostring(color)) -- Debug
-                    local args = {
-                        [1] = "PickingCarColor",
-                        [2] = color
-                    }
-                    local success, errorMessage = pcall(function()
-                        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(args))
-                    end)
-                    if not success then
-                        warn("Erro ao mudar a cor do carro: " .. tostring(errorMessage))
+                    local args = { [1] = "PickingCarColor", [2] = color }
+                    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                    local event = ReplicatedStorage:FindFirstChild("RE") and ReplicatedStorage.RE:FindFirstChild("1Player1sCa1r")
+                    if event then
+                        pcall(function()
+                            event:FireServer(unpack(args))
+                        end)
                     end
-                    wait(1) -- Delay de 1 segundo para evitar detecção
+                    wait(1)
+                    task.wait() -- Pequena pausa para aliviar a carga
                 end
             end)
-            print("Car RGB ativado!")
-        else
-            print("Car RGB desativado! Mantendo a última cor.")
-            -- Não redefinimos para branco; a última cor permanece
         end
-    end,
+    end
 })
 
 ---------------------------------------------------------------------------------------------------------------------------------
@@ -1845,7 +1751,7 @@ Tab5:Button({
     Desc = "Car music",
     Callback = function()
         tocarMusica("")
-        print("Música do carro parada")
+        
     end,
 })
 
@@ -1894,7 +1800,7 @@ Tab6:Toggle({
     Callback = function(state)
         loopAtivo = state
         if loopAtivo then
-            print("Loop ativado!")
+            
             spawn(function()
                 while loopAtivo do
                     if InputID then
@@ -1915,7 +1821,7 @@ Tab6:Toggle({
                 end
             end)
         else
-            print("Loop desativado!")
+            
         end
     end,
 })
@@ -2064,7 +1970,7 @@ Tab6:Toggle({
                 end
             end)
         else
-            print("Loop desativado!")
+            
         end
     end,
 })
@@ -2172,7 +2078,7 @@ Tab6:Toggle({
     Callback = function(state)
         dropdownLoopActive = state
         if state then
-            print("Loop ativado!")
+            
             task.spawn(function()
                 while dropdownLoopActive do
                     if selectedSoundID then
@@ -2184,7 +2090,7 @@ Tab6:Toggle({
                 end
             end)
         else
-            print("Loop desativado!")
+            
         end
     end,
 })
@@ -2325,7 +2231,7 @@ local function teleportToPlayer(playerName)
         local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         local myHumanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
         if not myHRP or not myHumanoid then
-            print("Seu personagem não está totalmente carregado para teletransporte.")
+            
             return
         end
 
@@ -2434,11 +2340,11 @@ local function stopSpectating()
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         Workspace.CurrentCamera.CameraSubject = LocalPlayer.Character.Humanoid
         Workspace.CurrentCamera.CameraType = Enum.CameraType.Custom -- Força o modo de câmera padrão
-        print("Parando de visualizar. Voltando à visão do jogador local.")
+        
     else
         Workspace.CurrentCamera.CameraSubject = nil
         Workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
-        print("Nenhum personagem local encontrado. Câmera redefinida.")
+        
     end
 end
 
@@ -2481,7 +2387,7 @@ Tab8:Button({
     Desc = "Atualiza a lista de jogadores no dropdown",
     Callback = function()
         updateDropdown(DropdownPlayer)
-        print("Lista de jogadores atualizada.")
+        
     end,
 })
 
@@ -2497,7 +2403,7 @@ Tab8:Button({
                 warn("Erro ao teletransportar: " .. tostring(errorMessage))
             end
         else
-            print("Selecione um jogador antes de teletransportar.")
+            
         end
     end,
 })
@@ -2517,7 +2423,7 @@ local SpectateToggle = Tab8:Toggle({
                     SpectateToggle:SetValue(false)
                 end
             else
-                print("Selecione um jogador antes de ativar o modo de visualização.")
+                
                 SpectateToggle:SetValue(false)
             end
         else
@@ -2708,7 +2614,7 @@ local function disableCarClient()
     local carClient = backpack:FindFirstChild("CarClient")
     if carClient and carClient:IsA("LocalScript") then
         carClient.Disabled = true
-        print("CarClient desativado com sucesso!")
+        
     end
 end
 
@@ -2827,7 +2733,7 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 end)
 
 -- Dropdown para selecionar jogador
-print("Criando o dropdown para selecionar jogador...")
+
 local DropdownPlayer = Tab10:Dropdown({
     Title = "Selecionar Jogador",
     Desc = "Escolha um jogador para matar, puxar, visualizar ou aplicar fling",
@@ -2858,10 +2764,10 @@ local DropdownPlayer = Tab10:Dropdown({
         end
     end
 })
-print("Dropdown para selecionar jogador criado com sucesso!")
+
 
 -- Botão para atualizar a lista de jogadores
-print("Criando o botão para atualizar a lista de jogadores...")
+
 Tab10:Button({
     Title = "Atualizar Lista de Jogadores",
     Desc = "Atualiza a lista de jogadores no dropdown",
@@ -2869,10 +2775,10 @@ Tab10:Button({
         updateDropdown(DropdownPlayer)
     end
 })
-print("Botão para atualizar a lista de jogadores criado com sucesso!")
+
 
 -- Toggle para visualizar jogador
-print("Criando o toggle para visualizar jogador...")
+
 local SpectateToggle = Tab10:Toggle({
     Title = "Visualizar Jogador",
     Desc = "Ativa/desativa a visualização do jogador selecionado",
@@ -2897,7 +2803,7 @@ local SpectateToggle = Tab10:Toggle({
         end
     end
 })
-print("Toggle para visualizar jogador criado com sucesso!")
+
 
 -- Remove jogadores que saem do servidor
 Players.PlayerRemoving:Connect(function(player)
@@ -2920,7 +2826,7 @@ end)
 updateDropdown(DropdownPlayer)
 
 -- Dropdown para selecionar método de matar/puxar
-print("Criando o dropdown para selecionar método de matar/puxar...")
+
 local DropdownKillPullMethod = Tab10:Dropdown({
     Title = "Selecionar Método (Matar/Puxar)",
     Desc = "Escolha o método para matar ou puxar",
@@ -2929,7 +2835,7 @@ local DropdownKillPullMethod = Tab10:Dropdown({
         selectedKillPullMethod = value
     end
 })
-print("Dropdown para selecionar método de matar/puxar criado com sucesso!")
+
 
 -- Função para equipar o sofá
 local function equipSofa()
@@ -3219,7 +3125,7 @@ sitCheckConnection = RunService.Heartbeat:Connect(function()
 end)
 
 -- Botão para iniciar matar
-print("Criando o botão para iniciar matar...")
+
 Tab10:Button({
     Title = "Matar",
     Desc = "Inicia o matar com o método selecionado",
@@ -3243,7 +3149,7 @@ Tab10:Button({
         end
     end
 })
-print("Botão para iniciar matar criado com sucesso!")
+
 
 -- Botão para iniciar puxar
 print("Criando o botão para iniciar puxar...")
@@ -3270,10 +3176,10 @@ Tab10:Button({
         end
     end
 })
-print("Botão para iniciar puxar criado com sucesso!")
+
 
 -- Botão para parar matar ou puxar
-print("Criando o botão para parar matar ou puxar...")
+
 Tab10:Button({
     Title = "Parar (Matar ou Puxar)",
     Desc = "Para o movimento de matar ou puxar",
@@ -3321,10 +3227,10 @@ Tab10:Button({
         end)
     end
 })
-print("Botão para parar matar ou puxar criado com sucesso!")
+
 
 -- Dropdown para selecionar método de fling
-print("Criando o dropdown para selecionar método de fling...")
+
 local DropdownFlingMethod = Tab10:Dropdown({
     Title = "Selecionar Método de Fling",
     Desc = "Escolha o método para aplicar fling",
@@ -3333,7 +3239,7 @@ local DropdownFlingMethod = Tab10:Dropdown({
         selectedFlingMethod = value
     end
 })
-print("Dropdown para selecionar método de fling criado com sucesso!")
+)
 
 -- Função para equipar a bola
 local function equipBola()
@@ -3790,13 +3696,19 @@ local function flingWithBus(targetPlayer)
     end)
 end
 
--- Função para fling com barco
+-- Função para fling com barco (atualizada)
 local function flingWithBoat(targetPlayer)
-    if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then return end
+    if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then
+        warn("Selecione um jogador válido antes de iniciar!")
+        return
+    end
     local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     local myHRP = character:FindFirstChild("HumanoidRootPart")
-    if not humanoid or not myHRP then return end
+    if not humanoid or not myHRP then
+        warn("Seu personagem ainda não está totalmente carregado.")
+        return
+    end
     savedPosition = myHRP.Position
     pcall(function()
         myHRP.Anchored = true
@@ -3846,7 +3758,10 @@ local function flingWithBoat(targetPlayer)
     local sitStart = tick()
     repeat
         task.wait()
-        if tick() - sitStart > 10 then break end
+        if tick() - sitStart > 10 then
+            warn("Timeout: Jogador local não foi detectado como sentado!")
+            return
+        end
     until humanoid.Sit
     for _, part in ipairs(boat:GetDescendants()) do
         if part:IsA("BasePart") then
@@ -3922,7 +3837,14 @@ local function flingWithBoat(targetPlayer)
         local targetCharacter = targetPlayer.Character or targetPlayer.CharacterAdded:Wait()
         local newTargetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
         local newTargetHumanoid = targetCharacter:FindFirstChild("Humanoid")
-        if not newTargetHRP or not newTargetHumanoid then return end
+        if not newTargetHRP or not newTargetHumanoid then
+            running = false
+            for _, conn in ipairs(touchedConnections) do
+                conn:Disconnect()
+            end
+            touchedConnections = {}
+            return
+        end
         if not myHRP or not humanoid then
             running = false
             for _, conn in ipairs(touchedConnections) do
@@ -4053,9 +3975,7 @@ flingToggle = Tab10:Toggle({
         end
     end
 })
-print("Toggle para ativar/desativar o fling criado com sucesso!")
 
-print("Script inicializado com sucesso! A UI deve estar visível agora.")
 
 end
 
