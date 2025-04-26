@@ -138,7 +138,7 @@ screenGui:Destroy()
     local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
     local Window = WindUI:CreateWindow({
-        Title = "Lolyta Hub 3.1,treste fjhgdfghjfdgmdfjkgfihpololkfidjgufdhghfdyg,",
+        Title = "Lolyta Hub 3.1, vesion 3.1 testeee",
         Icon = "door-open",
         Author = "Lolycon666",
         Folder = "Lolyta hub v.1.666",
@@ -237,7 +237,8 @@ Tab1:Toggle({
 
         -- Função para criar ou atualizar o ESP de um jogador
         local function updateESP(player)
-            if player == Players.LocalPlayer or not espEnabled then return end
+            if player == Players.LocalPlayer then return end -- Ignora o jogador local
+            if not espEnabled then return end -- Evita criar ESP se desativado
 
             local character = player.Character
             if character then
@@ -292,14 +293,18 @@ Tab1:Toggle({
 
         if state then
             -- Loop para atualizar o ESP continuamente
-            task.spawn(function()
-                while espEnabled do
-                    for _, player in pairs(Players:GetPlayers()) do
-                        updateESP(player)
-                    end
-                    RunService.RenderStepped:Wait() -- Atualiza suavemente
+            local updateConnection = RunService.Heartbeat:Connect(function()
+                if not espEnabled then
+                    updateConnection:Disconnect()
+                    return
+                end
+
+                -- Atualiza o ESP para todos os jogadores
+                for _, player in pairs(Players:GetPlayers()) do
+                    updateESP(player)
                 end
             end)
+            table.insert(connections, updateConnection)
 
             -- Conecta evento para novos jogadores
             local playerAddedConnection = Players.PlayerAdded:Connect(function(player)
@@ -332,6 +337,8 @@ Tab1:Toggle({
             for _, player in pairs(Players:GetPlayers()) do
                 updateESP(player)
             end
+
+            print("ESP ativado!")
         else
             -- Remove o ESP de todos os jogadores
             for _, player in pairs(Players:GetPlayers()) do
@@ -348,6 +355,7 @@ Tab1:Toggle({
             billboardGuis = {}
 
             espEnabled = false -- Garante que o estado está desativado
+            print("ESP desativado!")
         end
     end,
 })
@@ -368,6 +376,7 @@ local Workspace = game:GetService("Workspace")
 local function setNoclip(state)
     local character = LocalPlayer.Character
     if not character or not character:FindFirstChild("HumanoidRootPart") then
+        print("Personagem ou HumanoidRootPart não encontrado ao tentar ativar/desativar o Noclip!")
         return
     end
 
@@ -375,6 +384,7 @@ local function setNoclip(state)
     local rootPart = character:FindFirstChild("HumanoidRootPart")
 
     if not humanoid or not rootPart then
+        print("Humanoid ou RootPart não encontrado ao tentar ativar/desativar o Noclip!")
         return
     end
 
@@ -416,13 +426,17 @@ local function setNoclip(state)
 
                 if raycastResult then
                     rootPart.CFrame = CFrame.new(raycastResult.Position + Vector3.new(0, 3, 0)) -- Reposiciona acima do chão
+                    print("Personagem estava caindo no void, reposicionado acima do chão!")
                 else
                     -- Se não encontrar o chão, reposiciona em uma posição segura
                     rootPart.CFrame = CFrame.new(Vector3.new(0, 50, 0))
+                    print("Chão não encontrado, personagem movido para uma posição segura!")
                 end
             end
         end)
         table.insert(noclipConnections, connection)
+
+        print("Noclip ativado! Você pode atravessar objetos e se mover normalmente.")
     else
         -- Desativa o noclip e restaura as propriedades do personagem
         for _, connection in pairs(noclipConnections) do
@@ -463,9 +477,11 @@ local function setNoclip(state)
 
             if raycastResult then
                 rootPart.CFrame = CFrame.new(raycastResult.Position + Vector3.new(0, 3, 0)) -- Coloca o personagem acima do chão
+                print("Personagem reposicionado acima do chão após desativar o Noclip!")
             else
                 -- Se não encontrar o chão, tenta encontrar uma posição segura acima
                 rootPart.CFrame = CFrame.new(rootPart.Position + Vector3.new(0, 10, 0))
+                print("Chão não encontrado, personagem movido para uma posição segura!")
             end
         end
 
@@ -475,6 +491,8 @@ local function setNoclip(state)
                 part.Anchored = false
             end
         end
+
+        print("Noclip desativado! Comportamento normal restaurado.")
     end
 end
 
@@ -494,14 +512,16 @@ Tab1:Toggle({
 -- Reconecta o noclip ao respawn do personagem
 LocalPlayer.CharacterAdded:Connect(function(character)
     if noclipEnabled then
-        task.spawn(function()
-            local humanoid = character:FindFirstChild("Humanoid")
-            local rootPart = character:FindFirstChild("HumanoidRootPart")
-            if humanoid and rootPart then
-                task.wait(0.2) -- Atraso para garantir que o personagem esteja pronto
-                setNoclip(true) -- Reaplica o noclip se estava ativado
-            end
-        end)
+        -- Espera o personagem carregar completamente
+        local humanoid = character:WaitForChild("Humanoid", 5)
+        local rootPart = character:WaitForChild("HumanoidRootPart", 5)
+        if humanoid and rootPart then
+            task.wait(0.2) -- Atraso maior para garantir que o personagem esteja pronto
+            setNoclip(true) -- Reaplica o noclip se estava ativado
+            print("Noclip reaplicado após respawn!")
+        else
+            print("Humanoid ou RootPart não encontrado ao reaplicar Noclip após respawn!")
+        end
     end
 end)
 ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -1303,7 +1323,6 @@ Tab4:Toggle({
         end
     end
 })
-
 ---------------------------------------------------------------------------------------------------------------------------------
                                           -- === Tab 5: Troll Musica === --
 ---------------------------------------------------------------------------------------------------------------------------------
@@ -1358,7 +1377,6 @@ local musicOptions = {
         {name = "forro dudu", id = "74404168179733"},
         {name = "forro sao joao", id = "106364874935196"},
         {name = "forro engraçado paia", id = "76524290482399"}
-        
        
         
     }
@@ -1415,7 +1433,42 @@ Tab5:Dropdown({
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+local function tocarMusica(id)
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    
+    local argsCasa = {
+        [1] = "PickHouseMusicText",
+        [2] = id
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sHous1e"):FireServer(unpack(argsCasa))
 
+    local argsCarro = {
+        [1] = "PickingCarMusicText",
+        [2] = id
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(argsCarro))
+
+    local argsScooter = {
+        [1] = "PickingScooterMusicText",
+        [2] = id
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(argsScooter))
+end
+
+-- Função auxiliar para validar valores do Dropdown
+local function isValidMusicId(value)
+    return value and value ~= "" and value ~= "Option 1" and not value:match("novas musica adds") and not value:match("musica brasil") and not value:match("musica do meu interece") and not value:match("musica dls por elas") and not value:match("meme abaixo") and not value:match("estourada")
+end
+
+Tab5:Input({
+    Title = "ID da música",
+    Placeholder = "Digite o ID e pressione Enter",
+    Callback = function(value)
+        if value and value ~= "" then
+            tocarMusica(tostring(value))
+        end
+    end,
+})
 
 
 -- Tabela de opções de música para o Dropdown "Funk, Phonk, MTG"
@@ -1542,7 +1595,6 @@ local musicOptions = {
         {name = "Dança do Canguru (Pke Gaz1nh)", id = "86876136192157"},
         {name = "Il Cacto Hipopotamo FUNK", id = "104491656009142"},
         {name = "Dingo o Bell (Omega)", id = "93847687239132"},
-        {name = "vai rebola pro pai", id = "113169253847228"},
         {name = "espere 30segundos!! Ondas sonoras", id = "127757321382838"},
         {name = "MONTAGEM ARABIANA (Pke Gaz1nh)", id = "78076624091098"},
         {name = "MONTAGEM 15 AN0", id = "82838053504552"},
@@ -1552,7 +1604,7 @@ local musicOptions = {
         {name = "AUTOMOTIVO DUPLA DINAMICA", id = "73361598376791"},
         {name = "SENTA, SENTA, SENTA", id = "140417852590557"},
         {name = "Boladona", id = "96625339070598"},
-        {name = "ARROCHA ", id = "103249564479431"},        
+        {name = "ARROCHA ", id = "103249564479431"},
         {name = "MEGA DOS AUTOMOTIVO", id = "82353927625851"},
         {name = "escravos do po", id = "108995231462803"}
         
@@ -1690,7 +1742,7 @@ local musicOptions = {
         {name = "TOMADA PHONK", id = "96610114209889"},
         {name = "riightt rs ", id = "98153718682753"},
         {name = "SARRA FUNK", id = "96249826607044"}
-        
+       
         
         
     }
@@ -1751,7 +1803,7 @@ Tab5:Button({
     Desc = "Car music",
     Callback = function()
         tocarMusica("")
-        
+        print("Música do carro parada")
     end,
 })
 
@@ -1800,7 +1852,7 @@ Tab6:Toggle({
     Callback = function(state)
         loopAtivo = state
         if loopAtivo then
-            
+            print("Loop ativado!")
             spawn(function()
                 while loopAtivo do
                     if InputID then
@@ -1821,7 +1873,7 @@ Tab6:Toggle({
                 end
             end)
         else
-            
+            print("Loop desativado!")
         end
     end,
 })
@@ -1866,6 +1918,7 @@ local musicOptions = {
         {name = "skibidi", id = 128771670035179},
         
         {name = "cavalo!!", id = 78871573440184},
+       
 
         {name = "deixa os garoto brinca", id = 80291355054807},
         {name = "flamengo", id = 137774355552052},
@@ -1970,7 +2023,7 @@ Tab6:Toggle({
                 end
             end)
         else
-            
+            print("Loop desativado!")
         end
     end,
 })
@@ -2078,7 +2131,7 @@ Tab6:Toggle({
     Callback = function(state)
         dropdownLoopActive = state
         if state then
-            
+            print("Loop ativado!")
             task.spawn(function()
                 while dropdownLoopActive do
                     if selectedSoundID then
@@ -2090,7 +2143,7 @@ Tab6:Toggle({
                 end
             end)
         else
-            
+            print("Loop desativado!")
         end
     end,
 })
@@ -2231,7 +2284,7 @@ local function teleportToPlayer(playerName)
         local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         local myHumanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
         if not myHRP or not myHumanoid then
-            
+            print("Seu personagem não está totalmente carregado para teletransporte.")
             return
         end
 
@@ -2340,11 +2393,11 @@ local function stopSpectating()
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         Workspace.CurrentCamera.CameraSubject = LocalPlayer.Character.Humanoid
         Workspace.CurrentCamera.CameraType = Enum.CameraType.Custom -- Força o modo de câmera padrão
-        
+        print("Parando de visualizar. Voltando à visão do jogador local.")
     else
         Workspace.CurrentCamera.CameraSubject = nil
         Workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
-        
+        print("Nenhum personagem local encontrado. Câmera redefinida.")
     end
 end
 
@@ -2387,7 +2440,7 @@ Tab8:Button({
     Desc = "Atualiza a lista de jogadores no dropdown",
     Callback = function()
         updateDropdown(DropdownPlayer)
-        
+        print("Lista de jogadores atualizada.")
     end,
 })
 
@@ -2403,7 +2456,7 @@ Tab8:Button({
                 warn("Erro ao teletransportar: " .. tostring(errorMessage))
             end
         else
-            
+            print("Selecione um jogador antes de teletransportar.")
         end
     end,
 })
@@ -2423,7 +2476,7 @@ local SpectateToggle = Tab8:Toggle({
                     SpectateToggle:SetValue(false)
                 end
             else
-                
+                print("Selecione um jogador antes de ativar o modo de visualização.")
                 SpectateToggle:SetValue(false)
             end
         else
@@ -2614,7 +2667,7 @@ local function disableCarClient()
     local carClient = backpack:FindFirstChild("CarClient")
     if carClient and carClient:IsA("LocalScript") then
         carClient.Disabled = true
-        
+        print("CarClient desativado com sucesso!")
     end
 end
 
@@ -2733,7 +2786,7 @@ LocalPlayer.CharacterAdded:Connect(function(character)
 end)
 
 -- Dropdown para selecionar jogador
-
+print("Criando o dropdown para selecionar jogador...")
 local DropdownPlayer = Tab10:Dropdown({
     Title = "Selecionar Jogador",
     Desc = "Escolha um jogador para matar, puxar, visualizar ou aplicar fling",
@@ -2764,10 +2817,10 @@ local DropdownPlayer = Tab10:Dropdown({
         end
     end
 })
-
+print("Dropdown para selecionar jogador criado com sucesso!")
 
 -- Botão para atualizar a lista de jogadores
-
+print("Criando o botão para atualizar a lista de jogadores...")
 Tab10:Button({
     Title = "Atualizar Lista de Jogadores",
     Desc = "Atualiza a lista de jogadores no dropdown",
@@ -2775,10 +2828,10 @@ Tab10:Button({
         updateDropdown(DropdownPlayer)
     end
 })
-
+print("Botão para atualizar a lista de jogadores criado com sucesso!")
 
 -- Toggle para visualizar jogador
-
+print("Criando o toggle para visualizar jogador...")
 local SpectateToggle = Tab10:Toggle({
     Title = "Visualizar Jogador",
     Desc = "Ativa/desativa a visualização do jogador selecionado",
@@ -2803,7 +2856,7 @@ local SpectateToggle = Tab10:Toggle({
         end
     end
 })
-
+print("Toggle para visualizar jogador criado com sucesso!")
 
 -- Remove jogadores que saem do servidor
 Players.PlayerRemoving:Connect(function(player)
@@ -2826,7 +2879,7 @@ end)
 updateDropdown(DropdownPlayer)
 
 -- Dropdown para selecionar método de matar/puxar
-
+print("Criando o dropdown para selecionar método de matar/puxar...")
 local DropdownKillPullMethod = Tab10:Dropdown({
     Title = "Selecionar Método (Matar/Puxar)",
     Desc = "Escolha o método para matar ou puxar",
@@ -2835,7 +2888,7 @@ local DropdownKillPullMethod = Tab10:Dropdown({
         selectedKillPullMethod = value
     end
 })
-
+print("Dropdown para selecionar método de matar/puxar criado com sucesso!")
 
 -- Função para equipar o sofá
 local function equipSofa()
@@ -3125,7 +3178,7 @@ sitCheckConnection = RunService.Heartbeat:Connect(function()
 end)
 
 -- Botão para iniciar matar
-
+print("Criando o botão para iniciar matar...")
 Tab10:Button({
     Title = "Matar",
     Desc = "Inicia o matar com o método selecionado",
@@ -3149,7 +3202,7 @@ Tab10:Button({
         end
     end
 })
-
+print("Botão para iniciar matar criado com sucesso!")
 
 -- Botão para iniciar puxar
 print("Criando o botão para iniciar puxar...")
@@ -3176,10 +3229,10 @@ Tab10:Button({
         end
     end
 })
-
+print("Botão para iniciar puxar criado com sucesso!")
 
 -- Botão para parar matar ou puxar
-
+print("Criando o botão para parar matar ou puxar...")
 Tab10:Button({
     Title = "Parar (Matar ou Puxar)",
     Desc = "Para o movimento de matar ou puxar",
@@ -3227,10 +3280,10 @@ Tab10:Button({
         end)
     end
 })
-
+print("Botão para parar matar ou puxar criado com sucesso!")
 
 -- Dropdown para selecionar método de fling
-
+print("Criando o dropdown para selecionar método de fling...")
 local DropdownFlingMethod = Tab10:Dropdown({
     Title = "Selecionar Método de Fling",
     Desc = "Escolha o método para aplicar fling",
@@ -3239,7 +3292,7 @@ local DropdownFlingMethod = Tab10:Dropdown({
         selectedFlingMethod = value
     end
 })
-
+print("Dropdown para selecionar método de fling criado com sucesso!")
 
 -- Função para equipar a bola
 local function equipBola()
@@ -3696,12 +3749,6 @@ local function flingWithBus(targetPlayer)
     end)
 end
 
--- Função para desativar CarClient (mantida como está, assumindo que funciona)
-local function disableCarClient()
-    -- Implementação da função disableCarClient, se necessário
-    -- Exemplo: Desativar scripts locais de controle de veículos
-end
-
 -- Função para fling com barco
 local function flingWithBoat(targetPlayer)
     if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then return end
@@ -3858,8 +3905,75 @@ local function flingWithBoat(targetPlayer)
     end)
 end
 
-
-
+-- Função para parar o fling (usada pelo toggle)
+local function stopFling()
+    running = false
+    if connection then
+        connection:Disconnect()
+        connection = nil
+    end
+    if flingConnection then
+        flingConnection:Disconnect()
+        flingConnection = nil
+    end
+    if soccerBall then
+        soccerBall.Anchored = originalProperties.Anchored
+        soccerBall.CanCollide = originalProperties.CanCollide
+        soccerBall.CanTouch = originalProperties.CanTouch
+    end
+    if couch and couch:IsA("BasePart") then
+        couch.Anchored = originalProperties.Anchored
+        couch.CanCollide = originalProperties.CanCollide
+        couch.CanTouch = originalProperties.CanTouch
+    end
+    
+    -- Desativar CarClient antes de deletar veículos
+    disableCarClient()
+    
+    local args = { [1] = "DeleteAllVehicles" }
+    pcall(function()
+        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
+    end)
+    task.wait(0.2)
+    local character = LocalPlayer.Character
+    if character then
+        for _, part in ipairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+                part.Velocity = Vector3.zero
+                part.RotVelocity = Vector3.zero
+            end
+        end
+    end
+    local myHumanoid = character and character:FindFirstChild("Humanoid")
+    if myHumanoid then
+        myHumanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+    end
+    for _, seat in ipairs(Workspace:GetDescendants()) do
+        if seat:IsA("Seat") or seat:IsA("VehicleSeat") then
+            seat.Disabled = false
+        end
+    end
+    pcall(function()
+        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeUp", 1)
+    end)
+    if savedPosition then
+        local myHRP = character and character:FindFirstChild("HumanoidRootPart")
+        if myHRP then
+            pcall(function()
+                myHRP.Anchored = true
+                myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
+                task.wait(0.2)
+                myHRP.Velocity = Vector3.zero
+                myHRP.RotVelocity = Vector3.zero
+                myHRP.Anchored = false
+                if myHumanoid then
+                    myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                end
+            end)
+        end
+    end
+end
 
 -- Toggle para ativar/desativar o fling
 print("Criando o toggle para ativar/desativar o fling...")
@@ -3898,17 +4012,14 @@ flingToggle = Tab10:Toggle({
         end
     end
 })
+print("Toggle para ativar/desativar o fling criado com sucesso!")
 
-Tab10:Paragraph({ 
-    Title = "fling barco op mais n recomendo ele pod causar travamento!!! e use o noclip ", 
-    Desc = ""
-})
+print("Script inicializado com sucesso! A UI deve estar visível agora.")
 
-
+end
 
 -- Remove a tela de carregamento após 5 segundos e carrega o hub
 task.delay(5, function()
     screenGui:Destroy()
     loadHub() -- Chama a função que carrega o hub e os scripts
 end)
-
