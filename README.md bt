@@ -152,7 +152,7 @@ local function loadHub()
     local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
     local Window = WindUI:CreateWindow({
-        Title = "Lolyta Hub 3.1,,,,",
+        Title = "Lolyta Hub 3.1,,,",
         Icon = "door-open",
         Author = "Lolycon666",
         Folder = "Lolyta hub v.1.666",
@@ -1636,6 +1636,7 @@ local musicOptions = {
         {name = "Dança do Canguru (Pke Gaz1nh)", id = "86876136192157"},
         {name = "Il Cacto Hipopotamo FUNK", id = "104491656009142"},
         {name = "Dingo o Bell (Omega)", id = "93847687239132"},
+        {name = "vai rebola pro pai", id = "113169253847228"},
         {name = "espere 30segundos!! Ondas sonoras", id = "127757321382838"},
         {name = "MONTAGEM ARABIANA (Pke Gaz1nh)", id = "78076624091098"},
         {name = "MONTAGEM 15 AN0", id = "82838053504552"},
@@ -1645,7 +1646,7 @@ local musicOptions = {
         {name = "AUTOMOTIVO DUPLA DINAMICA", id = "73361598376791"},
         {name = "SENTA, SENTA, SENTA", id = "140417852590557"},
         {name = "Boladona", id = "96625339070598"},
-        {name = "ARROCHA ", id = "103249564479431"},
+        {name = "ARROCHA ", id = "103249564479431"},        
         {name = "MEGA DOS AUTOMOTIVO", id = "82353927625851"},
         {name = "escravos do po", id = "108995231462803"}
         
@@ -4063,3 +4064,4 @@ task.delay(5, function()
     screenGui:Destroy()
     loadHub() -- Chama a função que carrega o hub e os scripts
 end)
+
