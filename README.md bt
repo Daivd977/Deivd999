@@ -138,7 +138,7 @@ screenGui:Destroy()
     local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
     local Window = WindUI:CreateWindow({
-        Title = "Lolyta Hub 3.1 hhgghghghghiodfji",
+        Title = "Lolyta Hub 3.1,,,",
         Icon = "door-open",
         Author = "Lolycon666",
         Folder = "Lolyta hub v.1.666",
@@ -3720,140 +3720,140 @@ local function flingWithBoat(targetPlayer)
         if humanoid then
             humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
         end
-    end)
-
-    -- Desativar CarClient antes de deletar veículos
-    disableCarClient()
-
-    local args = { [1] = "DeleteAllVehicles" }
-    pcall(function()
-        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
-    end)
-    task.wait(0.4)
-    args = { [1] = "PickingBoat", [2] = "MilitaryBoatFree" }
-    pcall(function()
-        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
-    end)
-    task.wait(1.5)
-    local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
-    if not vehiclesFolder then
-        return
+    end)-- Desativar CarClient antes de deletar veículos
+disableCarClient()local args = { [1] = "DeleteAllVehicles" }
+pcall(function()
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
+end)
+task.wait(0.4)
+args = { [1] = "PickingBoat", [2] = "MilitaryBoatFree" }
+pcall(function()
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
+end)
+task.wait(1.5)
+local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
+if not vehiclesFolder then
+    warn("Pasta Vehicles não encontrada no Workspace!")
+    return
+end
+local boatName = LocalPlayer.Name .. "Car"
+local boat = vehiclesFolder:FindFirstChild(boatName)
+if not boat then
+    warn("Barco não encontrado em Workspace.Vehicles com o nome: " .. boatName)
+    return
+end
+pcall(function()
+    myHRP.Anchored = true
+    myHRP.CFrame = CFrame.new(Vector3.new(-3358.85, 5.25, -521.95))
+    task.wait(0.2)
+    myHRP.Velocity = Vector3.zero
+    myHRP.RotVelocity = Vector3.zero
+    myHRP.Anchored = false
+    humanoid:ChangeState(Enum.HumanoidStateType.Seated)
+end)
+local sitStart = tick()
+repeat
+    task.wait()
+    if tick() - sitStart > 10 then break end
+until humanoid.Sit
+for _, part in ipairs(boat:GetDescendants()) do
+    if part:IsA("BasePart") then
+        part.CanCollide = true
+        pcall(function() part:SetNetworkOwner(nil) end)
     end
-    local boatName = LocalPlayer.Name .. "Car"
-    local boat = vehiclesFolder:FindFirstChild(boatName)
-    if not boat then
-        return
+end
+running = true
+connection = RunService.Stepped:Connect(function()
+    if not running then return end
+    for _, part in ipairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+        end
     end
-    pcall(function()
-        myHRP.Anchored = true
-        myHRP.CFrame = CFrame.new(Vector3.new(-3358.85, 5.25, -521.95))
-        task.wait(0.2)
-        myHRP.Velocity = Vector3.zero
-        myHRP.RotVelocity = Vector3.zero
-        myHRP.Anchored = false
-        humanoid:ChangeState(Enum.HumanoidStateType.Seated)
+end)
+local touchedConnections = {}
+local mainPart = boat:FindFirstChild("Body")
+if mainPart and mainPart:IsA("BasePart") then
+    local conn = mainPart.Touched:Connect(function(hit)
+        if not running then return end
+        local hitPlayer = Players:GetPlayerFromCharacter(hit.Parent)
+        if hitPlayer and hitPlayer == targetPlayer then
+            local targetHRP = hit.Parent:FindFirstChild("HumanoidRootPart")
+            if targetHRP then
+                local flingForce = Instance.new("BodyVelocity")
+                flingForce.MaxForce = Vector3.new(1e12, 1e12, 1e12)
+                flingForce.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 2000000 + Vector3.new(0, 2000000, 0)
+                flingForce.Parent = targetHRP
+                task.defer(function()
+                    task.wait(1)
+                    flingForce:Destroy()
+                end)
+            end
+        end
     end)
-    local sitStart = tick()
-    repeat
-        task.wait()
-        if tick() - sitStart > 10 then break end
-    until humanoid.Sit
+    table.insert(touchedConnections, conn)
+else
+    warn("Parte 'Body' não encontrada no barco! Usando todas as partes...")
     for _, part in ipairs(boat:GetDescendants()) do
         if part:IsA("BasePart") then
-            part.CanCollide = true
-            pcall(function() part:SetNetworkOwner(nil) end)
-        end
-    end
-    running = true
-    connection = RunService.Stepped:Connect(function()
-        if not running then return end
-        for _, part in ipairs(character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
-            end
-        end
-    end)
-    local touchedConnections = {}
-    local mainPart = boat:FindFirstChild("Body")
-    if mainPart and mainPart:IsA("BasePart") then
-        local conn = mainPart.Touched:Connect(function(hit)
-            if not running then return end
-            local hitPlayer = Players:GetPlayerFromCharacter(hit.Parent)
-            if hitPlayer and hitPlayer == targetPlayer then
-                local targetHRP = hit.Parent:FindFirstChild("HumanoidRootPart")
-                if targetHRP then
-                    local flingForce = Instance.new("BodyVelocity")
-                    flingForce.MaxForce = Vector3.new(1e12, 1e12, 1e12)
-                    flingForce.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 2000000 + Vector3.new(0, 2000000, 0)
-                    flingForce.Parent = targetHRP
-                    task.defer(function()
-                        task.wait(1)
-                        flingForce:Destroy()
-                    end)
-                end
-            end
-        end)
-        table.insert(touchedConnections, conn)
-    else
-        for _, part in ipairs(boat:GetDescendants()) do
-            if part:IsA("BasePart") then
-                local conn = part.Touched:Connect(function(hit)
-                    if not running then return end
-                    local hitPlayer = Players:GetPlayerFromCharacter(hit.Parent)
-                    if hitPlayer and hitPlayer == targetPlayer then
-                        local targetHRP = hit.Parent:FindFirstChild("HumanoidRootPart")
-                        if targetHRP then
-                            local flingForce = Instance.new("BodyVelocity")
-                            flingForce.MaxForce = Vector3.new(1e12, 1e12, 1e12)
-                            flingForce.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 2000000 + Vector3.new(0, 2000000, 0)
-                            flingForce.Parent = targetHRP
-                            task.defer(function()
-                                task.wait(1)
-                                flingForce:Destroy()
-                            end)
-                        end
+            local conn = part.Touched:Connect(function(hit)
+                if not running then return end
+                local hitPlayer = Players:GetPlayerFromCharacter(hit.Parent)
+                if hitPlayer and hitPlayer == targetPlayer then
+                    local targetHRP = hit.Parent:FindFirstChild("HumanoidRootPart")
+                    if targetHRP then
+                        local flingForce = Instance.new("BodyVelocity")
+                        flingForce.MaxForce = Vector3.new(1e12, 1e12, 1e12)
+                        flingForce.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 2000000 + Vector3.new(0, 2000000, 0)
+                        flingForce.Parent = targetHRP
+                        task.defer(function()
+                            task.wait(1)
+                            flingForce:Destroy()
+                        end)
                     end
-                end)
-                table.insert(touchedConnections, conn)
-            end
+                end
+            end)
+            table.insert(touchedConnections, conn)
         end
     end
-    local lastUpdate = tick()
-    local updateInterval = 0.05
-    flingConnection = RunService.Heartbeat:Connect(function()
-        if not running then
-            for _, conn in ipairs(touchedConnections) do
-                conn:Disconnect()
-            end
-            touchedConnections = {}
-            return
-        end
-        local targetCharacter = targetPlayer.Character or targetPlayer.CharacterAdded:Wait()
-        local newTargetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
-        local newTargetHumanoid = targetCharacter:FindFirstChild("Humanoid")
-        if not newTargetHRP or not newTargetHumanoid then return end
-        if not myHRP or not humanoid then
-            running = false
-            for _, conn in ipairs(touchedConnections) do
-                conn:Disconnect()
-            end
-            touchedConnections = {}
-            return
-        end
-        if tick() - lastUpdate < updateInterval then return end
-        lastUpdate = tick()
-        pcall(function()
-            local targetPosition = newTargetHRP.Position
-            local time = Workspace.DistributedGameTime
-            local rotationX = math.rad(time * 20000)
-            local rotationY = math.rad(time * 25000)
-            local rotationZ = math.rad(time * 30000)
-            boat:PivotTo(
-                CFrame.new(targetPosition) * CFrame.Angles(rotationX, rotationY, rotationZ)
-            )
-        end)
-    end)
 end
+local lastUpdate = tick()
+local updateInterval = 0.05
+flingConnection = RunService.Heartbeat:Connect(function()
+    if not running then
+        for _, conn in ipairs(touchedConnections) do
+            conn:Disconnect()
+        end
+        touchedConnections = {}
+        return
+    end
+    local targetCharacter = targetPlayer.Character or targetPlayer.CharacterAdded:Wait()
+    local newTargetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
+    local newTargetHumanoid = targetCharacter:FindFirstChild("Humanoid")
+    if not newTargetHRP or not newTargetHumanoid then return end
+    if not myHRP or not humanoid then
+        running = false
+        for _, conn in ipairs(touchedConnections) do
+            conn:Disconnect()
+        end
+        touchedConnections = {}
+        return
+    end
+    if tick() - lastUpdate < updateInterval then return end
+    lastUpdate = tick()
+    pcall(function()
+        local targetPosition = newTargetHRP.Position
+        local time = Workspace.DistributedGameTime
+        local rotationX = math.rad(time * 20000)
+        local rotationY = math.rad(time * 25000)
+        local rotationZ = math.rad(time * 30000)
+        boat:PivotTo(
+            CFrame.new(targetPosition) * CFrame.Angles(rotationX, rotationY, rotationZ)
+        )
+    end)
+end)
+
+
 
 -- Toggle para ativar/desativar o fling
 print("Criando o toggle para ativar/desativar o fling...")
@@ -3893,6 +3893,10 @@ flingToggle = Tab10:Toggle({
     end
 })
 
+Tab10:Paragraph({ 
+    Title = "fling barco op mais n recomendo ele pod causar travamento!!! e use o noclip ", 
+    Desc = ""
+})
 
 
 
