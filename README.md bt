@@ -138,7 +138,7 @@ screenGui:Destroy()
     local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
     local Window = WindUI:CreateWindow({
-        Title = "Lolyta Hub 3.1, vesion 3.1 testeee",
+        Title = "Lolyta Hub 3.1, vesion 3.1 tssdsdfsdsdsdsfsfsfesteee",
         Icon = "door-open",
         Author = "Lolycon666",
         Folder = "Lolyta hub v.1.666",
@@ -200,7 +200,27 @@ Tab1:Button({
     end,
 })
 
+--------------------------------------------------------------------------------------------------------------------------------------------------
 
+
+
+Tab1:Button({
+    Title = "Pegar sofá",
+    Desc = "Brookhaven",
+    Callback = function()
+        invokeServer("1Too1l", {"PickingTools", "Couch"})
+    end,
+})--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+Tab1:Button({
+    Title = "Pegar sofá",
+    Desc = "Brookhaven",
+    Callback = function()
+        invokeServer("1Too1l", {"PickingTools", "Couch"})
+    end,
+})
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -4016,7 +4036,7 @@ print("Toggle para ativar/desativar o fling criado com sucesso!")
 
 print("Script inicializado com sucesso! A UI deve estar visível agora.")
 
-end
+
 
 -- Remove a tela de carregamento após 5 segundos e carrega o hub
 task.delay(5, function()
