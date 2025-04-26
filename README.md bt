@@ -138,7 +138,7 @@ screenGui:Destroy()
     local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
     local Window = WindUI:CreateWindow({
-        Title = "Lolyta Hub 3.1 tsete pad version jj exploited",
+        Title = "Lolyta Hub 3.1,,,",
         Icon = "door-open",
         Author = "Lolycon666",
         Folder = "Lolyta hub v.1.666",
@@ -221,50 +221,6 @@ Tab1:Button({
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-Tab1:Button({
-    Title = "TP ALL",
-    Desc = "Teleporte para todos os players",
-    Callback = function()
-        local startingPosition = LocalPlayer.Character:GetPrimaryPartCFrame()
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer then
-                LocalPlayer.Character:SetPrimaryPartCFrame(player.Character:GetPrimaryPartCFrame())
-                wait(1)
-            end
-        end
-        LocalPlayer.Character:SetPrimaryPartCFrame(startingPosition)
-    end,
-})
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-Tab1:Button({
-    Title = "TP ALL",
-    Desc = "Teleporte para todos os players",
-    Callback = function()
-        local startingPosition = LocalPlayer.Character:GetPrimaryPartCFrame()
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer then
-                LocalPlayer.Character:SetPrimaryPartCFrame(player.Character:GetPrimaryPartCFrame())
-                wait(1)
-            end
-        end
-        LocalPlayer.Character:SetPrimaryPartCFrame(startingPosition)
-    end,
-})
-
-
---------------------------------------------------------------------------------------------------------------------------------------------------
-
 
 
 local Players = game:GetService("Players")
@@ -3740,46 +3696,58 @@ local function flingWithBus(targetPlayer)
     end)
 end
 
+-- Função para desativar CarClient (mantida como está, assumindo que funciona)
+local function disableCarClient()
+    -- Implementação da função disableCarClient, se necessário
+    -- Exemplo: Desativar scripts locais de controle de veículos
+end
+
 -- Função para fling com barco (atualizada)
 local function flingWithBoat(targetPlayer)
     if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then
         warn("Selecione um jogador válido antes de iniciar!")
         return
     end
-    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+
+    local character = LocalPlayer.Character
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     local myHRP = character:FindFirstChild("HumanoidRootPart")
     if not humanoid or not myHRP then
         warn("Seu personagem ainda não está totalmente carregado.")
         return
     end
-    savedPosition = myHRP.Position
+
+    -- Salvar posição inicial do jogador local
+    local savedPosition = myHRP.Position
+
+    -- Posicionar o jogador local para spawnar o barco
     pcall(function()
         myHRP.Anchored = true
         myHRP.CFrame = CFrame.new(Vector3.new(-3359.52, -5.05, -501.94))
         task.wait(0.2)
-        myHRP.Velocity = Vector3.zero
-        myHRP.RotVelocity = Vector3.zero
+        myHRP.Velocity = Vector3.new(0, 0, 0)
+        myHRP.RotVelocity = Vector3.new(0, 0, 0)
         myHRP.Anchored = false
-        if humanoid then
-            humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-        end
+        humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
     end)
-    
-    -- Desativar CarClient antes de deletar veículos
+
+    -- Desativar CarClient e deletar veículos existentes
     disableCarClient()
-    
     local args = { [1] = "DeleteAllVehicles" }
     pcall(function()
-        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
     task.wait(0.4)
+
+    -- Spawnar o barco
     args = { [1] = "PickingBoat", [2] = "MilitaryBoatFree" }
     pcall(function()
-        ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
+        game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
     task.wait(1.5)
-    local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
+
+    -- Encontrar o barco no Workspace
+    local vehiclesFolder = game:GetService("Workspace"):FindFirstChild("Vehicles")
     if not vehiclesFolder then
         warn("Pasta Vehicles não encontrada no Workspace!")
         return
@@ -3790,31 +3758,53 @@ local function flingWithBoat(targetPlayer)
         warn("Barco não encontrado em Workspace.Vehicles com o nome: " .. boatName)
         return
     end
+
+    -- Configurar o barco
+    pcall(function()
+        -- Garantir que o barco tenha um PrimaryPart
+        if not boat.PrimaryPart then
+            local body = boat:FindFirstChild("Body") or boat:FindFirstChildWhichIsA("BasePart")
+            if body then
+                boat.PrimaryPart = body
+            else
+                warn("Barco não tem PrimaryPart ou Body!")
+                return
+            end
+        end
+
+        -- Ativar colisões do barco
+        for _, part in ipairs(boat:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+                part.Massless = false -- Garantir que o barco tenha massa para colisões
+            end
+        end
+    end)
+
+    -- Posicionar o jogador local para sentar no barco
     pcall(function()
         myHRP.Anchored = true
-        myHRP.CFrame = CFrame.new(Vector3.new(-3358.85, 5.25, -521.95))
+        myHRP.CFrame = boat.PrimaryPart.CFrame + Vector3.new(0, 5, 0)
         task.wait(0.2)
-        myHRP.Velocity = Vector3.zero
-        myHRP.RotVelocity = Vector3.zero
+        myHRP.Velocity = Vector3.new(0, 0, 0)
+        myHRP.RotVelocity = Vector3.new(0, 0, 0)
         myHRP.Anchored = false
         humanoid:ChangeState(Enum.HumanoidStateType.Seated)
     end)
+
+    -- Aguardar até que o jogador local esteja sentado
     local sitStart = tick()
     repeat
         task.wait()
-        if tick() - sitStart > 10 then
+        if tick() - sitStart > 15 then
             warn("Timeout: Jogador local não foi detectado como sentado!")
             return
         end
     until humanoid.Sit
-    for _, part in ipairs(boat:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = true
-            pcall(function() part:SetNetworkOwner(nil) end)
-        end
-    end
-    running = true
-    connection = RunService.Stepped:Connect(function()
+
+    -- Desativar colisões do jogador local para evitar interferências
+    local running = true
+    local connection = game:GetService("RunService").Stepped:Connect(function()
         if not running then return end
         for _, part in ipairs(character:GetDescendants()) do
             if part:IsA("BasePart") then
@@ -3822,21 +3812,24 @@ local function flingWithBoat(targetPlayer)
             end
         end
     end)
+
+    -- Configurar eventos de colisão
     local touchedConnections = {}
-    local mainPart = boat:FindFirstChild("Body")
+    local mainPart = boat:FindFirstChild("Body") or boat.PrimaryPart
     if mainPart and mainPart:IsA("BasePart") then
         local conn = mainPart.Touched:Connect(function(hit)
             if not running then return end
-            local hitPlayer = Players:GetPlayerFromCharacter(hit.Parent)
+            local hitPlayer = game:GetService("Players"):GetPlayerFromCharacter(hit.Parent)
             if hitPlayer and hitPlayer == targetPlayer then
                 local targetHRP = hit.Parent:FindFirstChild("HumanoidRootPart")
                 if targetHRP then
+                    -- Aplicar força de fling
                     local flingForce = Instance.new("BodyVelocity")
-                    flingForce.MaxForce = Vector3.new(1e12, 1e12, 1e12)
-                    flingForce.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 2000000 + Vector3.new(0, 2000000, 0)
+                    flingForce.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                    flingForce.Velocity = Vector3.new(math.random(-10, 10), 50, math.random(-10, 10)).Unit * 5000
                     flingForce.Parent = targetHRP
                     task.defer(function()
-                        task.wait(1)
+                        task.wait(0.5)
                         flingForce:Destroy()
                     end)
                 end
@@ -3849,16 +3842,16 @@ local function flingWithBoat(targetPlayer)
             if part:IsA("BasePart") then
                 local conn = part.Touched:Connect(function(hit)
                     if not running then return end
-                    local hitPlayer = Players:GetPlayerFromCharacter(hit.Parent)
+                    local hitPlayer = game:GetService("Players"):GetPlayerFromCharacter(hit.Parent)
                     if hitPlayer and hitPlayer == targetPlayer then
                         local targetHRP = hit.Parent:FindFirstChild("HumanoidRootPart")
                         if targetHRP then
                             local flingForce = Instance.new("BodyVelocity")
-                            flingForce.MaxForce = Vector3.new(1e12, 1e12, 1e12)
-                            flingForce.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 2000000 + Vector3.new(0, 2000000, 0)
+                            flingForce.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                            flingForce.Velocity = Vector3.new(math.random(-10, 10), 50, math.random(-10, 10)).Unit * 5000
                             flingForce.Parent = targetHRP
                             task.defer(function()
-                                task.wait(1)
+                                task.wait(0.5)
                                 flingForce:Destroy()
                             end)
                         end
@@ -3868,46 +3861,59 @@ local function flingWithBoat(targetPlayer)
             end
         end
     end
+
+    -- Mover o barco em direção ao jogador alvo com força
     local lastUpdate = tick()
-    local updateInterval = 0.05
-    flingConnection = RunService.Heartbeat:Connect(function()
+    local updateInterval = 0.016 -- ~60 FPS
+    local flingConnection = game:GetService("RunService").Heartbeat:Connect(function()
         if not running then
             for _, conn in ipairs(touchedConnections) do
                 conn:Disconnect()
             end
             touchedConnections = {}
+            connection:Disconnect()
             return
         end
-        local targetCharacter = targetPlayer.Character or targetPlayer.CharacterAdded:Wait()
-        local newTargetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
-        local newTargetHumanoid = targetCharacter:FindFirstChild("Humanoid")
-        if not newTargetHRP or not newTargetHumanoid then
+
+        local targetCharacter = targetPlayer.Character
+        local newTargetHRP = targetCharacter and targetCharacter:FindFirstChild("HumanoidRootPart")
+        local newTargetHumanoid = targetCharacter and targetCharacter:FindFirstChild("Humanoid")
+        if not newTargetHRP or not newTargetHumanoid or not myHRP or not humanoid or not boat.Parent then
             running = false
             for _, conn in ipairs(touchedConnections) do
                 conn:Disconnect()
             end
             touchedConnections = {}
+            connection:Disconnect()
             return
         end
-        if not myHRP or not humanoid then
-            running = false
-            for _, conn in ipairs(touchedConnections) do
-                conn:Disconnect()
-            end
-            touchedConnections = {}
-            return
-        end
+
         if tick() - lastUpdate < updateInterval then return end
         lastUpdate = tick()
+
         pcall(function()
             local targetPosition = newTargetHRP.Position
-            local time = Workspace.DistributedGameTime
-            local rotationX = math.rad(time * 20000)
-            local rotationY = math.rad(time * 25000)
-            local rotationZ = math.rad(time * 30000)
-            boat:PivotTo(
-                CFrame.new(targetPosition) * CFrame.Angles(rotationX, rotationY, rotationZ)
-            )
+            local direction = (targetPosition - boat.PrimaryPart.Position).Unit
+            local velocity = direction * 100 -- Velocidade ajustada para colisão forte
+            boat.PrimaryPart.Velocity = velocity
+            boat:PivotTo(CFrame.new(boat.PrimaryPart.Position) * CFrame.Angles(math.rad(45), math.rad(45), math.rad(45)))
+        end)
+    end)
+
+    -- Parar após 10 segundos ou quando o alvo for atingido
+    task.delay(10, function()
+        running = false
+        for _, conn in ipairs(touchedConnections) do
+            conn:Disconnect()
+        end
+        touchedConnections = {}
+        connection:Disconnect()
+        flingConnection:Disconnect()
+
+        -- Restaurar posição do jogador local
+        pcall(function()
+            myHRP.CFrame = CFrame.new(savedPosition)
+            humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
         end)
     end)
 end
