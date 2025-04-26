@@ -138,7 +138,7 @@ screenGui:Destroy()
     local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
     local Window = WindUI:CreateWindow({
-        Title = "Lolyta Hub 3.1, vesion 3.1 tssdsdfsdsdsdsfsfsfesteee",
+        Title = "Lolyta Hub 3.1, vesion 3.1 tssdsdfs5555sfesteee",
         Icon = "door-open",
         Author = "Lolycon666",
         Folder = "Lolyta hub v.1.666",
@@ -1381,6 +1381,130 @@ end)
 -----------------------------------------------------------------------------------------------------
                                           -- === Tab 4: RGB Color === --
 ---------------------------------------------------------------------------------------------------------------------------------
+
+-- Lista de cores vibrantes (usada por todos os toggles)
+local vibrantColors = {
+    Color3.new(1, 0, 0),       -- Vermelho
+    Color3.new(0, 1, 0),       -- Verde
+    Color3.new(0, 0, 1),       -- Azul
+    Color3.new(1, 1, 0),       -- Amarelo
+    Color3.new(1, 0, 1),       -- Magenta
+    Color3.new(0, 1, 1),       -- Ciano
+    Color3.new(1, 0.5, 0),     -- Laranja
+    Color3.new(0.5, 0, 1)      -- Roxo
+}
+
+-- Função auxiliar para disparar eventos (reutilizada por todos os toggles)
+local function fireServer(eventName, args)
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local event = ReplicatedStorage:FindFirstChild("RE") and ReplicatedStorage.RE:FindFirstChild(eventName)
+    if event then
+        pcall(function()
+            event:FireServer(unpack(args))
+        end)
+    end
+end
+
+-- Novo Toggle: Nome e Bio RGB Sincronizado (em primeiro lugar)
+local nameAndBioRGBActive = false
+Tab4:Toggle({
+    Title = "Nome e Bio RGB Sincronizado",
+    Desc = "Ativa cores RGB sincronizadas para Nome e Bio",
+    Value = false,
+    Callback = function(state)
+        nameAndBioRGBActive = state
+        if state then
+            task.spawn(function()
+                while nameAndBioRGBActive and LocalPlayer.Character do
+                    local color = vibrantColors[math.random(1, #vibrantColors)]
+                    local nameArgs = { [1] = "PickingRPNameColor", [2] = color }
+                    local bioArgs = { [1] = "PickingRPBioColor", [2] = color }
+                    fireServer("1RPNam1eColo1r", nameArgs)
+                    fireServer("1RPNam1eColo1r", bioArgs)
+                    wait(1)
+                    task.wait() -- Pequena pausa para aliviar a carga
+                end
+            end)
+        end
+    end
+})
+
+-- Toggle Nome RGB
+local nameRGBActive = false
+Tab4:Toggle({
+    Title = "Nome RGB",
+    Desc = "Ativa cores RGB para o Nome",
+    Value = false,
+    Callback = function(state)
+        nameRGBActive = state
+        if state then
+            task.spawn(function()
+                while nameRGBActive and LocalPlayer.Character do
+                    local color = vibrantColors[math.random(1, #vibrantColors)]
+                    local args = { [1] = "PickingRPNameColor", [2] = color }
+                    fireServer("1RPNam1eColo1r", args)
+                    wait(1)
+                    task.wait() -- Pequena pausa para aliviar a carga
+                end
+            end)
+        end
+    end
+})
+
+-- Toggle Bio RGB
+local bioRGBActive = false
+Tab4:Toggle({
+    Title = "Bio RGB",
+    Desc = "Ativa cores RGB aleatórias na sua bio",
+    Value = false,
+    Callback = function(state)
+        bioRGBActive = state
+        if state then
+            task.spawn(function()
+                while bioRGBActive and LocalPlayer.Character do
+                    local color = vibrantColors[math.random(1, #vibrantColors)]
+                    local args = { [1] = "PickingRPBioColor", [2] = color }
+                    fireServer("1RPNam1eColo1r", args)
+                    wait(1)
+                    task.wait() -- Pequena pausa para aliviar a carga
+                end
+            end)
+        end
+    end
+})
+
+-- Toggle RGB Premium (Carro)
+local carRGBActive = false
+Tab4:Toggle({
+    Title = "Car RGB",
+    Desc = "Precisa do premium (atenção, pode dar kick!!!! Não recomendo usar!!!)",
+    Value = false,
+    Callback = function(state)
+        carRGBActive = state
+        if state then
+            local character = LocalPlayer.Character
+            if not character then
+                carRGBActive = false
+                return
+            end
+            task.spawn(function()
+                while carRGBActive and LocalPlayer.Character do
+                    local color = vibrantColors[math.random(1, #vibrantColors)]
+                    local args = { [1] = "PickingCarColor", [2] = color }
+                    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                    local event = ReplicatedStorage:FindFirstChild("RE") and ReplicatedStorage.RE:FindFirstChild("1Player1sCa1r")
+                    if event then
+                        pcall(function()
+                            event:FireServer(unpack(args))
+                        end)
+                    end
+                    wait(1)
+                    task.wait() -- Pequena pausa para aliviar a carga
+                end
+            end)
+        end
+    end
+})
 
 -- Lista de cores vibrantes (usada por todos os toggles)
 local vibrantColors = {
