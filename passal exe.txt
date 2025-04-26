@@ -2,6 +2,7 @@
 
 -- === Configurações Iniciais === --
 local AllowedUsers = {
+    "Lolytave2",
     "rtrt967",  --dev
     "kaio_lg1",  --kaio
     "Higor_hg5", --higo
@@ -17,6 +18,7 @@ local AllowedUsers = {
     "RED_MIGZINN",  --bf
     "Davilorenzopro123",  --vamp
     "Xxfriend03",  --vini
+    "Davilorenzopro123",
 }
 
 -- Serviços do Roblox
@@ -148,7 +150,7 @@ screenGui:Destroy()
     local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
     local Window = WindUI:CreateWindow({
-        Title = "Lolyta Hub 3.1,,,,,",
+        Title = "Lolyta Hub 3.1__________",
         Icon = "door-open",
         Author = "Lolycon666",
         Folder = "Lolyta hub v.1.666",
