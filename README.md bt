@@ -138,7 +138,7 @@ screenGui:Destroy()
     local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
     local Window = WindUI:CreateWindow({
-        Title = "Lolyta Hub 3.1uuu",
+        Title = "Lolyta Hub 3.1,,,",
         Icon = "door-open",
         Author = "Lolycon666",
         Folder = "Lolyta hub v.1.666",
@@ -2179,6 +2179,374 @@ Tab7:Button({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/M1ZZ001/BrookhavenR4D/main/Brookhaven%20R4D%20Script"))()
     end,
 })
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 8: Jogadores === --
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+local isSpectating = false
+local spectatedPlayer = nil
+local characterConnection = nil
+
+-- Função para obter os nomes dos jogadores, excluindo o jogador local
+local function getPlayerNames()
+    local playerNames = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            table.insert(playerNames, player.Name)
+        end
+    end
+    return playerNames
+end
+
+-- Função para atualizar o dropdown com os nomes dos jogadores
+local function updateDropdown(dropdown)
+    local success, errorMessage = pcall(function()
+        local currentValue = dropdown.Value
+        local playerNames = getPlayerNames()
+        dropdown:Refresh(playerNames)
+        if currentValue and not table.find(playerNames, currentValue) then
+            dropdown:SetValue("")
+            print("Jogador anterior saiu do jogo. Seleção resetada.")
+            if isSpectating then
+                stopSpectating()
+                SpectateToggle:SetValue(false)
+            end
+        end
+    end)
+    if not success then
+        warn("Erro ao atualizar dropdown: " .. tostring(errorMessage))
+    end
+end
+
+-- Função para teletransportar para o jogador selecionado (com ancoragem segura)
+local function teleportToPlayer(playerName)
+    local targetPlayer = Players:FindFirstChild(playerName)
+    if targetPlayer and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local myHumanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+        if not myHRP or not myHumanoid then
+            
+            return
+        end
+
+        -- Zerar a física do personagem antes do teleporte
+        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Velocity = Vector3.zero
+                part.RotVelocity = Vector3.zero
+                part.Anchored = true -- Ancorar temporariamente para evitar movimento
+            end
+        end
+
+        -- Teleportar para a posição do jogador-alvo
+        local success, errorMessage = pcall(function()
+            myHRP.CFrame = CFrame.new(targetPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 2, 0)) -- Leve elevação para evitar colisão com o chão
+        end)
+        if not success then
+            warn("Erro ao teletransportar: " .. tostring(errorMessage))
+            return
+        end
+
+        -- Garantir que o Humanoid saia do estado sentado ou voando
+        myHumanoid.Sit = false
+        myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+
+        -- Aguardar 0,5 segundos com o personagem ancorado
+        task.wait(0.5)
+
+        -- Desancorar todas as partes do personagem e restaurar física
+        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Anchored = false
+                part.Velocity = Vector3.zero
+                part.RotVelocity = Vector3.zero
+            end
+        end
+
+        print("Teletransportado para o jogador: " .. playerName .. " com ancoragem segura.")
+    else
+        print("Jogador ou personagem não encontrado para teletransporte.")
+    end
+end
+
+-- Função para visualizar um jogador (modo espectador)
+local function spectatePlayer(playerName)
+    if characterConnection then
+        characterConnection:Disconnect()
+        characterConnection = nil
+    end
+
+    local targetPlayer = Players:FindFirstChild(playerName)
+    if targetPlayer and targetPlayer ~= LocalPlayer then
+        spectatedPlayer = targetPlayer
+        isSpectating = true
+        print("Visualizando jogador: " .. targetPlayer.Name)
+
+        local function updateCamera()
+            if not isSpectating or not spectatedPlayer then
+                return
+            end
+            if spectatedPlayer.Character and spectatedPlayer.Character:FindFirstChild("Humanoid") then
+                Workspace.CurrentCamera.CameraSubject = spectatedPlayer.Character.Humanoid
+            else
+                Workspace.CurrentCamera.CameraSubject = nil
+            end
+        end
+
+        updateCamera()
+
+        characterConnection = RunService.Heartbeat:Connect(function()
+            if not isSpectating then
+                characterConnection:Disconnect()
+                characterConnection = nil
+                return
+            end
+            local success, errorMessage = pcall(updateCamera)
+            if not success then
+                warn("Erro ao atualizar câmera no modo visualização: " .. tostring(errorMessage))
+                stopSpectating()
+            end
+        end)
+
+        spectatedPlayer.CharacterAdded:Connect(function()
+            if isSpectating then
+                updateCamera()
+            end
+        end)
+    else
+        print("Jogador inválido ou não encontrado para modo visualização.")
+        isSpectating = false
+        spectatedPlayer = nil
+    end
+end
+
+-- Função para parar de visualizar
+local function stopSpectating()
+    if characterConnection then
+        characterConnection:Disconnect()
+        characterConnection = nil
+    end
+
+    isSpectating = false
+    spectatedPlayer = nil
+
+    -- Garante que a câmera volte para o Humanoid do jogador local
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        Workspace.CurrentCamera.CameraSubject = LocalPlayer.Character.Humanoid
+        Workspace.CurrentCamera.CameraType = Enum.CameraType.Custom -- Força o modo de câmera padrão
+        
+    else
+        Workspace.CurrentCamera.CameraSubject = nil
+        Workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
+        
+    end
+end
+
+-- Detecta quando o jogador local morre e reseta a câmera
+LocalPlayer.CharacterAdded:Connect(function(character)
+    if isSpectating then
+        stopSpectating()
+        print("Você morreu. Câmera voltou para o seu personagem.")
+    end
+end)
+
+-- Dropdown para selecionar jogador
+local DropdownPlayer = Tab8:Dropdown({
+    Title = "Selecionar Jogador",
+    Desc = "Selecione o jogador para teletransportar ou visualizar",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = getPlayerNames(),
+    Callback = function(selectedPlayerName)
+        if selectedPlayerName == "" or selectedPlayerName == nil then
+            print("Nenhum jogador selecionado.")
+            if isSpectating then
+                stopSpectating()
+                SpectateToggle:SetValue(false)
+            end
+        else
+            print("Jogador selecionado: " .. selectedPlayerName)
+            if isSpectating then
+                stopSpectating()
+                spectatePlayer(selectedPlayerName)
+            end
+        end
+    end,
+})
+
+-- Botão para atualizar a lista de jogadores (adicionado logo abaixo do dropdown)
+Tab8:Button({
+    Title = "Atualizar Lista de Jogadores",
+    Desc = "Atualiza a lista de jogadores no dropdown",
+    Callback = function()
+        updateDropdown(DropdownPlayer)
+        
+    end,
+})
+
+-- Botão de Teleporte
+Tab8:Button({
+    Title = "Teleportar para Jogador",
+    Desc = "Clique para teletransportar para o jogador selecionado",
+    Callback = function()
+        local selectedPlayerName = DropdownPlayer.Value
+        if selectedPlayerName and selectedPlayerName ~= "" then
+            local success, errorMessage = pcall(teleportToPlayer, selectedPlayerName)
+            if not success then
+                warn("Erro ao teletransportar: " .. tostring(errorMessage))
+            end
+        else
+            
+        end
+    end,
+})
+
+-- Toggle para visualizar jogador
+local SpectateToggle = Tab8:Toggle({
+    Title = "Visualizar Jogador",
+    Desc = "Ativa ou desativa o modo de visualização",
+    Default = false,
+    Callback = function(state)
+        if state then
+            local selectedPlayerName = DropdownPlayer.Value
+            if selectedPlayerName and selectedPlayerName ~= "" then
+                local success, errorMessage = pcall(spectatePlayer, selectedPlayerName)
+                if not success then
+                    warn("Erro ao ativar modo de visualização: " .. tostring(errorMessage))
+                    SpectateToggle:SetValue(false)
+                end
+            else
+                
+                SpectateToggle:SetValue(false)
+            end
+        else
+            local success, errorMessage = pcall(stopSpectating)
+            if not success then
+                warn("Erro ao desativar modo de visualização: " .. tostring(errorMessage))
+            end
+        end
+    end,
+})
+
+-- Atualiza o dropdown quando jogadores entram ou saem
+updateDropdown(DropdownPlayer)
+Players.PlayerAdded:Connect(function()
+    updateDropdown(DropdownPlayer)
+end)
+Players.PlayerRemoving:Connect(function(player)
+    updateDropdown(DropdownPlayer)
+    if spectatedPlayer and spectatedPlayer == player then
+        stopSpectating()
+        SpectateToggle:SetValue(false)
+        DropdownPlayer:SetValue("")
+    end
+end)
+-----------------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 9: Teleportes === --
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+local player = game.Players.LocalPlayer
+local selectedLocation = "Morro"
+
+-- Dropdown com as localizações de Brookhaven
+local Dropdown = Tab9:Dropdown({
+    Title = "Locais de Brookhaven",
+    Desc = "Selecione um local para teleportar",
+    Value = "Morro",
+    Multi = false,
+    AllowNone = false,
+    Values = {
+        "Morro",
+        "Praça",
+        "Banco",
+        "Hospital",
+        "Prefeitura",
+        "Fazenda",
+        "Mercado",
+        "Shopping",
+        "Aeroporto",
+        "Hotel",
+        "Beira-mar 1",
+        "Beira-mar 2"
+    },
+    Callback = function(value)
+        selectedLocation = value
+        print("Local selecionado: " .. selectedLocation)
+    end
+})
+
+-- Botão para teleportar
+local TeleportButton = Tab9:Button({
+    Title = "Teleportar",
+    Desc = "Teleporta para o local selecionado",
+    Callback = function()
+        print("Teleportando para: " .. selectedLocation)
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local humanoidRootPart = player.Character.HumanoidRootPart
+            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+            local locations = {
+                ["Morro"] = Vector3.new(-348.64, 65.94, -458.08),
+                ["Praça"] = Vector3.new(-26.17, 3.48, -0.93),
+                ["Banco"] = Vector3.new(1.99, 3.32, 236.65),
+                ["Hospital"] = Vector3.new(-303.2, 3.40, 13.74),
+                ["Prefeitura"] = Vector3.new(-354.65, 7.32, -102.16),
+                ["Fazenda"] = Vector3.new(-766.41, 2.92, -61.10),
+                ["Mercado"] = Vector3.new(16.31, 3.32, -107.07),
+                ["Shopping"] = Vector3.new(151.05, 3.52, -190.64),
+                ["Aeroporto"] = Vector3.new(290.23, 4.32, 42.57),
+                ["Hotel"] = Vector3.new(159.10, 3.32, 164.97),
+                ["Beira-mar 1"] = Vector3.new(55.69, 2.94, -1403.60),
+                ["Beira-mar 2"] = Vector3.new(42.39, 2.94, 1336.14)
+            }
+
+            if locations[selectedLocation] then
+                local success, errorMessage = pcall(function()
+                    -- Desativar física (impedir movimento durante o teleporte)
+                    if humanoid then
+                        humanoid:ChangeState(Enum.HumanoidStateType.Physics) -- Forçar estado neutro
+                        humanoid.WalkSpeed = 0 -- Impedir movimento
+                    end
+                    humanoidRootPart.Anchored = true -- Ancorar para evitar física externa
+
+                    -- Realizar o teleporte
+                    humanoidRootPart.CFrame = CFrame.new(locations[selectedLocation])
+
+                    -- Manter ancorado por 0,4 segundos
+                    task.wait(0.4)
+
+                    -- Restaurar estado
+                    humanoidRootPart.Anchored = false
+                    if humanoid then
+                        humanoid.WalkSpeed = 16 -- Restaurar velocidade padrão (ajuste conforme necessário)
+                        humanoid:ChangeState(Enum.HumanoidStateType.Running) -- Voltar ao estado normal
+                    end
+                end)
+
+                if not success then
+                    warn("Erro ao teleportar: " .. tostring(errorMessage))
+                    -- Garantir que o personagem não fique preso
+                    humanoidRootPart.Anchored = false
+                    if humanoid then
+                        humanoid.WalkSpeed = 16
+                        humanoid:ChangeState(Enum.HumanoidStateType.Running)
+                    end
+                end
+            else
+                print("Local não encontrado!")
+            end
+        else
+            print("Personagem não encontrado!")
+        end
+    end
+})
+
 
 
 
