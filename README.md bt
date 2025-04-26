@@ -222,6 +222,50 @@ Tab1:Button({
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Tab1:Button({
+    Title = "TP ALL",
+    Desc = "Teleporte para todos os players",
+    Callback = function()
+        local startingPosition = LocalPlayer.Character:GetPrimaryPartCFrame()
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                LocalPlayer.Character:SetPrimaryPartCFrame(player.Character:GetPrimaryPartCFrame())
+                wait(1)
+            end
+        end
+        LocalPlayer.Character:SetPrimaryPartCFrame(startingPosition)
+    end,
+})
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Tab1:Button({
+    Title = "TP ALL",
+    Desc = "Teleporte para todos os players",
+    Callback = function()
+        local startingPosition = LocalPlayer.Character:GetPrimaryPartCFrame()
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                LocalPlayer.Character:SetPrimaryPartCFrame(player.Character:GetPrimaryPartCFrame())
+                wait(1)
+            end
+        end
+        LocalPlayer.Character:SetPrimaryPartCFrame(startingPosition)
+    end,
+})
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
