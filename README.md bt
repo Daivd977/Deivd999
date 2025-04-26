@@ -138,7 +138,7 @@ screenGui:Destroy()
     local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
     local Window = WindUI:CreateWindow({
-        Title = "Lolyta Hub 3.1 teste pad version teste",
+        Title = "Lolyta Hub 3.1 teste pad version teste 3.1 gg exploited",
         Icon = "door-open",
         Author = "Lolycon666",
         Folder = "Lolyta hub v.1.666",
@@ -290,6 +290,27 @@ Tab1:Button({
         invokeServer("1Too1l", {"PickingTools", "Couch"})
     end,
 })
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Tab1:Button({
+    Title = "TP ALL",
+    Desc = "Teleporte para todos os players",
+    Callback = function()
+        local startingPosition = LocalPlayer.Character:GetPrimaryPartCFrame()
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                LocalPlayer.Character:SetPrimaryPartCFrame(player.Character:GetPrimaryPartCFrame())
+                wait(1)
+            end
+        end
+        LocalPlayer.Character:SetPrimaryPartCFrame(startingPosition)
+    end,
+})
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
