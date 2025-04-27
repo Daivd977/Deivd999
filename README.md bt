@@ -15,6 +15,8 @@ local AllowedUsers = {
     "lacradoor123",
     "enzin12346BR",
     "RED_MIGZINN",
+    "",
+    "",
 }
 
 -- Serviços do Roblox
@@ -4008,25 +4010,3 @@ Tab10:Paragraph({
 })
 
 
--- Executa as funções na ordem correta
-local success, err = pcall(function()
-    -- 1. Tela de carregamento já está exibida
-    -- 2. Configura RolePlayName e bio
-    local rolePlaySuccess = setupRolePlay()
-    if not rolePlaySuccess then
-        warn("Falha ao configurar RolePlayName ou bio!")
-    end
-
-    -- 3. Inicializa a interface WindUI
-    local uiSuccess = initializeUI()
-    if not uiSuccess then
-        warn("Falha ao inicializar a interface WindUI!")
-    end
-end)
-
--- 4. Remove a tela de carregamento após tudo
-screenGui:Destroy()
-
-if not success then
-    warn("Erro durante a inicialização: " .. tostring(err))
-end
