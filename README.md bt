@@ -1,7 +1,50 @@
 --lolyta hub para teste
 
---gcfdrmiohtewdki65qqwertyuiopiuytrewqwertyuioliuytrewqwertyuiliuytrewqwertuiopoiuyteqwertyuiopoiuytrewwertyuiol
 
+-- === Configurações Iniciais === --
+local AllowedUsers = {
+    "rtrt967",
+    "kaio_lg1",
+    "Higor_hg5",
+    "QUEROBOVO",
+    "guga_10plays",
+    "pzinrlk929",
+    "Tataizin_021",
+    "Lolytateste666",
+    "rafainha4002",
+    "Tiago_RJ4",
+    "lacradoor123",
+    "enzin12346BR",
+    "RED_MIGZINN",
+}
+
+-- Serviços do Roblox
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+
+-- Verificação de permissão do jogador
+local LocalPlayer = Players.LocalPlayer
+local PlayerName = LocalPlayer.Name
+local isAllowed = false
+
+for _, user in pairs(AllowedUsers) do
+    if user == PlayerName then
+        isAllowed = true
+        break
+    end
+end
+
+if not isAllowed then
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "Acesso Negado",
+        Text = "Você não tem permissão para usar o Lolyta Hub 3.1 Contate o criador para ser adicionado à lista.",
+        Duration = 5
+    })
+    return
+end
 
 -- Tela de carregamento com imagem funcional e texto "Carregando..."
 local imageId = "rbxassetid://76308195683050" -- ✅ imagem testada e garantida funcional
@@ -96,14 +139,8 @@ task.wait(3)
 screenGui:Destroy()
 
 -- === Inicialização da Interface === --
-local Version = "1.4.0"
-local success, WindUI = pcall(function()
-    return loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
-end)
-if not success then
-    warn("Erro ao carregar WindUI: " .. WindUI)
-    return
-end
+ local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
+    local Version = "1.4.0"
 
 local Window = WindUI:CreateWindow({
     Title = "hhygytttyggr",
@@ -132,8 +169,17 @@ Window:EditOpenButton({
 })
 
 
+-- === Abas da Interface === --
+local Tab1 = Window:Tab({ Title = "Main", Icon = "house-plus" })
+local Tab2 = Window:Tab({ Title = "Casa", Icon = "house" })
+local Tab3 = Window:Tab({ Title = "Carro", Icon = "car" })
+local Tab4 = Window:Tab({ Title = "RGB Color", Icon = "palette" })
+local Tab5 = Window:Tab({ Title = "Troll Musica", Icon = "music" })
+local Tab6 = Window:Tab({ Title = "Music All", Icon = "audio-lines" })
+local Tab7 = Window:Tab({ Title = "Scripts", Icon = "layers" })
+local Tab8 = Window:Tab({ Title = "Jogadores", Icon = "users" })
+local Tab9 = Window:Tab({ Title = "Teleportes", Icon = "map-pin" })
 local Tab10 = Window:Tab({ Title = "Troll", Icon = "skull" })
-
 
 
 -- Serviços
@@ -244,9 +290,9 @@ end
 local function updateDropdown(dropdown)
     local success, errorMessage = pcall(function()
         local playerNames = getPlayerNames()
-        dropdown:Clear() -- Limpa os valores antigos
+        dropdown:Clear()
         for _, name in ipairs(playerNames) do
-            dropdown:Add(name) -- Adiciona os novos valores
+            dropdown:Add(name)
         end
         if selectedPlayer and not table.find(playerNames, selectedPlayer.Name) then
             dropdown:SetValue(nil)
@@ -336,18 +382,17 @@ LocalPlayer.CharacterAdded:Connect(function(character)
     end
 end)
 
--- Criação da Interface Gráfica
-
 -- Dropdown para selecionar jogador
 print("Criando o dropdown para selecionar jogador...")
-local DropdownPlayer = Tab10:AddDropdown({
+local DropdownPlayer = Tab10:Dropdown({
     Title = "Selecionar Jogador",
-    Description = "Escolha um jogador para matar, puxar, visualizar ou aplicar fling",
-    Default = nil,
+    Desc = "Escolha um jogador para matar, puxar, visualizar ou aplicar fling",
+    Value = "",
     Multi = false,
-    Options = getPlayerNames(),
+    AllowNone = true,
+    Values = getPlayerNames(),
     Callback = function(selectedPlayerName)
-        if selectedPlayerName == nil then
+        if selectedPlayerName == "" or selectedPlayerName == nil then
             selectedPlayer = nil
             if running or isFollowingKill or isFollowingPull then
                 running = false
@@ -373,9 +418,9 @@ print("Dropdown para selecionar jogador criado com sucesso!")
 
 -- Botão para atualizar a lista de jogadores
 print("Criando o botão para atualizar a lista de jogadores...")
-Tab10:AddButton({
+Tab10:Button({
     Title = "Atualizar Lista de Jogadores",
-    Description = "Atualiza a lista de jogadores no dropdown",
+    Desc = "Atualiza a lista de jogadores no dropdown",
     Callback = function()
         updateDropdown(DropdownPlayer)
     end
@@ -384,9 +429,9 @@ print("Botão para atualizar a lista de jogadores criado com sucesso!")
 
 -- Toggle para visualizar jogador
 print("Criando o toggle para visualizar jogador...")
-local SpectateToggle = Tab10:AddToggle({
+local SpectateToggle = Tab10:Toggle({
     Title = "Visualizar Jogador",
-    Description = "Ativa/desativa a visualização do jogador selecionado",
+    Desc = "Ativa/desativa a visualização do jogador selecionado",
     Default = false,
     Callback = function(state)
         if state then
@@ -432,10 +477,10 @@ updateDropdown(DropdownPlayer)
 
 -- Dropdown para selecionar método de matar/puxar
 print("Criando o dropdown para selecionar método de matar/puxar...")
-local DropdownKillPullMethod = Tab10:AddDropdown({
+local DropdownKillPullMethod = Tab10:Dropdown({
     Title = "Selecionar Método (Matar/Puxar)",
-    Description = "Escolha o método para matar ou puxar",
-    Options = {"Sofá", "Ônibus"},
+    Desc = "Escolha o método para matar ou puxar",
+    Values = {"Sofá", "Ônibus"},
     Callback = function(value)
         selectedKillPullMethod = value
     end
@@ -762,9 +807,9 @@ end)
 
 -- Botão para iniciar matar
 print("Criando o botão para iniciar matar...")
-Tab10:AddButton({
+Tab10:Button({
     Title = "Matar",
-    Description = "Inicia o matar com o método selecionado",
+    Desc = "Inicia o matar com o método selecionado",
     Callback = function()
         if isFollowingKill or isFollowingPull or running then
             print("Uma ação já está ativa. Use o botão Parar primeiro.")
@@ -789,9 +834,9 @@ print("Botão para iniciar matar criado com sucesso!")
 
 -- Botão para iniciar puxar
 print("Criando o botão para iniciar puxar...")
-Tab10:AddButton({
+Tab10:Button({
     Title = "Puxar",
-    Description = "Inicia o puxar com o método selecionado",
+    Desc = "Inicia o puxar com o método selecionado",
     Callback = function()
         if isFollowingKill or isFollowingPull or running then
             print("Uma ação já está ativa. Use o botão Parar primeiro.")
@@ -816,9 +861,9 @@ print("Botão para iniciar puxar criado com sucesso!")
 
 -- Botão para parar matar ou puxar
 print("Criando o botão para parar matar ou puxar...")
-Tab10:AddButton({
+Tab10:Button({
     Title = "Parar (Matar ou Puxar)",
-    Description = "Para o movimento de matar ou puxar",
+    Desc = "Para o movimento de matar ou puxar",
     Callback = function()
         isFollowingKill = false
         isFollowingPull = false
@@ -868,10 +913,10 @@ print("Botão para parar matar ou puxar criado com sucesso!")
 
 -- Dropdown para selecionar método de fling
 print("Criando o dropdown para selecionar método de fling...")
-local DropdownFlingMethod = Tab10:AddDropdown({
+local DropdownFlingMethod = Tab10:Dropdown({
     Title = "Selecionar Método de Fling",
-    Description = "Escolha o método para aplicar fling",
-    Options = {"Sofá", "Ônibus", "Bola", "Barco"},
+    Desc = "Escolha o método para aplicar fling",
+    Values = {"Sofá", "Ônibus", "Bola", "Barco"},
     Callback = function(value)
         selectedFlingMethod = value
     end
@@ -1104,7 +1149,7 @@ local function flingWithSofa(targetPlayer)
                     part.CanCollide = false
                     pcall(function() part:SetNetworkOwner(nil) end)
                 end
-            end
+        end
             walkFlingInstance = Instance.new("BodyVelocity")
             walkFlingInstance.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
             walkFlingInstance.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
@@ -1635,9 +1680,9 @@ end
 
 -- Toggle para ativar/desativar o fling
 print("Criando o toggle para ativar/desativar o fling...")
-flingToggle = Tab10:AddToggle({
+flingToggle = Tab10:Toggle({
     Title = "Ativar Fling",
-    Description = "Ativa ou desativa o fling com o método selecionado",
+    Desc = "Ativa ou desativa o fling com o método selecionado",
     Default = false,
     Callback = function(state)
         if state then
@@ -1673,9 +1718,9 @@ flingToggle = Tab10:AddToggle({
 print("Toggle para ativar/desativar o fling criado com sucesso!")
 
 -- Aviso sobre o fling com barco
-Tab10:AddParagraph({
-    Title = "Aviso",
-    Content = "Fling com barco é poderoso, mas pode causar travamentos! Use noclip para evitar problemas."
+Tab10:Paragraph({ 
+    Title = "fling barco op mais n recomendo ele pod causar travamento!!! e use o noclip ", 
+    Desc = ""
 })
 
 print("Script inicializado com sucesso! A UI deve estar visível agora.")
