@@ -207,6 +207,7 @@ local isSpectating = false
 local spectatedPlayer = nil
 local characterConnection = nil
 local flingToggle = nil
+local touchedConnections = {} -- Para armazenar conexões do fling com barco
 
 -- Cria um RemoteEvent para comunicação com o servidor
 local SetNetworkOwnerEvent = Instance.new("RemoteEvent")
@@ -290,12 +291,16 @@ end
 local function updateDropdown(dropdown)
     local success, errorMessage = pcall(function()
         local playerNames = getPlayerNames()
-        dropdown:Clear()
-        for _, name in ipairs(playerNames) do
-            dropdown:Add(name)
-        end
+        -- Limpa o dropdown completamente
+        dropdown.Values = {}
+        dropdown.Value = ""
+        -- Adiciona os novos valores
+        dropdown.Values = playerNames
+        -- Força a atualização visual do dropdown
+        dropdown:Update()
+        -- Verifica se o jogador selecionado ainda está na lista
         if selectedPlayer and not table.find(playerNames, selectedPlayer.Name) then
-            dropdown:SetValue(nil)
+            dropdown.Value = ""
             selectedPlayer = nil
             if isSpectating then
                 stopSpectating()
@@ -559,7 +564,7 @@ local function killWithBus(targetPlayer)
     pcall(function()
         myHRP.Anchored = true
         myHRP.CFrame = CFrame.new(Vector3.new(1181.83, 76.08, -1158.83))
-        task.wait(0.2)
+        task.wait(0.1) -- Reduzido o tempo de espera
         myHRP.Velocity = Vector3.zero
         myHRP.RotVelocity = Vector3.zero
         myHRP.Anchored = false
@@ -567,7 +572,7 @@ local function killWithBus(targetPlayer)
             humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
         end
     end)
-    task.wait(0.5)
+    task.wait(0.2) -- Reduzido o tempo de espera
     
     -- Remove todos os veículos existentes
     local args = { [1] = "DeleteAllVehicles" }
@@ -580,7 +585,7 @@ local function killWithBus(targetPlayer)
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
-    task.wait(1.5)
+    task.wait(0.5) -- Reduzido o tempo de espera
     
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
     if not vehiclesFolder then 
@@ -589,7 +594,7 @@ local function killWithBus(targetPlayer)
         return 
     end
     local busName = LocalPlayer.Name .. "Car"
-    local bus = vehiclesFolder:FindFirstChild(busName)
+    local bus = vehiclesFolder:WaitForChild(busName, 3)
     if not bus then 
         print("Ônibus não encontrado em Workspace.Vehicles com o nome: " .. busName)
         enableCarClient()
@@ -608,7 +613,7 @@ local function killWithBus(targetPlayer)
     pcall(function()
         myHRP.Anchored = true
         myHRP.CFrame = CFrame.new(Vector3.new(1171.71, 79.12, -1166.68))
-        task.wait(0.2)
+        task.wait(0.1) -- Reduzido o tempo de espera
         myHRP.Velocity = Vector3.zero
         myHRP.RotVelocity = Vector3.zero
         myHRP.Anchored = false
@@ -619,7 +624,7 @@ local function killWithBus(targetPlayer)
     local sitStart = tick()
     repeat
         task.wait()
-        if tick() - sitStart > 10 then 
+        if tick() - sitStart > 5 then 
             print("Timeout: Jogador local não foi detectado como sentado!")
             enableCarClient()
             return 
@@ -687,7 +692,7 @@ local function killWithBus(targetPlayer)
             pcall(function()
                 bus:PivotTo(CFrame.new(Vector3.new(-76.6, -401.97, -84.26)))
             end)
-            task.wait(0.5)
+            task.wait(0.2) -- Reduzido o tempo de espera
             
             -- Remove o ônibus
             local args = { [1] = "DeleteAllVehicles" }
@@ -702,7 +707,7 @@ local function killWithBus(targetPlayer)
                     pcall(function()
                         myHRP.Anchored = true
                         myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
-                        task.wait(0.2)
+                        task.wait(0.1) -- Reduzido o tempo de espera
                         myHRP.Velocity = Vector3.zero
                         myHRP.RotVelocity = Vector3.zero
                         myHRP.Anchored = false
@@ -785,7 +790,7 @@ sitCheckConnection = RunService.Heartbeat:Connect(function()
                     if myHRP then
                         myHRP.Anchored = true
                         myHRP.CFrame = CFrame.new(originalPosition + Vector3.new(0, 5, 0))
-                        task.wait(0.2)
+                        task.wait(0.1) -- Reduzido o tempo de espera
                         myHRP.Velocity = Vector3.zero
                         myHRP.RotVelocity = Vector3.zero
                         myHRP.Anchored = false
@@ -888,7 +893,7 @@ Tab10:Button({
             if myHRP then
                 myHRP.Anchored = true
                 myHRP.CFrame = CFrame.new(originalPosition + Vector3.new(0, 5, 0))
-                task.wait(0.2)
+                task.wait(0.1) -- Reduzido o tempo de espera
                 myHRP.Velocity = Vector3.zero
                 myHRP.RotVelocity = Vector3.zero
                 myHRP.Anchored = false
@@ -905,7 +910,7 @@ Tab10:Button({
         pcall(function()
             ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
         end)
-        task.wait(0.5)
+        task.wait(0.2) -- Reduzido o tempo de espera
         enableCarClient()
     end
 })
@@ -965,7 +970,7 @@ local function flingWithBall(targetPlayer)
         return
     end
     if not equipBola() then return end
-    task.wait(0.5)
+    task.wait(0.2) -- Reduzido o tempo de espera
     local args = { [1] = "PlayerWantsToDeleteTool", [2] = "SoccerBall" }
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer(unpack(args))
@@ -1078,7 +1083,7 @@ local function flingWithSofa(targetPlayer)
     end
     savedPosition = myHRP.Position
     if not equipSofa() then return end
-    task.wait(0.5)
+    task.wait(0.2) -- Reduzido o tempo de espera
     couch = character:FindFirstChild("Couch")
     if not couch then
         for _, obj in ipairs(Workspace:GetDescendants()) do
@@ -1149,7 +1154,7 @@ local function flingWithSofa(targetPlayer)
                     part.CanCollide = false
                     pcall(function() part:SetNetworkOwner(nil) end)
                 end
-        end
+            end
             walkFlingInstance = Instance.new("BodyVelocity")
             walkFlingInstance.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
             walkFlingInstance.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
@@ -1176,7 +1181,7 @@ local function flingWithSofa(targetPlayer)
                     )
                 end)
             end)
-            task.wait(0.5)
+            task.wait(0.2) -- Reduzido o tempo de espera
             local args = { [1] = "PlayerWantsToDeleteTool", [2] = "Couch" }
             pcall(function()
                 ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clea1rTool1s"):FireServer(unpack(args))
@@ -1184,7 +1189,7 @@ local function flingWithSofa(targetPlayer)
             pcall(function()
                 myHRP.Anchored = true
                 myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
-                task.wait(0.2)
+                task.wait(0.1) -- Reduzido o tempo de espera
                 myHRP.Velocity = Vector3.zero
                 myHRP.RotVelocity = Vector3.zero
                 myHRP.Anchored = false
@@ -1229,7 +1234,7 @@ local function flingWithBus(targetPlayer)
     pcall(function()
         myHRP.Anchored = true
         myHRP.CFrame = CFrame.new(Vector3.new(1181.83, 76.08, -1158.83))
-        task.wait(0.2)
+        task.wait(0.1) -- Reduzido o tempo de espera
         myHRP.Velocity = Vector3.zero
         myHRP.RotVelocity = Vector3.zero
         myHRP.Anchored = false
@@ -1237,7 +1242,7 @@ local function flingWithBus(targetPlayer)
             humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
         end
     end)
-    task.wait(0.5)
+    task.wait(0.2) -- Reduzido o tempo de espera
     
     -- Remove todos os veículos existentes
     local args = { [1] = "DeleteAllVehicles" }
@@ -1250,7 +1255,7 @@ local function flingWithBus(targetPlayer)
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
-    task.wait(1.5)
+    task.wait(0.5) -- Reduzido o tempo de espera
     
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
     if not vehiclesFolder then 
@@ -1259,7 +1264,7 @@ local function flingWithBus(targetPlayer)
         return 
     end
     local busName = LocalPlayer.Name .. "Car"
-    local bus = vehiclesFolder:FindFirstChild(busName)
+    local bus = vehiclesFolder:WaitForChild(busName, 3)
     if not bus then 
         print("Ônibus não encontrado em Workspace.Vehicles com o nome: " .. busName)
         enableCarClient()
@@ -1278,7 +1283,7 @@ local function flingWithBus(targetPlayer)
     pcall(function()
         myHRP.Anchored = true
         myHRP.CFrame = CFrame.new(Vector3.new(1171.71, 79.12, -1166.68))
-        task.wait(0.2)
+        task.wait(0.1) -- Reduzido o tempo de espera
         myHRP.Velocity = Vector3.zero
         myHRP.RotVelocity = Vector3.zero
         myHRP.Anchored = false
@@ -1289,7 +1294,7 @@ local function flingWithBus(targetPlayer)
     local sitStart = tick()
     repeat
         task.wait()
-        if tick() - sitStart > 10 then 
+        if tick() - sitStart > 5 then 
             print("Timeout: Jogador local não foi detectado como sentado!")
             enableCarClient()
             return 
@@ -1362,14 +1367,14 @@ local function flingWithBus(targetPlayer)
             walkFlingInstancePlayer.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
             walkFlingInstancePlayer.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
             walkFlingInstancePlayer.Parent = myHRP
-            task.wait(0.5)
+            task.wait(0.2) -- Reduzido o tempo de espera
             
             -- Remove o ônibus
             local args = { [1] = "DeleteAllVehicles" }
             pcall(function()
                 ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
             end)
-            task.wait(0.5)
+            task.wait(0.2) -- Reduzido o tempo de espera
             
             if walkFlingInstancePlayer then
                 walkFlingInstancePlayer:Destroy()
@@ -1382,7 +1387,7 @@ local function flingWithBus(targetPlayer)
             pcall(function()
                 myHRP.Anchored = true
                 myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
-                task.wait(0.2)
+                task.wait(0.1) -- Reduzido o tempo de espera
                 myHRP.Velocity = Vector3.zero
                 myHRP.RotVelocity = Vector3.zero
                 myHRP.Anchored = false
@@ -1421,7 +1426,7 @@ local function flingWithBoat(targetPlayer)
     pcall(function()
         myHRP.Anchored = true
         myHRP.CFrame = CFrame.new(Vector3.new(-3359.52, -5.05, -501.94))
-        task.wait(0.2)
+        task.wait(0.1) -- Reduzido o tempo de espera
         myHRP.Velocity = Vector3.zero
         myHRP.RotVelocity = Vector3.zero
         myHRP.Anchored = false
@@ -1435,14 +1440,14 @@ local function flingWithBoat(targetPlayer)
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
-    task.wait(0.4)
+    task.wait(0.2) -- Reduzido o tempo de espera
     
     -- Spawna o barco
     args = { [1] = "PickingBoat", [2] = "MilitaryBoatFree" }
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
-    task.wait(1.5)
+    task.wait(0.5) -- Reduzido o tempo de espera
     
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
     if not vehiclesFolder then 
@@ -1451,7 +1456,7 @@ local function flingWithBoat(targetPlayer)
         return 
     end
     local boatName = LocalPlayer.Name .. "Car"
-    local boat = vehiclesFolder:FindFirstChild(boatName)
+    local boat = vehiclesFolder:WaitForChild(boatName, 3)
     if not boat then 
         print("Barco não encontrado em Workspace.Vehicles com o nome: " .. boatName)
         enableCarClient()
@@ -1484,7 +1489,7 @@ local function flingWithBoat(targetPlayer)
     pcall(function()
         myHRP.Anchored = true
         myHRP.CFrame = vehicleSeat.CFrame + Vector3.new(0, 2, 0)
-        task.wait(0.2)
+        task.wait(0.1) -- Reduzido o tempo de espera
         myHRP.Velocity = Vector3.zero
         myHRP.RotVelocity = Vector3.zero
         myHRP.Anchored = false
@@ -1496,7 +1501,7 @@ local function flingWithBoat(targetPlayer)
     local sitStart = tick()
     repeat
         task.wait()
-        if tick() - sitStart > 10 then 
+        if tick() - sitStart > 5 then 
             print("Timeout: Jogador local não foi detectado como sentado!")
             enableCarClient()
             return 
@@ -1518,7 +1523,12 @@ local function flingWithBoat(targetPlayer)
             end
         end
     end)
-    local touchedConnections = {}
+    -- Limpa conexões anteriores para evitar erros na segunda tentativa
+    for _, conn in ipairs(touchedConnections) do
+        conn:Disconnect()
+    end
+    touchedConnections = {}
+    
     local mainPart = boat:FindFirstChild("Body")
     if mainPart and mainPart:IsA("BasePart") then
         local conn = mainPart.Touched:Connect(function(hit)
@@ -1618,6 +1628,12 @@ local function stopFling()
         flingConnection:Disconnect()
         flingConnection = nil
     end
+    -- Limpa conexões do fling com barco
+    for _, conn in ipairs(touchedConnections) do
+        conn:Disconnect()
+    end
+    touchedConnections = {}
+    
     if soccerBall then
         soccerBall.Anchored = originalProperties.Anchored
         soccerBall.CanCollide = originalProperties.CanCollide
@@ -1633,7 +1649,7 @@ local function stopFling()
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
-    task.wait(0.5)
+    task.wait(0.2) -- Reduzido o tempo de espera
     
     local character = LocalPlayer.Character
     if character then
@@ -1663,7 +1679,7 @@ local function stopFling()
             pcall(function()
                 myHRP.Anchored = true
                 myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
-                task.wait(0.2)
+                task.wait(0.1) -- Reduzido o tempo de espera
                 myHRP.Velocity = Vector3.zero
                 myHRP.RotVelocity = Vector3.zero
                 myHRP.Anchored = false
@@ -1717,10 +1733,6 @@ flingToggle = Tab10:Toggle({
 })
 print("Toggle para ativar/desativar o fling criado com sucesso!")
 
--- Aviso sobre o fling com barco
-Tab10:Paragraph({ 
-    Title = "fling barco op mais n recomendo ele pod causar travamento!!! e use o noclip ", 
-    Desc = ""
-})
+
 
 print("Script inicializado com sucesso! A UI deve estar visível agora.")
