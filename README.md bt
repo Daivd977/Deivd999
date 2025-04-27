@@ -149,7 +149,7 @@ if not success then
 end
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 3.1,,,",
+    Title = "hhygytttyggr",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.666",
@@ -174,22 +174,10 @@ Window:EditOpenButton({
     Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29"))
 })
 
--- === Abas da Interface === --
-local Tab1 = Window:Tab({ Title = "Main", Icon = "house-plus" })
-local Tab2 = Window:Tab({ Title = "Casa", Icon = "house" })
-local Tab3 = Window:Tab({ Title = "Carro", Icon = "car" })
-local Tab4 = Window:Tab({ Title = "RGB Color", Icon = "palette" })
-local Tab5 = Window:Tab({ Title = "Troll Musica", Icon = "music" })
-local Tab6 = Window:Tab({ Title = "Music All", Icon = "audio-lines" })
-local Tab7 = Window:Tab({ Title = "Scripts", Icon = "layers" })
-local Tab8 = Window:Tab({ Title = "Jogadores", Icon = "users" })
-local Tab9 = Window:Tab({ Title = "Teleportes", Icon = "map-pin" })
+
 local Tab10 = Window:Tab({ Title = "Troll", Icon = "skull" })
 
--- Carrega a biblioteca Fluent para criar a interface gráfica
-local UILib = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Default.lua"))()
-local Window = UILib:CreateWindow("Kill/Fling GUI")
-local Tab10 = Window:AddTab("Main")
+
 
 -- Serviços
 local Players = game:GetService("Players")
