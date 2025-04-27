@@ -274,11 +274,19 @@ end
 local function disableCarClient()
     local backpack = LocalPlayer:WaitForChild("Backpack")
     local carClient = backpack:FindFirstChild("CarClient")
+    if not carClient then
+        -- Aguarda até que o CarClient apareça, com um tempo limite
+        local startTime = tick()
+        repeat
+            carClient = backpack:FindFirstChild("CarClient")
+            task.wait()
+        until carClient or (tick() - startTime > 5) -- Tempo limite de 5 segundos
+    end
     if carClient and carClient:IsA("LocalScript") then
         carClient.Disabled = true
         print("CarClient desativado.")
     else
-        print("CarClient não encontrado para desativar.")
+        print("CarClient não encontrado após espera. Prosseguindo sem desativar.")
     end
 end
 
@@ -286,11 +294,19 @@ end
 local function enableCarClient()
     local backpack = LocalPlayer:WaitForChild("Backpack")
     local carClient = backpack:FindFirstChild("CarClient")
+    if not carClient then
+        -- Aguarda até que o CarClient apareça, com um tempo limite
+        local startTime = tick()
+        repeat
+            carClient = backpack:FindFirstChild("CarClient")
+            task.wait()
+        until carClient or (tick() - startTime > 5) -- Tempo limite de 5 segundos
+    end
     if carClient and carClient:IsA("LocalScript") then
         carClient.Disabled = false
         print("CarClient reativado.")
     else
-        print("CarClient não encontrado para reativar.")
+        print("CarClient não encontrado após espera. Prosseguindo sem reativar.")
     end
 end
 
@@ -559,7 +575,7 @@ local function pullWithSofa(targetPlayer)
     originalPosition = LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position
 end
 
--- Função para matar com ônibus (ajustada para teleporte e assento)
+-- Função para matar com ônibus (usando posição fixa do assento)
 local function killWithBus(targetPlayer)
     if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then 
         print("Selecione um jogador válido antes de iniciar!")
@@ -602,7 +618,7 @@ local function killWithBus(targetPlayer)
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
-    task.wait(1.5) -- Aumentei o tempo de espera para garantir que o ônibus spawne
+    task.wait(1.5) -- Tempo de espera para garantir que o ônibus spawne
     
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
     if not vehiclesFolder then 
@@ -624,30 +640,15 @@ local function killWithBus(targetPlayer)
         return 
     end
     
-    -- Encontra o assento do motorista (VehicleSeat)
-    local vehicleSeat = nil
-    for _, part in ipairs(bus:GetDescendants()) do
-        if part:IsA("VehicleSeat") then
-            vehicleSeat = part
-            break
-        end
-    end
-    if not vehicleSeat then 
-        print("Assento do motorista não encontrado no ônibus!")
-        enableCarClient()
-        return 
-    end
-    
-    -- Teleporta o jogador para a posição do assento
+    -- Teleporta o jogador para a posição fixa do assento fornecida
     pcall(function()
         myHRP.Anchored = true
-        myHRP.CFrame = vehicleSeat.CFrame + Vector3.new(0, 2, 0) -- Posiciona o jogador acima do assento
+        myHRP.CFrame = CFrame.new(Vector3.new(1171.71, 79.12, -1166.68)) -- Posição fixa do assento
         task.wait(0.2)
         myHRP.Velocity = Vector3.zero
         myHRP.RotVelocity = Vector3.zero
         myHRP.Anchored = false
         humanoid:ChangeState(Enum.HumanoidStateType.Seated) -- Força o estado de sentado
-        vehicleSeat:Sit(humanoid) -- Força o jogador a sentar no assento
     end)
     
     -- Aguarda até que o jogador esteja sentado
@@ -1242,7 +1243,7 @@ local function flingWithSofa(targetPlayer)
     end)
 end
 
--- Função para fling com ônibus (ajustada para teleporte e assento)
+-- Função para fling com ônibus (usando posição fixa do assento)
 local function flingWithBus(targetPlayer)
     if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then
         print("Selecione um jogador válido antes de iniciar!")
@@ -1285,7 +1286,7 @@ local function flingWithBus(targetPlayer)
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
-    task.wait(1.5) -- Aumentei o tempo de espera para garantir que o ônibus spawne
+    task.wait(1.5) -- Tempo de espera para garantir que o ônibus spawne
     
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
     if not vehiclesFolder then 
@@ -1307,30 +1308,15 @@ local function flingWithBus(targetPlayer)
         return 
     end
     
-    -- Encontra o assento do motorista (VehicleSeat)
-    local vehicleSeat = nil
-    for _, part in ipairs(bus:GetDescendants()) do
-        if part:IsA("VehicleSeat") then
-            vehicleSeat = part
-            break
-        end
-    end
-    if not vehicleSeat then 
-        print("Assento do motorista não encontrado no ônibus!")
-        enableCarClient()
-        return 
-    end
-    
-    -- Teleporta o jogador para a posição do assento
+    -- Teleporta o jogador para a posição fixa do assento fornecida
     pcall(function()
         myHRP.Anchored = true
-        myHRP.CFrame = vehicleSeat.CFrame + Vector3.new(0, 2, 0) -- Posiciona o jogador acima do assento
+        myHRP.CFrame = CFrame.new(Vector3.new(1171.71, 79.12, -1166.68)) -- Posição fixa do assento
         task.wait(0.2)
         myHRP.Velocity = Vector3.zero
         myHRP.RotVelocity = Vector3.zero
         myHRP.Anchored = false
         humanoid:ChangeState(Enum.HumanoidStateType.Seated) -- Força o estado de sentado
-        vehicleSeat:Sit(humanoid) -- Força o jogador a sentar no assento
     end)
     
     -- Aguarda até que o jogador esteja sentado
@@ -1448,7 +1434,7 @@ local function flingWithBus(targetPlayer)
     end)
 end
 
--- Função para fling com barco (ajustada para evitar erro do CarClient)
+-- Função para fling com barco
 local function flingWithBoat(targetPlayer)
     if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then 
         print("Selecione um jogador válido antes de iniciar!")
@@ -1763,9 +1749,5 @@ flingToggle = Tab10:Toggle({
 })
 print("Toggle para ativar/desativar o fling criado com sucesso!")
 
-
-Tab10:Paragraph({ 
-    Title = "fling barco op mais n recomendo ele pod causar travamento!!! e use o noclip ", 
-    Desc = ""
-})
+print("Script inicializado com sucesso! A UI deve estar visível agora.")
 
