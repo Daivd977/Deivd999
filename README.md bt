@@ -1,50 +1,7 @@
 --lolyta hub para teste
 
 
--- === Configurações Iniciais === --
-local AllowedUsers = {
-    "rtrt967",
-    "kaio_lg1",
-    "Higor_hg5",
-    "QUEROBOVO",
-    "guga_10plays",
-    "pzinrlk929",
-    "Tataizin_021",
-    "Lolytateste666",
-    "rafainha4002",
-    "Tiago_RJ4",
-    "lacradoor123",
-    "enzin12346BR",
-    "RED_MIGZINN",
-}
 
--- Serviços do Roblox
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
-
--- Verificação de permissão do jogador
-local LocalPlayer = Players.LocalPlayer
-local PlayerName = LocalPlayer.Name
-local isAllowed = false
-
-for _, user in pairs(AllowedUsers) do
-    if user == PlayerName then
-        isAllowed = true
-        break
-    end
-end
-
-if not isAllowed then
-    game.StarterGui:SetCore("SendNotification", {
-        Title = "Acesso Negado",
-        Text = "Você não tem permissão para usar o Lolyta Hub 3.1 Contate o criador para ser adicionado à lista.",
-        Duration = 5
-    })
-    return
-end
 
 -- Tela de carregamento com imagem funcional e texto "Carregando..."
 local imageId = "rbxassetid://76308195683050" -- ✅ imagem testada e garantida funcional
