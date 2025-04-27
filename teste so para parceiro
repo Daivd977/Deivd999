@@ -45,21 +45,21 @@ if not isAllowed then
     return
 end
 
--- Tela de carregamento com imagem funcional e texto "Carregando..."
-local imageId = "rbxassetid://76308195683050" -- ✅ Imagem testada e garantida funcional
 
--- Remove GUI antiga se já existir
-local oldGui = game:GetService("CoreGui"):FindFirstChild("LoadingScreen")
+
+-- Tela de carregamento
+local imageId = "rbxassetid://76308195683050"
+
+local oldGui = game.CoreGui:FindFirstChild("LoadingScreen")
 if oldGui then oldGui:Destroy() end
 
--- Cria a nova tela
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "LoadingScreen"
 screenGui.IgnoreGuiInset = true
 screenGui.ResetOnSpawn = false
+pcall(function() syn.protect_gui(screenGui) end)
 screenGui.Parent = game:GetService("CoreGui")
 
--- Imagem no centro da tela
 local imageLabel = Instance.new("ImageLabel")
 imageLabel.Size = UDim2.new(0, 300, 0, 300)
 imageLabel.Position = UDim2.new(0.5, -150, 0.5, -150)
@@ -67,7 +67,6 @@ imageLabel.BackgroundTransparency = 1
 imageLabel.Image = imageId
 imageLabel.Parent = screenGui
 
--- Texto "Carregando..."
 local textLabel = Instance.new("TextLabel")
 textLabel.Size = UDim2.new(0, 300, 0, 50)
 textLabel.Position = UDim2.new(0.5, -150, 0.5, 180)
@@ -79,118 +78,112 @@ textLabel.Font = Enum.Font.FredokaOne
 textLabel.TextScaled = true
 textLabel.Parent = screenGui
 
--- Função que define o RolePlayName e a bio
-local function setupRolePlay()
+-- Função para configurar nome e bio
+local function configureNameAndBio()
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local RE = ReplicatedStorage:WaitForChild("RE", 5) -- Aguarda até 5 segundos
-    if not RE then
-        warn("Erro: ReplicatedStorage.RE não encontrado!")
-        return false
-    end
+    local RE = ReplicatedStorage:FindFirstChild("RE")
+    if not RE then return end
 
     local function fireServer(eventName, args)
         local event = RE:FindFirstChild(eventName)
         if event then
-            local success, err = pcall(function()
+            pcall(function()
                 event:FireServer(unpack(args))
             end)
-            if not success then
-                warn("Erro ao disparar evento " .. eventName .. ": " .. tostring(err))
-                return false
-            else
-                print("Evento " .. eventName .. " disparado com sucesso!")
-                return true
-            end
-        else
-            warn("Erro: Evento remoto " .. eventName .. " não encontrado!")
-            return false
         end
     end
 
-    -- Define o RolePlayName como "Lolyta Hub 💖"
-    local success = fireServer("1RPNam1eTex1t", {
+    -- Nome
+    local argsName = {
         [1] = "RolePlayName",
-        [2] = "Lolyta Hub \240\159\146\150"
-    })
-    if not success then return false end
+        [2] = "Lolyta Hub 💖"
+    }
+    fireServer("1RPNam1eTex1t", argsName)
 
-    -- Define a cor do RolePlayName como rosa
-    success = fireServer("1RPNam1eColo1r", {
+    -- Cor do Nome (rosa escuro)
+    local argsNameColor = {
         [1] = "PickingRPNameColor",
-        [2] = Color3.new(1, 0, 0.9187874794006348)
-    })
-    if not success then return false end
+        [2] = Color3.new(0.8, 0.2, 0.4)
+    }
+    fireServer("1RPNam1eColo1r", argsNameColor)
 
-    -- Define a bio como "scripter"
-    success = fireServer("1RPNam1eTex1t", {
+    -- Bio
+    local argsBio = {
         [1] = "RolePlayBio",
-        [2] = "scripter "
-    })
-    if not success then return false end
+        [2] = "scripter"
+    }
+    fireServer("1RPNam1eTex1t", argsBio)
 
-    -- Define a cor da bio como preta
-    success = fireServer("1RPNam1eColo1r", {
+    -- Cor da Bio (preto)
+    local argsBioColor = {
         [1] = "PickingRPBioColor",
         [2] = Color3.new(0, 0, 0)
-    })
-    if not success then return false end
-
-    return true
+    }
+    fireServer("1RPNam1eColo1r", argsBioColor)
 end
 
--- Função para inicializar a interface WindUI
-local function initializeUI()
-    local success, WindUI = pcall(function()
-        return loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
-    end)
+-- Executa configuração de nome e bio
+configureNameAndBio()
 
-    if not success then
-        warn("Erro ao carregar WindUI: " .. tostring(WindUI))
-        return false
+-- Espera 5 segundos e carrega a UI
+task.wait(5)
+
+-- Remove a tela de carregamento
+screenGui:Destroy()
+
+-- Carrega a WindUI
+local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
+local Version = "1.4.0"
+local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
+
+local Window = WindUI:CreateWindow({
+    Title = "Lolyta Hub 3.1",
+    Icon = "door-open",
+    Author = "Lolycon666",
+    Folder = "Lolyta hub v.1.666",
+    Size = UDim2.fromOffset(580, 460),
+    KeySystem = {
+        Key = "666",
+        Note = "pode nao man",
+        URL = "",
+        SaveKey = true,
+    },
+    Transparent = true,
+    Theme = "Dark",
+    SideBarWidth = 200,
+    HasOutline = false,
+})
+
+Window:EditOpenButton({
+    Title = "Lolyta",
+    Icon = "align-justify",
+    CornerRadius = UDim.new(0, 10),
+    StrokeThickness = 3,
+    Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29"))
+})
+
+-- Abas da Interface
+local Tab1 = Window:Tab({ Title = "Main", Icon = "house-plus" })
+local Tab2 = Window:Tab({ Title = "Casa", Icon = "house" })
+local Tab3 = Window:Tab({ Title = "Carro", Icon = "car" })
+local Tab4 = Window:Tab({ Title = "RGB Color", Icon = "palette" })
+local Tab5 = Window:Tab({ Title = "Troll Musica", Icon = "music" })
+local Tab6 = Window:Tab({ Title = "Music All", Icon = "audio-lines" })
+local Tab7 = Window:Tab({ Title = "Scripts", Icon = "layers" })
+local Tab8 = Window:Tab({ Title = "Jogadores", Icon = "users" })
+local Tab9 = Window:Tab({ Title = "Teleportes", Icon = "map-pin" })
+local Tab10 = Window:Tab({ Title = "Troll", Icon = "skull" })
+
+
+
+    -- === Funções Auxiliares === --
+    local function fireServer(eventPath, args)
+        ReplicatedStorage:WaitForChild("RE"):WaitForChild(eventPath):FireServer(unpack(args))
     end
 
-    local Version = "1.4.0"
-    local Window = WindUI:CreateWindow({
-        Title = "Lolyta Hub 3.1,.__._.__.",
-        Icon = "door-open",
-        Author = "Lolycon666",
-        Folder = "Lolyta hub v.1.666",
-        Size = UDim2.fromOffset(580, 460),
-        KeySystem = {
-            Key = "666",
-            Note = "pode nao man",
-            URL = "",
-            SaveKey = true,
-        },
-        Transparent = true,
-        Theme = "Dark",
-        SideBarWidth = 200,
-        HasOutline = false,
-    })
-
-    Window:EditOpenButton({
-        Title = "Lolyta",
-        Icon = "align-justify",
-        CornerRadius = UDim.new(0, 10),
-        StrokeThickness = 3,
-        Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29"))
-    })
-
-    -- Abas da Interface
-    local Tab1 = Window:Tab({ Title = "Main", Icon = "house-plus" })
-    local Tab2 = Window:Tab({ Title = "Casa", Icon = "house" })
-    local Tab3 = Window:Tab({ Title = "Carro", Icon = "car" })
-    local Tab4 = Window:Tab({ Title = "RGB Color", Icon = "palette" })
-    local Tab5 = Window:Tab({ Title = "Troll Musica", Icon = "music" })
-    local Tab6 = Window:Tab({ Title = "Music All", Icon = "audio-lines" })
-    local Tab7 = Window:Tab({ Title = "Scripts", Icon = "layers" })
-    local Tab8 = Window:Tab({ Title = "Jogadores", Icon = "users" })
-    local Tab9 = Window:Tab({ Title = "Teleportes", Icon = "map-pin" })
-    local Tab10 = Window:Tab({ Title = "Troll", Icon = "skull" })
-
-    
-
-
+    local function invokeServer(eventPath, args)
+        return ReplicatedStorage:WaitForChild("RE"):WaitForChild(eventPath):InvokeServer(unpack(args))
+    end
 ---------------------------------------------------------------------------------------------------------------------------------
                                                    -- === Tab 1: Main === --
 ---------------------------------------------------------------------------------------------------------------------------------
@@ -199,7 +192,6 @@ local function initializeUI()
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
 
--------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Tab1:Button({
     Title = "Pegar sofá",
@@ -235,14 +227,17 @@ Tab1:Button({
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
+-- Variáveis precisam ser definidas fora do Callback para persistirem
+local connections = {}
+local billboardGuis = {}
+local espEnabled = false
+
 Tab1:Toggle({
     Title = "ESP",
     Desc = "Para visualizar jogadores",
     Value = false,
     Callback = function(state)
-        local connections = {} -- Tabela para armazenar as conexões dos eventos
-        local espEnabled = state -- Estado do ESP para controle
-        local billboardGuis = {} -- Tabela para rastrear os BillboardGuis de cada jogador
+        espEnabled = state -- Atualiza o estado do ESP
 
         -- Função para criar ou atualizar o ESP de um jogador
         local function updateESP(player)
@@ -256,7 +251,6 @@ Tab1:Toggle({
                     -- Remove ESP existente, se houver
                     if billboardGuis[player] then
                         billboardGuis[player]:Destroy()
-                        billboardGuis[player] = nil
                     end
 
                     -- Cria um novo BillboardGui
@@ -301,14 +295,10 @@ Tab1:Toggle({
             end
         end
 
-        if state then
+        if espEnabled then
             -- Loop para atualizar o ESP continuamente
             local updateConnection = RunService.Heartbeat:Connect(function()
-                if not espEnabled then
-                    -- Desconecta o loop se o ESP for desativado
-                    updateConnection:Disconnect()
-                    return
-                end
+                if not espEnabled then return end
 
                 -- Atualiza o ESP para todos os jogadores
                 for _, player in pairs(Players:GetPlayers()) do
@@ -352,7 +342,7 @@ Tab1:Toggle({
             print("ESP ativado!")
         else
             -- Remove o ESP de todos os jogadores
-            for player, _ in pairs(billboardGuis) do
+            for _, player in pairs(Players:GetPlayers()) do
                 removeESP(player)
             end
 
@@ -365,11 +355,11 @@ Tab1:Toggle({
             -- Limpa a tabela de BillboardGuis
             billboardGuis = {}
 
-            espEnabled = false -- Garante que o estado está desativado
             print("ESP desativado!")
         end
     end,
 })
+
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -2008,34 +1998,50 @@ local musicOptions = {
     ["efeito/terror"] = {
         {name = "jumpscar", id = 91784486966761},
         {name = "gritoestourado", id = 7520729342},
-        {name = "Woooo", id = 117521059248354},
-        {name = "gritodoido", id = 7807987190},
         {name = "gritomedo", id = 113029085566978},
-        {name = "___", id = 4354908569},
-        {name = "gritos acima", id = 4354908569},
-        {name = "___", id = 4354908569}, 
-        {name = "sirens abaixo", id = 4354908569},
-        {name = "___", id = 4354908569},
+        
+        
+        
+        
+       
         {name = "Nukesiren", id = 9067330158},
         {name = "nuclear sirenv2", id = 675587093},
         {name = "Alertescola", id = 6607047008},
         {name = "Memealertsiren", id = 8379374771},
-        {name = "Sirenhead", id = 5681392074},
-        {name = "Chernobyl5", id = 101927395686044},
-        {name = "Alerta3S", id = 402404861},
-        {name = "Radioxiado", id = 8028069841},
-        {name = "Error", id = 101446887200514},
-        {name = "___", id = 4354908569},
-        {name = "sirens acima", id = 4354908569},
+        
         {name = "Risada", id = 79191730206814},
         {name = "Hahahah", id = 90096947219465},
-        {name = "___", id = 4354908569},
-        {name = "efeitos abaixo", id = 4354908569},
-        {name = "___", id = 4354908569},
-        {name = "metal", id = 71251935617451},
-        {name = "tiro", id = 104223019424522},
-        {name = "Golden efect", id = 77773293292155},
-        {name = "Haki sound", id = 91390250645812},
+        {name = "scream", id = 314568939},
+        {name = "Terrified meme scream", id = 5853668794},
+        {name = "Sonic.exe Scream Effect", id = 146563959},
+        {name = "Demon Scream", id = 2738830850},
+        {name = "SCP-096 Scream (raging)", id = 343430735},
+        {name = "Nightmare Yelling Bursts", id = 9125713501},
+        {name = "HORROR SCREAM 07", id = 9043345732},
+        {name = "Female Scream Woman Screams", id = 9114397912},
+        {name = "Scream1", id = 1319496541},
+        {name = "Scream2", id = 199978176},
+        {name = "scary maze scream", id = 270145703},
+        {name = "SammyClassicSonicFan's Scream", id = 143942090},
+        {name = "FNAF 2 Death Scream", id = 1572549161},
+        {name = "cod zombie scream", id = 8566359672},
+        {name = "Slendytubbies- CaveTubby Scream", id = 1482639185},
+        {name = "FNAF 2 Death Scream", id = 5537531920},
+        {name = "HORROR SCREAM 15", id = 9043346574},
+        {name = "Jumpscare Scream", id = 6150329916},
+        {name = "FNaF: Security Breach", id = 2050522547},
+        {name = "llllllll", id = 5029269312},
+        {name = "loud jumpscare", id = 7236490488},
+        {name = "fnaf", id = 6982454389},
+        {name = "Pinkamena Jumpscare 1", id = 192334186},
+        {name = "Ennard Jumpscare 2", id = 629526707},
+        
+        
+       
+        
+        
+        
+        
 
     }
 }
@@ -3990,36 +3996,6 @@ flingToggle = Tab10:Toggle({
 })
 print("Toggle para ativar/desativar o fling criado com sucesso!")
 
-print("Script inicializado com sucesso! A UI deve estar visível agora.")
 
-Tab10:Paragraph({ 
-    Title = "fling barco op mais n recomendo ele pod causar travamento!!! e use o noclip ", 
-    Desc = ""
-})
-
--- Executa as funções na ordem correta
-local success, err = pcall(function()
-    -- 1. Exibe a tela de carregamento por 5 segundos
-    task.wait(5)
-
-    -- 2. Configura RolePlayName e bio
-    local rolePlaySuccess = setupRolePlay()
-    if not rolePlaySuccess then
-        warn("Falha ao configurar RolePlayName ou bio!")
-    end
-
-    -- 3. Inicializa a interface WindUI (imediatamente após o RolePlay)
-    local uiSuccess = initializeUI()
-    if not uiSuccess then
-        warn("Falha ao inicializar a interface WindUI!")
-    end
-end)
-
--- 4. Remove a tela de carregamento após tudo
-screenGui:Destroy()
-
-if not success then
-    warn("Erro durante a inicialização: " .. tostring(err))
-end
 
 
