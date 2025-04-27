@@ -1,5 +1,4 @@
---lolyta hub para teste
-
+-- lolyta hub version olisinal
 
 -- === Configurações Iniciais === --
 local AllowedUsers = {
@@ -47,10 +46,10 @@ if not isAllowed then
 end
 
 -- Tela de carregamento com imagem funcional e texto "Carregando..."
-local imageId = "rbxassetid://76308195683050" -- ✅ imagem testada e garantida funcional
+local imageId = "rbxassetid://76308195683050" -- ✅ Imagem testada e garantida funcional
 
 -- Remove GUI antiga se já existir
-local oldGui = game.CoreGui:FindFirstChild("LoadingScreen")
+local oldGui = game:GetService("CoreGui"):FindFirstChild("LoadingScreen")
 if oldGui then oldGui:Destroy() end
 
 -- Cria a nova tela
@@ -58,9 +57,6 @@ local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "LoadingScreen"
 screenGui.IgnoreGuiInset = true
 screenGui.ResetOnSpawn = false
-if syn and typeof(syn.protect_gui) == "function" then
-    pcall(function() syn.protect_gui(screenGui) end)
-end
 screenGui.Parent = game:GetService("CoreGui")
 
 -- Imagem no centro da tela
@@ -83,106 +79,2520 @@ textLabel.Font = Enum.Font.FredokaOne
 textLabel.TextScaled = true
 textLabel.Parent = screenGui
 
--- Função que carrega o hub e os scripts após a tela de carregamento
-local function loadHub()
-    local RE = ReplicatedStorage:FindFirstChild("RE")
+-- Função que define o RolePlayName e a bio
+local function setupRolePlay()
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local RE = ReplicatedStorage:WaitForChild("RE", 5) -- Aguarda até 5 segundos
     if not RE then
         warn("Erro: ReplicatedStorage.RE não encontrado!")
-        return
+        return false
     end
 
     local function fireServer(eventName, args)
         local event = RE:FindFirstChild(eventName)
         if event then
-            pcall(function()
+            local success, err = pcall(function()
                 event:FireServer(unpack(args))
             end)
+            if not success then
+                warn("Erro ao disparar evento " .. eventName .. ": " .. tostring(err))
+                return false
+            else
+                print("Evento " .. eventName .. " disparado com sucesso!")
+                return true
+            end
         else
             warn("Erro: Evento remoto " .. eventName .. " não encontrado!")
+            return false
         end
     end
 
-    -- Define o nome "Lolyta Hub 💖" com cor rosa escuro
-    local argsName = {
+    -- Define o RolePlayName como "Lolyta Hub 💖"
+    local success = fireServer("1RPNam1eTex1t", {
         [1] = "RolePlayName",
-        [2] = "Lolyta Hub 💖"
-    }
-    fireServer("RolePlayNameText", argsName)
+        [2] = "Lolyta Hub \240\159\146\150"
+    })
+    if not success then return false end
 
-    -- Define a cor do nome como rosa escuro
-    local argsNameColor = {
+    -- Define a cor do RolePlayName como rosa
+    success = fireServer("1RPNam1eColo1r", {
         [1] = "PickingRPNameColor",
-        [2] = Color3.new(0.8, 0.2, 0.4)
-    }
-    fireServer("RolePlayNameColor", argsNameColor)
+        [2] = Color3.new(1, 0, 0.9187874794006348)
+    })
+    if not success then return false end
 
-    -- Define a bio "scripter" com cor preta
-    local argsBio = {
+    -- Define a bio como "scripter"
+    success = fireServer("1RPNam1eTex1t", {
         [1] = "RolePlayBio",
-        [2] = "scripter"
-    }
-    fireServer("RolePlayBioText", argsBio)
+        [2] = "scripter "
+    })
+    if not success then return false end
 
     -- Define a cor da bio como preta
-    local argsBioColor = {
+    success = fireServer("1RPNam1eColo1r", {
         [1] = "PickingRPBioColor",
         [2] = Color3.new(0, 0, 0)
-    }
-    fireServer("RolePlayBioColor", argsBioColor)
+    })
+    if not success then return false end
+
+    return true
 end
 
--- Executa a função de carregamento
-loadHub()
+-- Função para inicializar a interface WindUI
+local function initializeUI()
+    local success, WindUI = pcall(function()
+        return loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
+    end)
 
--- Remove a tela de carregamento após 3 segundos
-task.wait(3)
-screenGui:Destroy()
+    if not success then
+        warn("Erro ao carregar WindUI: " .. tostring(WindUI))
+        return false
+    end
 
--- === Inicialização da Interface === --
- local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
     local Version = "1.4.0"
+    local Window = WindUI:CreateWindow({
+        Title = "Lolyta Hub 3.1,.__._.__.",
+        Icon = "door-open",
+        Author = "Lolycon666",
+        Folder = "Lolyta hub v.1.666",
+        Size = UDim2.fromOffset(580, 460),
+        KeySystem = {
+            Key = "666",
+            Note = "pode nao man",
+            URL = "",
+            SaveKey = true,
+        },
+        Transparent = true,
+        Theme = "Dark",
+        SideBarWidth = 200,
+        HasOutline = false,
+    })
 
-local Window = WindUI:CreateWindow({
-    Title = "hhygytttyggr",
-    Icon = "door-open",
-    Author = "Lolycon666",
-    Folder = "Lolyta hub v.1.666",
-    Size = UDim2.fromOffset(580, 460),
-    KeySystem = {
-        Key = "666",
-        Note = "pode nao man",
-        URL = "",
-        SaveKey = true,
+    Window:EditOpenButton({
+        Title = "Lolyta",
+        Icon = "align-justify",
+        CornerRadius = UDim.new(0, 10),
+        StrokeThickness = 3,
+        Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29"))
+    })
+
+    -- Abas da Interface
+    local Tab1 = Window:Tab({ Title = "Main", Icon = "house-plus" })
+    local Tab2 = Window:Tab({ Title = "Casa", Icon = "house" })
+    local Tab3 = Window:Tab({ Title = "Carro", Icon = "car" })
+    local Tab4 = Window:Tab({ Title = "RGB Color", Icon = "palette" })
+    local Tab5 = Window:Tab({ Title = "Troll Musica", Icon = "music" })
+    local Tab6 = Window:Tab({ Title = "Music All", Icon = "audio-lines" })
+    local Tab7 = Window:Tab({ Title = "Scripts", Icon = "layers" })
+    local Tab8 = Window:Tab({ Title = "Jogadores", Icon = "users" })
+    local Tab9 = Window:Tab({ Title = "Teleportes", Icon = "map-pin" })
+    local Tab10 = Window:Tab({ Title = "Troll", Icon = "skull" })
+
+    -- Exemplo de conteúdo para a aba Main
+    Tab1:Button({
+        Title = "Teste",
+        Description = "Botão de teste",
+        Callback = function()
+            print("Botão de teste clicado!")
+        end
+    })
+
+    return true
+end
+
+
+---------------------------------------------------------------------------------------------------------------------------------
+                                                   -- === Tab 1: Main === --
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Tab1:Button({
+    Title = "Pegar sofá",
+    Desc = "Brookhaven",
+    Callback = function()
+        invokeServer("1Too1l", {"PickingTools", "Couch"})
+    end,
+})
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Tab1:Button({
+    Title = "TP ALL",
+    Desc = "Teleporte para todos os players",
+    Callback = function()
+        local startingPosition = LocalPlayer.Character:GetPrimaryPartCFrame()
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                LocalPlayer.Character:SetPrimaryPartCFrame(player.Character:GetPrimaryPartCFrame())
+                wait(1)
+            end
+        end
+        LocalPlayer.Character:SetPrimaryPartCFrame(startingPosition)
+    end,
+})
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+Tab1:Toggle({
+    Title = "ESP",
+    Desc = "Para visualizar jogadores",
+    Value = false,
+    Callback = function(state)
+        local connections = {} -- Tabela para armazenar as conexões dos eventos
+        local espEnabled = state -- Estado do ESP para controle
+        local billboardGuis = {} -- Tabela para rastrear os BillboardGuis de cada jogador
+
+        -- Função para criar ou atualizar o ESP de um jogador
+        local function updateESP(player)
+            if player == Players.LocalPlayer then return end -- Ignora o jogador local
+            if not espEnabled then return end -- Evita criar ESP se desativado
+
+            local character = player.Character
+            if character then
+                local head = character:FindFirstChild("Head")
+                if head then
+                    -- Remove ESP existente, se houver
+                    if billboardGuis[player] then
+                        billboardGuis[player]:Destroy()
+                        billboardGuis[player] = nil
+                    end
+
+                    -- Cria um novo BillboardGui
+                    local billboard = Instance.new("BillboardGui")
+                    billboard.Name = "ESP_Billboard"
+                    billboard.Parent = head
+                    billboard.Adornee = head
+                    billboard.Size = UDim2.new(0, 200, 0, 50)
+                    billboard.StudsOffset = Vector3.new(0, 3, 0)
+                    billboard.AlwaysOnTop = true
+
+                    -- Cria o TextLabel
+                    local textLabel = Instance.new("TextLabel")
+                    textLabel.Parent = billboard
+                    textLabel.Size = UDim2.new(1, 0, 1, 0)
+                    textLabel.BackgroundTransparency = 1
+                    textLabel.TextStrokeTransparency = 0.5
+                    textLabel.Font = Enum.Font.SourceSansBold
+                    textLabel.TextSize = 14
+
+                    -- Define a cor com base na equipe do jogador (se aplicável)
+                    if player.Team then
+                        textLabel.TextColor3 = player.TeamColor.Color
+                    else
+                        textLabel.TextColor3 = Color3.new(1, 1, 1) -- Branco padrão
+                    end
+
+                    -- Atualiza o texto com o nome e a idade da conta
+                    textLabel.Text = player.Name .. " | " .. player.AccountAge .. " dias"
+
+                    -- Armazena o BillboardGui na tabela
+                    billboardGuis[player] = billboard
+                end
+            end
+        end
+
+        -- Função para remover o ESP de um jogador
+        local function removeESP(player)
+            if billboardGuis[player] then
+                billboardGuis[player]:Destroy()
+                billboardGuis[player] = nil
+            end
+        end
+
+        if state then
+            -- Loop para atualizar o ESP continuamente
+            local updateConnection = RunService.Heartbeat:Connect(function()
+                if not espEnabled then
+                    -- Desconecta o loop se o ESP for desativado
+                    updateConnection:Disconnect()
+                    return
+                end
+
+                -- Atualiza o ESP para todos os jogadores
+                for _, player in pairs(Players:GetPlayers()) do
+                    updateESP(player)
+                end
+            end)
+            table.insert(connections, updateConnection)
+
+            -- Conecta evento para novos jogadores
+            local playerAddedConnection = Players.PlayerAdded:Connect(function(player)
+                if not espEnabled then return end
+                updateESP(player)
+
+                -- Conecta o evento CharacterAdded para reaplicar o ESP ao respawn
+                local charAddedConnection = player.CharacterAdded:Connect(function()
+                    if not espEnabled then return end
+                    updateESP(player)
+                end)
+                table.insert(connections, charAddedConnection)
+
+                -- Conecta o evento TeamChanged para atualizar a cor do ESP
+                local teamChangedConnection = player:GetPropertyChangedSignal("Team"):Connect(function()
+                    if not espEnabled then return end
+                    updateESP(player)
+                end)
+                table.insert(connections, teamChangedConnection)
+            end)
+            table.insert(connections, playerAddedConnection)
+
+            -- Conecta evento para jogadores que saem
+            local playerRemovingConnection = Players.PlayerRemoving:Connect(function(player)
+                removeESP(player)
+            end)
+            table.insert(connections, playerRemovingConnection)
+
+            -- Inicializa o ESP para jogadores existentes
+            for _, player in pairs(Players:GetPlayers()) do
+                updateESP(player)
+            end
+
+            print("ESP ativado!")
+        else
+            -- Remove o ESP de todos os jogadores
+            for player, _ in pairs(billboardGuis) do
+                removeESP(player)
+            end
+
+            -- Desconecta todos os eventos
+            for _, connection in ipairs(connections) do
+                connection:Disconnect()
+            end
+            connections = {}
+
+            -- Limpa a tabela de BillboardGuis
+            billboardGuis = {}
+
+            espEnabled = false -- Garante que o estado está desativado
+            print("ESP desativado!")
+        end
+    end,
+})
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
+Tab1:Paragraph({ Title = "Jogador", Desc = "funçoes paara o jogador no caso voçe" })
+
+-- Variáveis para o noclip
+local noclipEnabled = false
+local noclipConnections = {}
+local LocalPlayer = game:GetService("Players").LocalPlayer
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+
+-- Função para ativar/desativar o noclip
+local function setNoclip(state)
+    local character = LocalPlayer.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then
+        print("Personagem ou HumanoidRootPart não encontrado ao tentar ativar/desativar o Noclip!")
+        return
+    end
+
+    local humanoid = character:FindFirstChild("Humanoid")
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+
+    if not humanoid or not rootPart then
+        print("Humanoid ou RootPart não encontrado ao tentar ativar/desativar o Noclip!")
+        return
+    end
+
+    noclipEnabled = state -- Define o estado do noclip com base no toggle
+
+    if noclipEnabled then
+        -- Desativa as colisões do personagem para atravessar objetos
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+
+        -- Mantém todas as propriedades normais do Humanoid (pulo, movimento, etc.)
+        humanoid.PlatformStand = false -- Garante que o personagem pode se mover normalmente
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true) -- Mantém o estado de queda ativo
+        humanoid:ChangeState(Enum.HumanoidStateType.Running) -- Garante que o personagem pode andar normalmente
+
+        -- Loop para manter o noclip ativo e evitar reversão pelo servidor
+        local connection = RunService.Heartbeat:Connect(function()
+            if not noclipEnabled or not character or not character.Parent then
+                connection:Disconnect()
+                return
+            end
+            -- Garante que as colisões permaneçam desativadas
+            for _, part in pairs(character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+            -- Verifica se o personagem está caindo no void e o reposiciona
+            if rootPart.Position.Y < -500 then -- Altura considerada como "void"
+                local rayOrigin = rootPart.Position
+                local rayDirection = Vector3.new(0, 500, 0) -- Raycast para cima
+                local raycastParams = RaycastParams.new()
+                raycastParams.FilterDescendantsInstances = {character}
+                raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+                local raycastResult = Workspace:Raycast(rayOrigin, rayDirection, raycastParams)
+
+                if raycastResult then
+                    rootPart.CFrame = CFrame.new(raycastResult.Position + Vector3.new(0, 3, 0)) -- Reposiciona acima do chão
+                    print("Personagem estava caindo no void, reposicionado acima do chão!")
+                else
+                    -- Se não encontrar o chão, reposiciona em uma posição segura
+                    rootPart.CFrame = CFrame.new(Vector3.new(0, 50, 0))
+                    print("Chão não encontrado, personagem movido para uma posição segura!")
+                end
+            end
+        end)
+        table.insert(noclipConnections, connection)
+
+        print("Noclip ativado! Você pode atravessar objetos e se mover normalmente.")
+    else
+        -- Desativa o noclip e restaura as propriedades do personagem
+        for _, connection in pairs(noclipConnections) do
+            connection:Disconnect()
+        end
+        noclipConnections = {}
+
+        -- Ancorar temporariamente para evitar quedas ou movimento indesejado
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Anchored = true
+            end
+        end
+
+        -- Restaura as colisões e corrige a física
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true -- Reativa colisões
+                part.Velocity = Vector3.new(0, 0, 0) -- Zera a velocidade
+                part.RotVelocity = Vector3.new(0, 0, 0) -- Zera a rotação
+            end
+        end
+
+        -- Restaura o estado do Humanoid
+        if humanoid then
+            humanoid:ChangeState(Enum.HumanoidStateType.GettingUp) -- Força o personagem a "se levantar"
+            humanoid.PlatformStand = false -- Desativa PlatformStand, se ativo
+        end
+
+        -- Corrige a posição para evitar ficar preso
+        if rootPart then
+            local rayOrigin = rootPart.Position
+            local rayDirection = Vector3.new(0, -50, 0) -- Raycast mais longo para baixo
+            local raycastParams = RaycastParams.new()
+            raycastParams.FilterDescendantsInstances = {character}
+            raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+            local raycastResult = Workspace:Raycast(rayOrigin, rayDirection, raycastParams)
+
+            if raycastResult then
+                rootPart.CFrame = CFrame.new(raycastResult.Position + Vector3.new(0, 3, 0)) -- Coloca o personagem acima do chão
+                print("Personagem reposicionado acima do chão após desativar o Noclip!")
+            else
+                -- Se não encontrar o chão, tenta encontrar uma posição segura acima
+                rootPart.CFrame = CFrame.new(rootPart.Position + Vector3.new(0, 10, 0))
+                print("Chão não encontrado, personagem movido para uma posição segura!")
+            end
+        end
+
+        -- Desancora o personagem após reposicionar
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Anchored = false
+            end
+        end
+
+        print("Noclip desativado! Comportamento normal restaurado.")
+    end
+end
+
+-- Garante que o noclip comece desativado ao carregar o hub
+setNoclip(false)
+
+-- Toggle para ativar/desativar o noclip
+Tab1:Toggle({
+    Title = "Noclip",
+    Desc = "Ativa/desativa o noclip para atravessar paredes",
+    Default = false,
+    Callback = function(value)
+        setNoclip(value)
+    end,
+})
+
+-- Reconecta o noclip ao respawn do personagem
+LocalPlayer.CharacterAdded:Connect(function(character)
+    if noclipEnabled then
+        -- Espera o personagem carregar completamente
+        local humanoid = character:WaitForChild("Humanoid", 5)
+        local rootPart = character:WaitForChild("HumanoidRootPart", 5)
+        if humanoid and rootPart then
+            task.wait(0.2) -- Atraso maior para garantir que o personagem esteja pronto
+            setNoclip(true) -- Reaplica o noclip se estava ativado
+            print("Noclip reaplicado após respawn!")
+        else
+            print("Humanoid ou RootPart não encontrado ao reaplicar Noclip após respawn!")
+        end
+    end
+end)
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+
+-- Botão para executar o script de fly
+Tab1:Button({
+    Title = "Ativar Fly GUI",
+    Desc = "Carrega um GUI de fly universal",
+    Callback = function()
+        local success, errorMessage = pcall(function()
+            loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Fly-gui-v3-30439"))()
+        end)
+
+        if success then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Sucesso",
+                Text = "Fly GUI carregado!",
+                Duration = 5
+            })
+        else
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Erro",
+                Text = "Falha ao carregar o Fly GUI.",
+                Duration = 5
+            })
+        end
+    end,
+})
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+local SpeedInput = Tab1:Input({
+    Title = "Definir a velocidade do jogador",
+    Desc = "Insira a velocidade (mínimo 1, sem limite máximo)",
+    Value = "70", -- Valor padrão como string
+    PlaceholderText = "Digite um número maior que 1...",
+    ClearTextOnFocus = false,
+    Callback = function(Text)
+        local value = tonumber(Text) -- Converte o texto para número
+        if value then
+            -- Garante que o valor seja pelo menos 1
+            value = math.max(value, 1)
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.WalkSpeed = value
+                print("Velocidade definida para: " .. value)
+            else
+                warn("Personagem ou Humanoid não encontrado!")
+            end
+        else
+            warn("Por favor, insira um número válido!")
+        end
+    end
+})
+
+local ResetSpeedButton = Tab1:Button({
+    Title = "Restaurar velocidade padrão",
+    Desc = "Retorna a velocidade para 16 (padrão do Roblox)",
+    Callback = function()
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = 16
+            print("Velocidade restaurada para 16!")
+        else
+            warn("Personagem ou Humanoid não encontrado!")
+        end
+    end,
+})
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+local JumpInput = Tab1:Input({
+    Title = "Definir o tamanho do salto do jogador",
+    Desc = "Insira o salto (mínimo 1, sem limite máximo)",
+    Value = "70", -- Valor padrão como string
+    PlaceholderText = "Digite um número maior que 1...",
+    ClearTextOnFocus = false,
+    Callback = function(Text)
+        local value = tonumber(Text) -- Converte o texto para número
+        if value then
+            -- Garante que o valor seja pelo menos 1
+            value = math.max(value, 1)
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.JumpPower = value
+                print("Tamanho do salto definido para: " .. value)
+            else
+                warn("Personagem ou Humanoid não encontrado!")
+            end
+        else
+            warn("Por favor, insira um número válido!")
+        end
+    end
+})
+
+local ResetJumpButton = Tab1:Button({
+    Title = "Restaurar salto padrão",
+    Desc = "Retorna o salto para 50 (padrão do Roblox)",
+    Callback = function()
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.JumpPower = 50
+            print("Tamanho do salto restaurado para 50!")
+        else
+            warn("Personagem ou Humanoid não encontrado!")
+        end
+    end,
+})
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
+-- Variáveis para armazenar as conexões
+local antiSitConnection = nil
+local characterAddedConnection = nil
+local antiSitEnabled = false
+
+Tab1:Toggle({
+    Title = "Anti-Sit",
+    Desc = "Impede o jogador de sentar em qualquer assento e evita a animação de sentar",
+    Value = false,
+    Callback = function(state)
+        antiSitEnabled = state
+        local LocalPlayer = game:GetService("Players").LocalPlayer
+
+        if state then
+            -- Função para aplicar o Anti-Sit a um personagem
+            local function applyAntiSit(character)
+                local humanoid = character:FindFirstChild("Humanoid")
+                if humanoid then
+                    -- Força o jogador a não estar sentado
+                    humanoid.Sit = false
+                    -- Desativa o estado de sentado e a animação associada
+                    humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, false)
+                    -- Conecta o evento Seated para impedir tentativas de sentar
+                    if antiSitConnection then
+                        antiSitConnection:Disconnect()
+                    end
+                    antiSitConnection = humanoid.Seated:Connect(function(isSeated, seat)
+                        if isSeated then
+                            humanoid.Sit = false -- Levanta o jogador imediatamente
+                            humanoid:ChangeState(Enum.HumanoidStateType.GettingUp) -- Força o estado "em pé"
+                            print("Tentativa de sentar bloqueada!")
+                        end
+                    end)
+                    print("Anti-Sit aplicado ao personagem!")
+                else
+                    warn("Humanoid não encontrado ao aplicar Anti-Sit!")
+                end
+            end
+
+            -- Aplica o Anti-Sit ao personagem atual, se existir
+            if LocalPlayer.Character then
+                applyAntiSit(LocalPlayer.Character)
+            end
+
+            -- Conecta o evento CharacterAdded para aplicar o Anti-Sit ao respawn
+            if characterAddedConnection then
+                characterAddedConnection:Disconnect()
+            end
+            characterAddedConnection = LocalPlayer.CharacterAdded:Connect(function(character)
+                -- Espera o Humanoid carregar
+                local humanoid = character:WaitForChild("Humanoid", 5)
+                if humanoid and antiSitEnabled then
+                    applyAntiSit(character)
+                    print("Anti-Sit reaplicado após respawn!")
+                else
+                    warn("Humanoid não encontrado ou Anti-Sit desativado ao respawn!")
+                end
+            end)
+
+            print("Anti-Sit ativado!")
+        else
+            -- Desativa o Anti-Sit
+            if antiSitConnection then
+                antiSitConnection:Disconnect()
+                antiSitConnection = nil
+            end
+            if characterAddedConnection then
+                characterAddedConnection:Disconnect()
+                characterAddedConnection = nil
+            end
+
+            -- Reativa o estado de sentado no Humanoid
+            if LocalPlayer.Character then
+                local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+                if humanoid then
+                    humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
+                    print("Estado de sentado reativado!")
+                end
+            end
+
+            print("Anti-Sit desativado!")
+        end
+    end,
+})
+
+---------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 2: casa === --
+---------------------------------------------------------------------------------------------------------------------------------
+
+Tab2:Paragraph({ Title = "funçoes para voce usar em voce", Desc = "" })
+
+
+-- Botão para remover ban de todas as casas (versão ajustada)
+Tab2:Button({
+    Title = "Remover Ban de Todas as Casas",
+    Desc = "Tenta remover o ban de todas as casas (1 a 37)",
+    Callback = function()
+        local successCount = 0
+        local failCount = 0
+        -- Verifica se há algum BannedBlock no Workspace
+        print("Procurando por BannedBlocks no Workspace...")
+        for i = 1, 37 do
+            local bannedBlockName = "BannedBlock" .. i
+            local bannedBlock = Workspace:FindFirstChild(bannedBlockName, true) -- Busca recursiva no Workspace
+            if bannedBlock then
+                local success, errorMessage = pcall(function()
+                    bannedBlock:Destroy()
+                end)
+                if success then
+                    successCount = successCount + 1
+                    print("Ban removido da casa " .. i .. " com sucesso!")
+                else
+                    failCount = failCount + 1
+                    warn("Erro ao remover ban da casa " .. i .. ": " .. tostring(errorMessage))
+                end
+            else
+                print("Nenhum ban encontrado para a casa " .. i .. " (BannedBlock" .. i .. " não existe).")
+            end
+        end
+        -- Tenta procurar em outros lugares (por exemplo, dentro das casas)
+        print("Procurando por BannedBlocks dentro das casas...")
+        for _, house in pairs(Workspace:GetDescendants()) do
+            if house.Name:match("BannedBlock") then
+                local success, errorMessage = pcall(function()
+                    house:Destroy()
+                end)
+                if success then
+                    successCount = successCount + 1
+                    print("Ban removido: " .. house.Name .. " em " .. house:GetFullName())
+                else
+                    failCount = failCount + 1
+                    warn("Erro ao remover ban " .. house.Name .. ": " .. tostring(errorMessage))
+                end
+            end
+        end
+        -- Resumo do resultado
+        print("Resumo: " .. successCount .. " bans removidos com sucesso, " .. failCount .. " falhas.")
+        if successCount > 0 then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Sucesso",
+                Text = "Bans removidos de " .. successCount .. " casas!",
+                Duration = 5
+            })
+        end
+        if failCount > 0 then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Aviso",
+                Text = "Falha ao remover bans de " .. failCount .. " casas. Veja o console para detalhes.",
+                Duration = 5
+            })
+        end
+        if successCount == 0 and failCount == 0 then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Aviso",
+                Text = "Nenhum ban encontrado para remover.",
+                Duration = 5
+            })
+        end
+    end,
+})
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+Tab2:Paragraph({ Title = "pegar permisao de casas!", Desc = "" })
+
+Tab2:Dropdown({
+    Title = "pegar permissão das casas",
+    Desc = "",
+    Value = "Option 1",
+    Multi = false,
+    AllowNone = true,
+    Values = {"Option 1", "Option 2", "Option 3", "Option 4", "Option 5", "Option 6", "Option 7", "Option 8", "Option 9", "Option 10", "Option 11", "Option 12", "Option 13", "Option 14", "Option 15", "Option 16", "Option 17", "Option 18", "Option 19", "Option 20", "Option 21", "Option 22", "Option 23", "Option 24", "Option 25", "Option 26", "Option 27", "Option 28", "Option 29", "Option 30", "Option 31", "Option 32", "Option 33", "Option 34", "Option 35", "Option 36", "Option 37"},
+    Callback = function(tab)
+        local permission = tonumber(tab:match("%d+")) or 1
+        fireServer("1Playe1rTrigge1rEven1t", {"GivePermissionLoopToServer", LocalPlayer, permission})
+    end,
+})
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+Tab2:Paragraph({ Title = "funçoes para outros players", Desc = "" })
+
+Tab2:Paragraph({ Title = "esta funçao e para dar permisao de qualquer casa para qualquer player", Desc = "" })
+
+-- Função para pegar os nomes dos jogadores
+local function getPlayerNames()
+    local playerNames = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        table.insert(playerNames, player.Name)
+    end
+    return playerNames
+end
+
+-- Dropdown para selecionar o jogador
+local selectedPlayerName = ""
+local DropdownPlayers = Tab2:Dropdown({
+    Title = "Selecionar Jogador",
+    Desc = "Escolha um jogador para dar permissão",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = getPlayerNames(),
+    Callback = function(playerName)
+        selectedPlayerName = playerName
+        print("Jogador selecionado: " .. selectedPlayerName)
+    end,
+})
+
+-- Atualiza o dropdown quando jogadores entram ou saem
+Players.PlayerAdded:Connect(function() DropdownPlayers:Refresh(getPlayerNames()) end)
+Players.PlayerRemoving:Connect(function() DropdownPlayers:Refresh(getPlayerNames()) end)
+
+-- Dropdown para selecionar o número da casa
+local selectedHouseNumber = 1
+local houseOptions = {}
+for i = 1, 37 do
+    table.insert(houseOptions, tostring(i))
+end
+
+local DropdownHouses = Tab2:Dropdown({
+    Title = "Selecionar Casa",
+    Desc = "Escolha o número da casa (1 a 37)",
+    Value = "1",
+    Multi = false,
+    AllowNone = false,
+    Values = houseOptions,
+    Callback = function(houseNumber)
+        selectedHouseNumber = tonumber(houseNumber)
+        print("Casa selecionada: " .. selectedHouseNumber)
+    end,
+})
+
+-- Botão para dar permissão
+Tab2:Button({
+    Title = "Dar Permissão",
+    Desc = "Dá permissão ao jogador selecionado para a casa escolhida",
+    Callback = function()
+        if selectedPlayerName == "" then
+            warn("Nenhum jogador selecionado!")
+            return
+        end
+        local targetPlayer = Players:FindFirstChild(selectedPlayerName)
+        if not targetPlayer then
+            warn("Jogador não encontrado: " .. selectedPlayerName)
+            return
+        end
+        local args = {
+            [1] = "GivePermissionLoopToServer",
+            [2] = targetPlayer,
+            [3] = selectedHouseNumber
+        }
+        local success, errorMessage = pcall(function()
+            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        end)
+        if success then
+            print("Permissão dada para " .. selectedPlayerName .. " na casa " .. selectedHouseNumber)
+        else
+            warn("Erro ao dar permissão: " .. tostring(errorMessage))
+        end
+    end,
+})
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+Tab2:Paragraph({ Title = "esta funçao e para remover a permisao de qualquer casa e de qualque player", Desc = "" })
+
+-- Função para pegar os nomes dos jogadores
+local function getPlayerNames()
+    local playerNames = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        table.insert(playerNames, player.Name)
+    end
+    return playerNames
+end
+
+-- Dropdown para selecionar o jogador
+local selectedPlayerNameRemove = ""
+local DropdownPlayersRemove = Tab2:Dropdown({
+    Title = "Selecionar Jogador (Remover)",
+    Desc = "Escolha um jogador para remover permissão",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = getPlayerNames(),
+    Callback = function(playerName)
+        selectedPlayerNameRemove = playerName
+        print("Jogador selecionado para remover permissão: " .. selectedPlayerNameRemove)
+    end,
+})
+
+-- Atualiza o dropdown quando jogadores entram ou saem
+Players.PlayerAdded:Connect(function() DropdownPlayersRemove:Refresh(getPlayerNames()) end)
+Players.PlayerRemoving:Connect(function() DropdownPlayersRemove:Refresh(getPlayerNames()) end)
+
+-- Dropdown para selecionar o número da casa
+local selectedHouseNumberRemove = 1
+local houseOptionsRemove = {}
+for i = 1, 37 do
+    table.insert(houseOptionsRemove, tostring(i))
+end
+
+local DropdownHousesRemove = Tab2:Dropdown({
+    Title = "Selecionar Casa (Remover)",
+    Desc = "Escolha o número da casa (1 a 37)",
+    Value = "1",
+    Multi = false,
+    AllowNone = false,
+    Values = houseOptionsRemove,
+    Callback = function(houseNumber)
+        selectedHouseNumberRemove = tonumber(houseNumber)
+        print("Casa selecionada para remover permissão: " .. selectedHouseNumberRemove)
+    end,
+})
+
+-- Botão para remover permissão
+Tab2:Button({
+    Title = "Remover Permissão",
+    Desc = "Remove a permissão do jogador selecionado para a casa escolhida",
+    Callback = function()
+        if selectedPlayerNameRemove == "" then
+            warn("Nenhum jogador selecionado para remover permissão!")
+            return
+        end
+        local targetPlayer = Players:FindFirstChild(selectedPlayerNameRemove)
+        if not targetPlayer then
+            warn("Jogador não encontrado: " .. selectedPlayerNameRemove)
+            return
+        end
+        local args = {
+            [1] = "RemovePermissionLoopToServer",
+            [2] = targetPlayer,
+            [3] = selectedHouseNumberRemove
+        }
+        local success, errorMessage = pcall(function()
+            game:GetService("ReplicatedStorage"):WaitForChild("RE"):WaitForChild("1Playe1rTrigge1rEven1t"):FireServer(unpack(args))
+        end)
+        if success then
+            print("Permissão removida de " .. selectedPlayerNameRemove .. " na casa " .. selectedHouseNumberRemove)
+        else
+            warn("Erro ao remover permissão: " .. tostring(errorMessage))
+        end
+    end,
+})
+
+
+-- (Código anterior, como a Tab1 e Tab2)
+---------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 3: Carro === --
+---------------------------------------------------------------------------------------------------------------------------------
+
+Tab3:Paragraph({ 
+    Title = "Instruções para o teleporta todods os carros do server no void ", 
+    Desc = "para que funcione perfeitamente use o void protection do systemBroken na tab sripts la vai tar ele e vai em game e voidprotection"
+})
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+
+Tab3:Toggle({
+    Title = "matar todos os carros do server",
+    Desc = "teleporta os carrospara o void",
+    Value = false,
+    Callback = function(state)
+        local LocalPlayer = Players.LocalPlayer
+        local originalPosition -- Para armazenar a posição original do jogador
+        local teleportActive = state -- Estado do toggle
+        local fallDamageDisabled = false -- Para controlar se a morte por queda está desativada
+
+        -- Função para desativar/reativar a morte por queda
+        local function toggleFallDamage(disable)
+            if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("Humanoid") then return end
+            local humanoid = LocalPlayer.Character.Humanoid
+            if disable then
+                -- Desativa a morte por queda
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, true)
+                humanoid.PlatformStand = false
+                fallDamageDisabled = true
+                print("Morte por queda desativada!")
+            else
+                -- Reativa a morte por queda
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, true)
+                fallDamageDisabled = false
+                print("Morte por queda reativada!")
+            end
+        end
+
+        -- Função para teleportar o jogador para um assento
+        local function teleportToSeat(seat, car)
+            if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("Humanoid") then
+                warn("Personagem ou Humanoid não encontrado!")
+                return false
+            end
+            local humanoid = LocalPlayer.Character.Humanoid
+            local rootPart = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if not rootPart then
+                warn("HumanoidRootPart não encontrado!")
+                return false
+            end
+
+            -- Força o jogador a não estar sentado antes de tentar
+            humanoid.Sit = false
+            task.wait(0.1)
+
+            -- Teleporta o jogador para perto do assento antes de sentar
+            rootPart.CFrame = seat.CFrame + Vector3.new(0, 5, 0) -- Coloca o jogador acima do assento
+            task.wait(0.1)
+
+            -- Tenta sentar no assento
+            seat:Sit(humanoid)
+            task.wait(0.5) -- Espera para confirmar que sentou
+            local success = humanoid.SeatPart == seat
+            if success then
+                print("Sentou no assento do carro: " .. car.Name)
+            else
+                warn("Falha ao sentar no assento do carro: " .. car.Name)
+            end
+            return success
+        end
+
+        -- Função para teleportar o carro e o jogador para o void
+        local function teleportToVoid(car)
+            if not car then
+                warn("Carro não encontrado para teleportar ao void!")
+                return
+            end
+            -- Define o PrimaryPart se não estiver definido
+            if not car.PrimaryPart then
+                local body = car:FindFirstChild("Body", true) or car:FindFirstChild("Chassis", true)
+                if body and body:IsA("BasePart") then
+                    car.PrimaryPart = body
+                else
+                    warn("Carro " .. car.Name .. " não tem PrimaryPart ou Body/Chassis para teleportar!")
+                    return
+                end
+            end
+            local voidPosition = Vector3.new(0, -1000, 0) -- Posição no "void"
+            car:SetPrimaryPartCFrame(CFrame.new(voidPosition))
+            print("Carro " .. car.Name .. " teleportado para o void!")
+            task.wait(0.5) -- Espera para garantir que o teleporte ocorreu
+        end
+
+        -- Função para forçar o jogador a sair do carro e voltar à posição original
+        local function exitCarAndReturn()
+            if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("Humanoid") then
+                warn("Personagem ou Humanoid não encontrado para sair do carro!")
+                return
+            end
+            local humanoid = LocalPlayer.Character.Humanoid
+            if humanoid.SeatPart then
+                humanoid.Sit = false -- Força o jogador a sair do assento
+                print("Jogador saiu do assento!")
+            end
+            task.wait(0.1) -- Pequeno atraso para garantir que saiu
+            if originalPosition then
+                LocalPlayer.Character:PivotTo(CFrame.new(originalPosition))
+                print("Jogador retornou à posição original: " .. tostring(originalPosition))
+            else
+                warn("Posição original não definida para retorno!")
+            end
+        end
+
+        if state then
+            -- Salva a posição original do jogador antes de começar
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                originalPosition = LocalPlayer.Character.HumanoidRootPart.Position
+                print("Posição original salva: " .. tostring(originalPosition))
+            else
+                warn("Não foi possível encontrar o personagem do jogador para salvar a posição!")
+                return
+            end
+
+            -- Desativa a morte por queda
+            toggleFallDamage(true)
+
+            -- Inicia o loop para processar os carros
+            spawn(function()
+                -- Obtém todos os carros em Workspace.Vehicles
+                local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
+                if not vehiclesFolder then
+                    warn("Pasta 'Vehicles' não encontrada no Workspace!")
+                    return
+                end
+
+                -- Cria uma lista de carros (filtra apenas os que terminam com "Car")
+                local cars = {}
+                for _, car in ipairs(vehiclesFolder:GetChildren()) do
+                    if car.Name:match("Car$") then -- Verifica se o nome termina com "Car"
+                        table.insert(cars, car)
+                    end
+                end
+                print("Carros encontrados: " .. #cars)
+
+                -- Processa cada carro
+                for _, car in ipairs(cars) do
+                    if not teleportActive then
+                        print("Toggle desativado, parando o loop!")
+                        break
+                    end
+
+                    print("Processando carro: " .. car.Name)
+
+                    -- Procura o VehicleSeat recursivamente dentro do carro
+                    local vehicleSeat = car:FindFirstChildWhichIsA("VehicleSeat", true)
+                    if vehicleSeat then
+                        print("VehicleSeat encontrado no carro: " .. car.Name .. " em " .. vehicleSeat:GetFullName())
+                        -- Verifica se o assento está vazio
+                        if vehicleSeat.Occupant == nil then
+                            print("Assento está vazio, tentando sentar...")
+                            -- Tenta teleportar para o assento
+                            local success = teleportToSeat(vehicleSeat, car)
+                            if success then
+                                -- Teleporta o carro e o jogador para o void
+                                teleportToVoid(car)
+                                -- Força o jogador a sair do carro e voltar à posição original
+                                exitCarAndReturn()
+                                task.wait(1) -- Intervalo antes de passar para o próximo carro
+                            else
+                                warn("Não conseguiu sentar no assento do carro: " .. car.Name)
+                            end
+                        else
+                            print("Assento ocupado no carro: " .. car.Name .. ", passando para o próximo...")
+                        end
+                    else
+                        warn("VehicleSeat não encontrado no carro: " .. car.Name)
+                    end
+                end
+
+                -- Desativa o toggle automaticamente quando terminar
+                if teleportActive then
+                    teleportActive = false
+                    print("Todos os carros foram processados!")
+                    -- Reativa a morte por queda ao terminar
+                    toggleFallDamage(false)
+                end
+            end)
+        else
+            teleportActive = false -- Para o loop quando o toggle é desativado
+            print("Toggle desativado manualmente!")
+            -- Reativa a morte por queda ao desativar o toggle
+            toggleFallDamage(false)
+        end
+    end,
+})
+
+-- Garante que a morte por queda seja reativada/desativada ao recarregar o personagem
+local fallDamageDisabled = false
+Players.LocalPlayer.CharacterAdded:Connect(function(character)
+    if fallDamageDisabled then
+        local humanoid = character:WaitForChild("Humanoid")
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, true)
+        humanoid.PlatformStand = false
+        print("Morte por queda desativada após respawn!")
+    else
+        local humanoid = character:WaitForChild("Humanoid")
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, true)
+        print("Morte por queda reativada após respawn!")
+    end
+end)
+-----------------------------------------------------------------------------------------------------
+                                          -- === Tab 4: RGB Color === --
+---------------------------------------------------------------------------------------------------------------------------------
+
+-- Lista de cores vibrantes (usada por todos os toggles)
+local vibrantColors = {
+    Color3.new(1, 0, 0),       -- Vermelho
+    Color3.new(0, 1, 0),       -- Verde
+    Color3.new(0, 0, 1),       -- Azul
+    Color3.new(1, 1, 0),       -- Amarelo
+    Color3.new(1, 0, 1),       -- Magenta
+    Color3.new(0, 1, 1),       -- Ciano
+    Color3.new(1, 0.5, 0),     -- Laranja
+    Color3.new(0.5, 0, 1)      -- Roxo
+}
+
+-- Função auxiliar para disparar eventos (reutilizada por todos os toggles)
+local function fireServer(eventName, args)
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local event = ReplicatedStorage:FindFirstChild("RE") and ReplicatedStorage.RE:FindFirstChild(eventName)
+    if event then
+        pcall(function()
+            event:FireServer(unpack(args))
+        end)
+    end
+end
+
+-- Novo Toggle: Nome e Bio RGB Sincronizado (em primeiro lugar)
+local nameAndBioRGBActive = false
+Tab4:Toggle({
+    Title = "Nome e Bio RGB Sincronizado",
+    Desc = "Ativa cores RGB sincronizadas para Nome e Bio",
+    Value = false,
+    Callback = function(state)
+        nameAndBioRGBActive = state
+        if state then
+            task.spawn(function()
+                while nameAndBioRGBActive and LocalPlayer.Character do
+                    local color = vibrantColors[math.random(1, #vibrantColors)]
+                    local nameArgs = { [1] = "PickingRPNameColor", [2] = color }
+                    local bioArgs = { [1] = "PickingRPBioColor", [2] = color }
+                    fireServer("1RPNam1eColo1r", nameArgs)
+                    fireServer("1RPNam1eColo1r", bioArgs)
+                    wait(1)
+                    task.wait() -- Pequena pausa para aliviar a carga
+                end
+            end)
+        end
+    end
+})
+
+-- Toggle Nome RGB
+local nameRGBActive = false
+Tab4:Toggle({
+    Title = "Nome RGB",
+    Desc = "Ativa cores RGB para o Nome",
+    Value = false,
+    Callback = function(state)
+        nameRGBActive = state
+        if state then
+            task.spawn(function()
+                while nameRGBActive and LocalPlayer.Character do
+                    local color = vibrantColors[math.random(1, #vibrantColors)]
+                    local args = { [1] = "PickingRPNameColor", [2] = color }
+                    fireServer("1RPNam1eColo1r", args)
+                    wait(1)
+                    task.wait() -- Pequena pausa para aliviar a carga
+                end
+            end)
+        end
+    end
+})
+
+-- Toggle Bio RGB
+local bioRGBActive = false
+Tab4:Toggle({
+    Title = "Bio RGB",
+    Desc = "Ativa cores RGB aleatórias na sua bio",
+    Value = false,
+    Callback = function(state)
+        bioRGBActive = state
+        if state then
+            task.spawn(function()
+                while bioRGBActive and LocalPlayer.Character do
+                    local color = vibrantColors[math.random(1, #vibrantColors)]
+                    local args = { [1] = "PickingRPBioColor", [2] = color }
+                    fireServer("1RPNam1eColo1r", args)
+                    wait(1)
+                    task.wait() -- Pequena pausa para aliviar a carga
+                end
+            end)
+        end
+    end
+})
+
+-- Toggle RGB Premium (Carro)
+local carRGBActive = false
+Tab4:Toggle({
+    Title = "Car RGB",
+    Desc = "Precisa do premium (atenção, pode dar kick!!!! Não recomendo usar!!!)",
+    Value = false,
+    Callback = function(state)
+        carRGBActive = state
+        if state then
+            local character = LocalPlayer.Character
+            if not character then
+                carRGBActive = false
+                return
+            end
+            task.spawn(function()
+                while carRGBActive and LocalPlayer.Character do
+                    local color = vibrantColors[math.random(1, #vibrantColors)]
+                    local args = { [1] = "PickingCarColor", [2] = color }
+                    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                    local event = ReplicatedStorage:FindFirstChild("RE") and ReplicatedStorage.RE:FindFirstChild("1Player1sCa1r")
+                    if event then
+                        pcall(function()
+                            event:FireServer(unpack(args))
+                        end)
+                    end
+                    wait(1)
+                    task.wait() -- Pequena pausa para aliviar a carga
+                end
+            end)
+        end
+    end
+})
+---------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 5: Troll Musica === --
+---------------------------------------------------------------------------------------------------------------------------------
+
+local function tocarMusica(id)
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    
+    local argsCasa = {
+        [1] = "PickHouseMusicText",
+        [2] = id
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sHous1e"):FireServer(unpack(argsCasa))
+
+    local argsCarro = {
+        [1] = "PickingCarMusicText",
+        [2] = id
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(argsCarro))
+
+    local argsScooter = {
+        [1] = "PickingScooterMusicText",
+        [2] = id
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(argsScooter))
+end
+
+-- Função auxiliar para validar valores do Dropdown
+local function isValidMusicId(value)
+    return value and value ~= "" and value ~= "Option 1" and not value:match("novas musica adds") and not value:match("musica brasil") and not value:match("musica do meu interece") and not value:match("musica dls por elas") and not value:match("meme abaixo") and not value:match("estourada")
+end
+
+Tab5:Input({
+    Title = "ID da música",
+    Placeholder = "Digite o ID e pressione Enter",
+    Callback = function(value)
+        if value and value ~= "" then
+            tocarMusica(tostring(value))
+        end
+    end,
+})
+
+
+-- Tabela de opções de música para o Dropdown "Funk, Phonk, MTG"
+local musicOptions = {
+    ["forro"] = {
+        {name = "forro", id = "4354908569"}, -- Placeholder ID para título
+        {name = "forro ja cançou", id = "74812784884330"},
+        {name = "lenbro ate hoje", id = "71531533552899"},
+        {name = "escolha certa", id = "107088620814881"},
+        {name = "nome na ajenda", id = "140095882383991"},
+        {name = "forro da rezenha", id = "120973520531216"},
+        {name = "forro dudu", id = "74404168179733"},
+        {name = "forro sao joao", id = "106364874935196"},
+        {name = "forro engraçado paia", id = "76524290482399"}
+       
+        
+    }
+}
+
+-- Criar listas de nomes e mapeamento de categorias
+local musicNames = {}
+local categoryMap = {}
+for category, sounds in pairs(musicOptions) do
+    for _, music in ipairs(sounds) do
+        table.insert(musicNames, music.name)
+        categoryMap[music.name] = {id = music.id, category = category}
+    end
+end
+
+-- Função auxiliar para tocar música
+local function playMusic(soundId)
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local argsScooter = {
+        [1] = "PickingScooterMusicText",
+        [2] = tostring(soundId)
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(argsScooter))
+    
+    local argsCarro = {
+        [1] = "PickingCarMusicText",
+        [2] = tostring(soundId)
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(argsCarro))
+end
+
+-- Dropdown para "Funk, Phonk, MTG"
+Tab5:Dropdown({
+    Title = "forro",
+    Desc = "all",
+    Value = "Option 1",
+    Multi = false,
+    AllowNone = true,
+    Values = musicNames,
+    Callback = function(selectedSound)
+        if selectedSound and categoryMap[selectedSound] then
+            local soundId = categoryMap[selectedSound].id
+            if soundId and soundId ~= "" and soundId ~= "4354908569" then
+                playMusic(soundId)
+                print("Música selecionada: " .. selectedSound .. " (ID: " .. soundId .. ")")
+            else
+                print("ID inválido ou título selecionado: " .. tostring(selectedSound))
+            end
+        else
+            print("Nenhuma música selecionada ou ID não encontrado!")
+        end
+    end,
+})
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+-- Tabela de opções de música para o Dropdown "Funk, Phonk, MTG"
+local musicOptions = {
+    ["forro"] = {
+        {name = "musica", id = "4354908569"}, -- Placeholder ID para título
+        {name = "ANXIETY (Amapiano Re-fix)", id = "101483901475189"},
+        {name = "Meu corpo, minhas regras", id = "127587901595282"},
+        {name = "FALAR (YPKE)", id = "81289143488329"},
+        {name = "$$$$gg$$$$gg", id = "137471775091253"}
+        
+       
+        
+    }
+}
+
+-- Criar listas de nomes e mapeamento de categorias
+local musicNames = {}
+local categoryMap = {}
+for category, sounds in pairs(musicOptions) do
+    for _, music in ipairs(sounds) do
+        table.insert(musicNames, music.name)
+        categoryMap[music.name] = {id = music.id, category = category}
+    end
+end
+
+-- Função auxiliar para tocar música
+local function playMusic(soundId)
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local argsScooter = {
+        [1] = "PickingScooterMusicText",
+        [2] = tostring(soundId)
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(argsScooter))
+    
+    local argsCarro = {
+        [1] = "PickingCarMusicText",
+        [2] = tostring(soundId)
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(argsCarro))
+end
+
+-- Dropdown para "Funk, Phonk, MTG"
+Tab5:Dropdown({
+    Title = "musicas internacionais",
+    Desc = "all",
+    Value = "Option 1",
+    Multi = false,
+    AllowNone = true,
+    Values = musicNames,
+    Callback = function(selectedSound)
+        if selectedSound and categoryMap[selectedSound] then
+            local soundId = categoryMap[selectedSound].id
+            if soundId and soundId ~= "" and soundId ~= "4354908569" then
+                playMusic(soundId)
+                print("Música selecionada: " .. selectedSound .. " (ID: " .. soundId .. ")")
+            else
+                print("ID inválido ou título selecionado: " .. tostring(selectedSound))
+            end
+        else
+            print("Nenhuma música selecionada ou ID não encontrado!")
+        end
+    end,
+})
+
+
+
+
+
+
+
+-------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+-- Tabela de opções de música para o Dropdown "Funk, Phonk, MTG"
+local musicOptions = {
+    ["Funk"] = {
+        {name = "funks", id = "4354908569"},
+        {name = "sua mulher funk", id = "90844637105538"},
+        {name = "carro ", id = "100788814736643"},
+        {name = "efuga na viatura", id = "131891110268352"},
+        {name = "da queles momentos", id = "123134215207264"},
+        {name = "ela vem para provacar", id = "79916408808299"},
+        {name = "funkphonk fumando verde", id = "112143944982807"},
+        {name = "trippi troop funk", id = "73049389767013"},
+        {name = "bombini funkphonk", id = "88814770244609"},
+        {name = "rachador", id = "109411226739991"},
+        {name = "cauma xmara", id = "95664293972405"},
+        {name = "tipo tasmania phonkfunk", id = "104300546340195"},
+        {name = "que que sharke", id = "129546408528391"},
+        {name = "cappuccino assassino funk", id = "122197083209373"},
+        {name = "kawai funk", id = "130053797131700"},
+        {name = "acordei passando mal", id = "83875675100660"},
+        {name = "mechamou de amor", id = "81791559745283"},
+        {name = "oeee ja ven sentando", id = "130944058486069"},
+        {name = "orror (omega007)", id = "73638649204496"},
+        {name = "que pro", id = "97239186078279"},
+        {name = "3 em um dot funk", id = "92191873659720"},
+        {name = "naved novinha", id = "102930993846348"},
+        {name = "preparaaa raaaaa", id = "98063604604756"},
+        {name = "vagalumes", id = "72026860897382"},
+        {name = "nova geraçao", id = "140065053895542"},
+        {name = "lovezin", id = "130664328738685"},
+        {name = "to voando alto", id = "110475831724424"},
+        {name = "CVVV", id = "94245278418076"},
+        {name = "MW funk", id = "73473695797214"},
+        {name = "menor TV", id = "93993692602344"},
+        {name = "de duplinha", id = "80112997683181"},
+        {name = "tropa da jamaika", id = "104498738218748"},
+        {name = "pre treino", id = "136869502216760"},
+        {name = "Of the king (Omega)", id = "75080131478471"},
+        {name = "CVRL", id = "124244582950595"},
+        {name = "batida Brega Violino (Beat Brega Funk) ", id = "99399643204701"},
+        {name = "Espressora Signora FUNK", id = "123394392737234"},
+        {name = "Dança do Canguru (Pke Gaz1nh)", id = "86876136192157"},
+        {name = "Il Cacto Hipopotamo FUNK", id = "104491656009142"},
+        {name = "Dingo o Bell (Omega)", id = "93847687239132"},
+        {name = "espere 30segundos!! Ondas sonoras", id = "127757321382838"},
+        {name = "MONTAGEM ARABIANA (Pke Gaz1nh)", id = "78076624091098"},
+        {name = "MONTAGEM 15 AN0", id = "82838053504552"},
+        {name = "Clube das Winx", id = "101870752447864"},
+        {name = "MONTAGEM PALHAÇO DAS TREVAS", id = "98342120038327"},
+        {name = "AQUI NO CH.. (GAZ1NH)", id = "132455229546431"},
+        {name = "AUTOMOTIVO DUPLA DINAMICA", id = "73361598376791"},
+        {name = "SENTA, SENTA, SENTA", id = "140417852590557"},
+        {name = "Boladona", id = "96625339070598"},
+        {name = "ARROCHA ", id = "103249564479431"},
+        {name = "MEGA DOS AUTOMOTIVO", id = "82353927625851"},
+        {name = "escravos do po", id = "108995231462803"}
+        
+        
+        
+    }
+}
+
+-- Criar listas de nomes e mapeamento de categorias
+local musicNames = {}
+local categoryMap = {}
+for category, sounds in pairs(musicOptions) do
+    for _, music in ipairs(sounds) do
+        table.insert(musicNames, music.name)
+        categoryMap[music.name] = {id = music.id, category = category}
+    end
+end
+
+-- Função auxiliar para tocar música
+local function playMusic(soundId)
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local argsScooter = {
+        [1] = "PickingScooterMusicText",
+        [2] = tostring(soundId)
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(argsScooter))
+    
+    local argsCarro = {
+        [1] = "PickingCarMusicText",
+        [2] = tostring(soundId)
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(argsCarro))
+end
+
+-- Dropdown para "Funk, Phonk, MTG"
+Tab5:Dropdown({
+    Title = "Funk",
+    Desc = "all",
+    Value = "Option 1",
+    Multi = false,
+    AllowNone = true,
+    Values = musicNames,
+    Callback = function(selectedSound)
+        if selectedSound and categoryMap[selectedSound] then
+            local soundId = categoryMap[selectedSound].id
+            if soundId and soundId ~= "" and soundId ~= "4354908569" then
+                playMusic(soundId)
+                print("Música selecionada: " .. selectedSound .. " (ID: " .. soundId .. ")")
+            else
+                print("ID inválido ou título selecionado: " .. tostring(selectedSound))
+            end
+        else
+            print("Nenhuma música selecionada ou ID não encontrado!")
+        end
+    end,
+})
+
+
+
+
+
+
+
+-------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+-- Tabela de opções de música para o Dropdown "Funk, Phonk, MTG"
+local musicOptions = {
+    ["phonk"] = {
+        {name = "phonk", id = "4354908569"},
+        {name = "wyles", id = "85385155970460"},
+        {name = "phonk kawai", id = "91502410121438"},
+        {name = "querendo da a bucet@", id = "72720721570850"},
+        {name = "vem no pocpoc", id = "102333419023382"},
+        {name = "tatiu wim", id = "122871512353520"},
+        {name = "novinha sapeca", id = "111668097052966"},
+        {name = "novinha representa", id = "93786060174790"},
+        {name = "phonk1", id = "77501611905348"},
+        {name = "phonk2", id = "126887144190812"},
+        {name = "phonk osadia", id = "88033569921555"},
+        {name = "phonk sarra", id = "132436320685732"},
+        {name = "relaionamento sem crush", id = "105832154444494"},
+        {name = "phonk3", id = "90323407842935"},
+        {name = "novinha dançapanpa", id = "132245626038510"},
+        {name = "phonk sexoagreçivo", id = "111995323199676"},
+        {name = "phonk4", id = "115016589376700"},
+        {name = "phonk5", id = "118740708757685"},
+        {name = "phonk6", id = "139435437308948"},
+        {name = "phonk chapaquente", id = "109189438638906"},
+        {name = "phonk rajada", id = "105126065014034"},
+        {name = "rede globo", id = "138487820505005"},
+        {name = "phonk indiano", id = "87968531262747"},
+        {name = "vapo do vapo", id = "106317184644394"},
+        {name = "tutatatutata", id = "112068892721408"},
+        {name = "phonk slower", id = "122852029094656"},
+        {name = "phonk9", id = "91760524161503"},
+        {name = "phonk10", id = "73140398421340"},
+        {name = "phonk11", id = "137962454483542"},
+        {name = "phonk12", id = "84733736048142"},
+        {name = "phonk12", id = "106322173003761"},
+        {name = "phonk13", id = "94604796823780"},
+        {name = "phonk14", id = "118063577904953"},
+        {name = "phonk15", id = "115567432786512"},
+        {name = "phonk toq", id = "71304501822029"},
+        {name = "phonk hey", id = "132218979961283"},
+        {name = "phonk16", id = "102708912256857"},
+        {name = "phonk17", id = "140642559093189"},
+        {name = "phonk neve", id = "13530439660"},
+        {name = "phonk18", id = "87863924786534"},
+        {name = "phonk19", id = "133135085604736"},
+        {name = "phonk lento", id = "97258811783169"},
+        {name = "phonk20", id = "92308400487695"},
+        {name = "phonk21", id = "104635713368149"},
+        {name = "tipo wym", id = "88064647826500"},
+        {name = "estouradassa1", id = "92175624643620"},
+        {name = "estouradassa2", id = "108099943758978"},
+        {name = "Naaaaa", id = "109784877184952"},
+        {name = "trem", id = "114608169341947"},
+        {name = "eoropa", id = "111346133543699"},
+        {name = "atimosphekika", id = "77857496821844"},
+        {name = "phonk ALL THE TIME", id = "123809083385992"},
+        {name = "Lifelong Memory", id = "81929101024622"},
+        {name = "Automotivo Blondie (Pke Gaz1nh)", id = "74564219749776"},
+        {name = "สวัสดีคนไทย v2", id = "118225359190317"},
+        {name = "MTG TU VAI SENTAR (Pke Gaz1nh)", id = "115317874112657"},
+        {name = "TOMADA PHONK", id = "96610114209889"},
+        {name = "riightt rs ", id = "98153718682753"},
+        {name = "SARRA FUNK", id = "96249826607044"}
+       
+        
+        
+    }
+}
+
+-- Criar listas de nomes e mapeamento de categorias
+local musicNames = {}
+local categoryMap = {}
+for category, sounds in pairs(musicOptions) do
+    for _, music in ipairs(sounds) do
+        table.insert(musicNames, music.name)
+        categoryMap[music.name] = {id = music.id, category = category}
+    end
+end
+
+-- Função auxiliar para tocar música
+local function playMusic(soundId)
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local argsScooter = {
+        [1] = "PickingScooterMusicText",
+        [2] = tostring(soundId)
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1NoMoto1rVehicle1s"):FireServer(unpack(argsScooter))
+    
+    local argsCarro = {
+        [1] = "PickingCarMusicText",
+        [2] = tostring(soundId)
+    }
+    ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Player1sCa1r"):FireServer(unpack(argsCarro))
+end
+
+-- Dropdown para "Funk, Phonk, MTG"
+Tab5:Dropdown({
+    Title = "Phonk",
+    Desc = "all",
+    Value = "Option 1",
+    Multi = false,
+    AllowNone = true,
+    Values = musicNames,
+    Callback = function(selectedSound)
+        if selectedSound and categoryMap[selectedSound] then
+            local soundId = categoryMap[selectedSound].id
+            if soundId and soundId ~= "" and soundId ~= "4354908569" then
+                playMusic(soundId)
+                print("Música selecionada: " .. selectedSound .. " (ID: " .. soundId .. ")")
+            else
+                print("ID inválido ou título selecionado: " .. tostring(selectedSound))
+            end
+        else
+            print("Nenhuma música selecionada ou ID não encontrado!")
+        end
+    end,
+})
+
+-- Botão Stop (Carro)
+Tab5:Button({
+    Title = "Stop",
+    Desc = "Car music",
+    Callback = function()
+        tocarMusica("")
+        print("Música do carro parada")
+    end,
+})
+
+---------------------------------------------------------------------------------------------------------------------------------
+                                                -- === Tab 6: Music All === --
+---------------------------------------------------------------------------------------------------------------------------------
+
+local loopAtivo = false
+local InputID = ""
+
+Tab6:Input({
+    Title = "Insira o ID Audio All",
+    Desc = "Digite o ID do som que deseja tocar",
+    Value = "",
+    PlaceholderText = "Exemplo: 6832470734",
+    ClearTextOnFocus = true,
+    Callback = function(text)
+        InputID = tonumber(text)
+        if not InputID then warn("Por favor, insira um ID válido!") end
+    end,
+})
+
+Tab6:Button({
+    Title = "Tocar Som",
+    Desc = "Clique para tocar a música inserida",
+    Callback = function()
+        if InputID then
+            fireServer("1Gu1nSound1s", {Workspace, InputID, 1})
+            local globalSound = Instance.new("Sound", Workspace)
+            globalSound.SoundId = "rbxassetid://" .. InputID
+            globalSound.Looped = false
+            globalSound:Play()
+            task.wait(3)
+            globalSound:Destroy()
+        else
+            warn("Nenhum ID válido foi inserido!")
+        end
+    end,
+})
+
+Tab6:Toggle({
+    Title = "Loop",
+    Desc = "Ative para colocar o som em loop",
+    Icon = "check",
+    Value = false,
+    Callback = function(state)
+        loopAtivo = state
+        if loopAtivo then
+            print("Loop ativado!")
+            spawn(function()
+                while loopAtivo do
+                    if InputID then
+                        fireServer("1Gu1nSound1s", {Workspace, InputID, 1})
+                        local globalSound = Instance.new("Sound", Workspace)
+                        globalSound.SoundId = "rbxassetid://" .. InputID
+                        globalSound.Looped = false
+                        globalSound:Play()
+                        -- Não espera o áudio terminar, apenas cria e toca
+                        task.spawn(function() -- Usa task.spawn para destruir após 3 segundos sem interferir no loop
+                            task.wait(3)
+                            globalSound:Destroy()
+                        end)
+                    else
+                        warn("Nenhum ID válido foi inserido!")
+                    end
+                    task.wait(1) -- Intervalo de 1 segundo entre cada início de som
+                end
+            end)
+        else
+            print("Loop desativado!")
+        end
+    end,
+})
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+local musicOptions = {
+    ["Memes"] = {
+        {name = "pankapakan", id = 122547522269143},
+        {name = "gemido", id = 106835463235574},
+        {name = "gemidao v2", id = 112179417472137},
+        {name = "Gemido ultra rápido", id = 128863565301778},
+        {name = "sus sex", id = 128137573022197},
+        {name = "gemido estranho", id = 131219411501419},
+        {name = "gemido kawai", id = 100409245129170},
+        {name = "Hentai gemido", id = 125037339642322},
+        {name = "Hentai wiaaaaan", id = 88332347208779},
+        {name = "iamete cunasai", id = 108494476595033},
+        {name = "___", id = 4354908569},
+        {name = "gemidos acima", id = 4354908569},
+        {name = "___", id = 4354908569},
+        --parte dos gemidos acima 
+        --memes abaixo 
+        {name = "memes abaixo", id = 4354908569},
+        {name = "___", id = 4354908569},
+        {name = "kid bengala", id = 4354908569},
+        {name = "Toma jack", id = 132603645477541},
+        {name = "Toma jackV2", id = 100446887985203},
+        {name = "Toma jack no sol quente", id = 97476487963273},
+        {name = "ifood", id = 133843750864059},
+        {name = "pelo geito ela ta querendo ram", id = 94395705857835},
+        {name = "lula vai todo mundo ", id = 136804576009416},
+        {name = "coringa", id = 84663543883498},
+        {name = "shoope", id = 8747441609},
+        {name = "quenojo", id = 103440368630269},
+        {name = "sai dai lava prato", id = 101232400175829},
+        {name = "se e loko numconpeça", id = 78442476709262},
+        {name = "mita sequer que eu too uma", id = 94889439372168},
+        {name = "Hoje vou ser tua mulher e tu", id = 90844637105538},
+        {name = "Deita aqui eu mandei vc deitar sirens", id = 100291188941582},
+        {name = "miau", id = 131804436682424},
+        {name = "skibidi", id = 128771670035179},
+        
+        {name = "cavalo!!", id = 78871573440184},
+       
+
+        {name = "deixa os garoto brinca", id = 80291355054807},
+        {name = "flamengo", id = 137774355552052},
+        {name = "sai do mei satnas", id = 127944706557246},
+        {name = "namoral agora e a hora", id = 120677947987369},
+        {name = "n pode me chutar pq seu celebro e burro", id = 82284055473737},
+        {name = "vc ta fudido vou te pegar", id = 120214772725166},
+        {name = "deley", id = 102906880476838},
+        {name = "Tu e um beta", id = 130233956349541},
+        {name = "Porfavor n tira eu nao", id = 85321374020324},
+        {name = "Olá beleza vc pode me dá muitos", id = 74235334504693},
+        {name = "Discord sus", id = 122662798976905},
+        {name = "rojao apito", id = 6549021381},
+        {name = "off", id = 1778829098},
+        {name = "Kazuma kazuma", id = 127954653962405},
+        {name = "sometourado", id = 123592956882621},
+        {name = "Estouradoespad", id = 136179020015211},
+        {name = "Alaku bommm", id = 110796593805268},
+        {name = "busss", id = 139841197791567},
+        {name = "Estourado wItb", id = 137478052262430},
+        {name = "sla", id = 116672405522828},
+
+    }
+}
+
+local musicNames = {}
+local categoryMap = {}
+for category, sounds in pairs(musicOptions) do
+    for _, music in ipairs(sounds) do
+        table.insert(musicNames, music.name)
+        categoryMap[music.name] = {id = music.id, category = category}
+    end
+end
+
+local selectedSoundID = nil
+local currentVolume = 1
+local currentPitch = 1
+
+local function playSound(soundId, volume, pitch)
+    fireServer("1Gu1nSound1s", {Workspace, soundId, volume})
+    local globalSound = Instance.new("Sound")
+    globalSound.Parent = Workspace
+    globalSound.SoundId = "rbxassetid://" .. soundId
+    globalSound.Volume = volume
+    globalSound.Pitch = pitch
+    globalSound.Looped = false
+    globalSound:Play()
+    -- Usa task.spawn para destruir após 3 segundos sem bloquear o loop
+    task.spawn(function()
+        task.wait(3)
+        globalSound:Destroy()
+    end)
+end
+
+local MusicDropdown = Tab6:Dropdown({
+    Title = "Selecione um meme",
+    Desc = "Escolha um meme para tocar no servidor",
+    Value = "pankapakan",
+    Multi = false,
+    AllowNone = true,
+    Values = musicNames,
+    Callback = function(selectedSound)
+        if selectedSound and categoryMap[selectedSound] then
+            selectedSoundID = categoryMap[selectedSound].id
+            print("Som selecionado: " .. selectedSound .. " (ID: " .. selectedSoundID .. ")")
+        else
+            warn("Nenhum som selecionado ou ID não encontrado!")
+            selectedSoundID = nil
+        end
+    end,
+})
+
+Tab6:Button({
+    Title = "Tocar Som Selecionado",
+    Desc = "Clique para tocar o som do dropdown",
+    Callback = function()
+        if selectedSoundID then
+            playSound(selectedSoundID, currentVolume, currentPitch)
+        else
+            warn("Nenhum som selecionado no dropdown!")
+        end
+    end,
+})
+
+local dropdownLoopActive = false
+Tab6:Toggle({
+    Title = "Loop",
+    Desc = "Ativa o loop do som selecionado",
+    Value = false,
+    Callback = function(state)
+        dropdownLoopActive = state
+        if state then
+            print("Loop ativado!")
+            task.spawn(function()
+                while dropdownLoopActive do
+                    if selectedSoundID then
+                        playSound(selectedSoundID, currentVolume, currentPitch)
+                    else
+                        warn("Nenhum som selecionado!")
+                    end
+                    task.wait(1) -- Intervalo de 1 segundo entre cada início de som
+                end
+            end)
+        else
+            print("Loop desativado!")
+        end
+    end,
+})
+
+local musicOptions = {
+    ["efeito/terror"] = {
+        {name = "jumpscar", id = 91784486966761},
+        {name = "gritoestourado", id = 7520729342},
+        {name = "Woooo", id = 117521059248354},
+        {name = "gritodoido", id = 7807987190},
+        {name = "gritomedo", id = 113029085566978},
+        {name = "___", id = 4354908569},
+        {name = "gritos acima", id = 4354908569},
+        {name = "___", id = 4354908569}, 
+        {name = "sirens abaixo", id = 4354908569},
+        {name = "___", id = 4354908569},
+        {name = "Nukesiren", id = 9067330158},
+        {name = "nuclear sirenv2", id = 675587093},
+        {name = "Alertescola", id = 6607047008},
+        {name = "Memealertsiren", id = 8379374771},
+        {name = "Sirenhead", id = 5681392074},
+        {name = "Chernobyl5", id = 101927395686044},
+        {name = "Alerta3S", id = 402404861},
+        {name = "Radioxiado", id = 8028069841},
+        {name = "Error", id = 101446887200514},
+        {name = "___", id = 4354908569},
+        {name = "sirens acima", id = 4354908569},
+        {name = "Risada", id = 79191730206814},
+        {name = "Hahahah", id = 90096947219465},
+        {name = "___", id = 4354908569},
+        {name = "efeitos abaixo", id = 4354908569},
+        {name = "___", id = 4354908569},
+        {name = "metal", id = 71251935617451},
+        {name = "tiro", id = 104223019424522},
+        {name = "Golden efect", id = 77773293292155},
+        {name = "Haki sound", id = 91390250645812},
+
+    }
+}
+
+local musicNames = {}
+local categoryMap = {}
+for category, sounds in pairs(musicOptions) do
+    for _, music in ipairs(sounds) do
+        table.insert(musicNames, music.name)
+        categoryMap[music.name] = {id = music.id, category = category}
+    end
+end
+
+local selectedSoundID = nil
+local currentVolume = 1
+local currentPitch = 1
+
+local function playSound(soundId, volume, pitch)
+    fireServer("1Gu1nSound1s", {Workspace, soundId, volume})
+    local globalSound = Instance.new("Sound")
+    globalSound.Parent = Workspace
+    globalSound.SoundId = "rbxassetid://" .. soundId
+    globalSound.Volume = volume
+    globalSound.Pitch = pitch
+    globalSound.Looped = false
+    globalSound:Play()
+    -- Usa task.spawn para destruir após 3 segundos sem bloquear o loop
+    task.spawn(function()
+        task.wait(3)
+        globalSound:Destroy()
+    end)
+end
+
+local MusicDropdown = Tab6:Dropdown({
+    Title = "Selecione um terror ou efeito",
+    Desc = "Escolha umterror ou efeito para tocar no servidor",
+    Value = "jumpscar",
+    Multi = false,
+    AllowNone = true,
+    Values = musicNames,
+    Callback = function(selectedSound)
+        if selectedSound and categoryMap[selectedSound] then
+            selectedSoundID = categoryMap[selectedSound].id
+            print("Som selecionado: " .. selectedSound .. " (ID: " .. selectedSoundID .. ")")
+        else
+            warn("Nenhum som selecionado ou ID não encontrado!")
+            selectedSoundID = nil
+        end
+    end,
+})
+
+Tab6:Button({
+    Title = "Tocar Som Selecionado",
+    Desc = "Clique para tocar o som do dropdown",
+    Callback = function()
+        if selectedSoundID then
+            playSound(selectedSoundID, currentVolume, currentPitch)
+        else
+            warn("Nenhum som selecionado no dropdown!")
+        end
+    end,
+})
+
+local dropdownLoopActive = false
+Tab6:Toggle({
+    Title = "Loop",
+    Desc = "Ativa o loop do som selecionado",
+    Value = false,
+    Callback = function(state)
+        dropdownLoopActive = state
+        if state then
+            print("Loop ativado!")
+            task.spawn(function()
+                while dropdownLoopActive do
+                    if selectedSoundID then
+                        playSound(selectedSoundID, currentVolume, currentPitch)
+                    else
+                        warn("Nenhum som selecionado!")
+                    end
+                    task.wait(1) -- Intervalo de 1 segundo entre cada início de som
+                end
+            end)
+        else
+            print("Loop desativado!")
+        end
+    end,
+})
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+                                               -- === Tab 7: Scripts === --
+----------------------------------------------------------------------------------------------------------------------------------------------
+
+Tab7:Button({
+    Title = "Invisible",
+    Desc = "universal",
+    Callback = function()
+        loadstring(game:HttpGet("https://scriptblox.com/raw/Universal-Script-fe-invisible-4366"))()
+    end,
+})
+
+Tab7:Button({
+    Title = "FE Jerk Off Hub Matrix",
+    Desc = "Universal",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ExploitFin/AquaMatrix/refs/heads/AquaMatrix/AquaMatrix"))()
+    end,
+})
+
+Tab7:Button({
+    Title = "FE HUGG",
+    Desc = "Universal",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/JSFKGBASDJKHIOAFHDGHIUODSGBJKLFGDKSB/fe/refs/heads/main/FEHUGG"))()
+    end,
+})
+
+Tab7:Button({
+    Title = "Auto Piano Panda Hub",
+    Desc = "Universal",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/MADNESSTEST/Pqoeirnfjw/main/AP3-5.lua", true))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Sgesa/RandomCatsAutoplay/main/Protected_1274635038188005.lua.txt", true))()
+    end,
+})
+
+Tab7:Button({
+    Title = "Buraco Negro",
+    Desc = "Universal",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Bac0nHck/Scripts/main/BringFlingPlayers"))("More Scripts: t.me/arceusxscripts")
+    end,
+})
+
+Tab7:Button({
+    Title = "System Broochk",
+    Desc = "Universal",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/H20CalibreYT/SystemBroken/main/script"))()
+    end,
+})
+
+Tab7:Button({
+    Title = "Roships",
+    Desc = "Universal",
+    Callback = function()
+        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-rochips-universal-18294"))()
+    end,
+})
+
+Tab7:Button({
+    Title = "Sander X",
+    Desc = "Somente para Brookhaven",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/kigredns/SanderXV4.2.2/refs/heads/main/New.lua"))()
+    end,
+})
+
+Tab7:Button({
+    Title = "Reverso",
+    Desc = "Universal",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/0Ben1/fe./main/L"))()
+    end,
+})
+
+Tab7:Button({
+    Title = "RD4",
+    Desc = "Somente para Brookhaven",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/M1ZZ001/BrookhavenR4D/main/Brookhaven%20R4D%20Script"))()
+    end,
+})
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 8: Jogadores === --
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+local isSpectating = false
+local spectatedPlayer = nil
+local characterConnection = nil
+
+-- Função para obter os nomes dos jogadores, excluindo o jogador local
+local function getPlayerNames()
+    local playerNames = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            table.insert(playerNames, player.Name)
+        end
+    end
+    return playerNames
+end
+
+-- Função para atualizar o dropdown com os nomes dos jogadores
+local function updateDropdown(dropdown)
+    local success, errorMessage = pcall(function()
+        local currentValue = dropdown.Value
+        local playerNames = getPlayerNames()
+        dropdown:Refresh(playerNames)
+        if currentValue and not table.find(playerNames, currentValue) then
+            dropdown:SetValue("")
+            print("Jogador anterior saiu do jogo. Seleção resetada.")
+            if isSpectating then
+                stopSpectating()
+                SpectateToggle:SetValue(false)
+            end
+        end
+    end)
+    if not success then
+        warn("Erro ao atualizar dropdown: " .. tostring(errorMessage))
+    end
+end
+
+-- Função para teletransportar para o jogador selecionado (com ancoragem segura)
+local function teleportToPlayer(playerName)
+    local targetPlayer = Players:FindFirstChild(playerName)
+    if targetPlayer and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        local myHumanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+        if not myHRP or not myHumanoid then
+            print("Seu personagem não está totalmente carregado para teletransporte.")
+            return
+        end
+
+        -- Zerar a física do personagem antes do teleporte
+        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Velocity = Vector3.zero
+                part.RotVelocity = Vector3.zero
+                part.Anchored = true -- Ancorar temporariamente para evitar movimento
+            end
+        end
+
+        -- Teleportar para a posição do jogador-alvo
+        local success, errorMessage = pcall(function()
+            myHRP.CFrame = CFrame.new(targetPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 2, 0)) -- Leve elevação para evitar colisão com o chão
+        end)
+        if not success then
+            warn("Erro ao teletransportar: " .. tostring(errorMessage))
+            return
+        end
+
+        -- Garantir que o Humanoid saia do estado sentado ou voando
+        myHumanoid.Sit = false
+        myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+
+        -- Aguardar 0,5 segundos com o personagem ancorado
+        task.wait(0.5)
+
+        -- Desancorar todas as partes do personagem e restaurar física
+        for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Anchored = false
+                part.Velocity = Vector3.zero
+                part.RotVelocity = Vector3.zero
+            end
+        end
+
+        print("Teletransportado para o jogador: " .. playerName .. " com ancoragem segura.")
+    else
+        print("Jogador ou personagem não encontrado para teletransporte.")
+    end
+end
+
+-- Função para visualizar um jogador (modo espectador)
+local function spectatePlayer(playerName)
+    if characterConnection then
+        characterConnection:Disconnect()
+        characterConnection = nil
+    end
+
+    local targetPlayer = Players:FindFirstChild(playerName)
+    if targetPlayer and targetPlayer ~= LocalPlayer then
+        spectatedPlayer = targetPlayer
+        isSpectating = true
+        print("Visualizando jogador: " .. targetPlayer.Name)
+
+        local function updateCamera()
+            if not isSpectating or not spectatedPlayer then
+                return
+            end
+            if spectatedPlayer.Character and spectatedPlayer.Character:FindFirstChild("Humanoid") then
+                Workspace.CurrentCamera.CameraSubject = spectatedPlayer.Character.Humanoid
+            else
+                Workspace.CurrentCamera.CameraSubject = nil
+            end
+        end
+
+        updateCamera()
+
+        characterConnection = RunService.Heartbeat:Connect(function()
+            if not isSpectating then
+                characterConnection:Disconnect()
+                characterConnection = nil
+                return
+            end
+            local success, errorMessage = pcall(updateCamera)
+            if not success then
+                warn("Erro ao atualizar câmera no modo visualização: " .. tostring(errorMessage))
+                stopSpectating()
+            end
+        end)
+
+        spectatedPlayer.CharacterAdded:Connect(function()
+            if isSpectating then
+                updateCamera()
+            end
+        end)
+    else
+        print("Jogador inválido ou não encontrado para modo visualização.")
+        isSpectating = false
+        spectatedPlayer = nil
+    end
+end
+
+-- Função para parar de visualizar
+local function stopSpectating()
+    if characterConnection then
+        characterConnection:Disconnect()
+        characterConnection = nil
+    end
+
+    isSpectating = false
+    spectatedPlayer = nil
+
+    -- Garante que a câmera volte para o Humanoid do jogador local
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        Workspace.CurrentCamera.CameraSubject = LocalPlayer.Character.Humanoid
+        Workspace.CurrentCamera.CameraType = Enum.CameraType.Custom -- Força o modo de câmera padrão
+        print("Parando de visualizar. Voltando à visão do jogador local.")
+    else
+        Workspace.CurrentCamera.CameraSubject = nil
+        Workspace.CurrentCamera.CameraType = Enum.CameraType.Custom
+        print("Nenhum personagem local encontrado. Câmera redefinida.")
+    end
+end
+
+-- Detecta quando o jogador local morre e reseta a câmera
+LocalPlayer.CharacterAdded:Connect(function(character)
+    if isSpectating then
+        stopSpectating()
+        print("Você morreu. Câmera voltou para o seu personagem.")
+    end
+end)
+
+-- Dropdown para selecionar jogador
+local DropdownPlayer = Tab8:Dropdown({
+    Title = "Selecionar Jogador",
+    Desc = "Selecione o jogador para teletransportar ou visualizar",
+    Value = "",
+    Multi = false,
+    AllowNone = true,
+    Values = getPlayerNames(),
+    Callback = function(selectedPlayerName)
+        if selectedPlayerName == "" or selectedPlayerName == nil then
+            print("Nenhum jogador selecionado.")
+            if isSpectating then
+                stopSpectating()
+                SpectateToggle:SetValue(false)
+            end
+        else
+            print("Jogador selecionado: " .. selectedPlayerName)
+            if isSpectating then
+                stopSpectating()
+                spectatePlayer(selectedPlayerName)
+            end
+        end
+    end,
+})
+
+-- Botão para atualizar a lista de jogadores (adicionado logo abaixo do dropdown)
+Tab8:Button({
+    Title = "Atualizar Lista de Jogadores",
+    Desc = "Atualiza a lista de jogadores no dropdown",
+    Callback = function()
+        updateDropdown(DropdownPlayer)
+        print("Lista de jogadores atualizada.")
+    end,
+})
+
+-- Botão de Teleporte
+Tab8:Button({
+    Title = "Teleportar para Jogador",
+    Desc = "Clique para teletransportar para o jogador selecionado",
+    Callback = function()
+        local selectedPlayerName = DropdownPlayer.Value
+        if selectedPlayerName and selectedPlayerName ~= "" then
+            local success, errorMessage = pcall(teleportToPlayer, selectedPlayerName)
+            if not success then
+                warn("Erro ao teletransportar: " .. tostring(errorMessage))
+            end
+        else
+            print("Selecione um jogador antes de teletransportar.")
+        end
+    end,
+})
+
+-- Toggle para visualizar jogador
+local SpectateToggle = Tab8:Toggle({
+    Title = "Visualizar Jogador",
+    Desc = "Ativa ou desativa o modo de visualização",
+    Default = false,
+    Callback = function(state)
+        if state then
+            local selectedPlayerName = DropdownPlayer.Value
+            if selectedPlayerName and selectedPlayerName ~= "" then
+                local success, errorMessage = pcall(spectatePlayer, selectedPlayerName)
+                if not success then
+                    warn("Erro ao ativar modo de visualização: " .. tostring(errorMessage))
+                    SpectateToggle:SetValue(false)
+                end
+            else
+                print("Selecione um jogador antes de ativar o modo de visualização.")
+                SpectateToggle:SetValue(false)
+            end
+        else
+            local success, errorMessage = pcall(stopSpectating)
+            if not success then
+                warn("Erro ao desativar modo de visualização: " .. tostring(errorMessage))
+            end
+        end
+    end,
+})
+
+-- Atualiza o dropdown quando jogadores entram ou saem
+updateDropdown(DropdownPlayer)
+Players.PlayerAdded:Connect(function()
+    updateDropdown(DropdownPlayer)
+end)
+Players.PlayerRemoving:Connect(function(player)
+    updateDropdown(DropdownPlayer)
+    if spectatedPlayer and spectatedPlayer == player then
+        stopSpectating()
+        SpectateToggle:SetValue(false)
+        DropdownPlayer:SetValue("")
+    end
+end)
+-----------------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 9: Teleportes === --
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+local player = game.Players.LocalPlayer
+local selectedLocation = "Morro"
+
+-- Dropdown com as localizações de Brookhaven
+local Dropdown = Tab9:Dropdown({
+    Title = "Locais de Brookhaven",
+    Desc = "Selecione um local para teleportar",
+    Value = "Morro",
+    Multi = false,
+    AllowNone = false,
+    Values = {
+        "Morro",
+        "Praça",
+        "Banco",
+        "Hospital",
+        "Prefeitura",
+        "Fazenda",
+        "Mercado",
+        "Shopping",
+        "Aeroporto",
+        "Hotel",
+        "Beira-mar 1",
+        "Beira-mar 2"
     },
-    Transparent = true,
-    Theme = "Dark",
-    SideBarWidth = 200,
-    HasOutline = false,
+    Callback = function(value)
+        selectedLocation = value
+        print("Local selecionado: " .. selectedLocation)
+    end
 })
 
-Window:EditOpenButton({
-    Title = "Lolyta",
-    Icon = "align-justify",
-    CornerRadius = UDim.new(0, 10),
-    StrokeThickness = 3,
-    Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29"))
+-- Botão para teleportar
+local TeleportButton = Tab9:Button({
+    Title = "Teleportar",
+    Desc = "Teleporta para o local selecionado",
+    Callback = function()
+        print("Teleportando para: " .. selectedLocation)
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local humanoidRootPart = player.Character.HumanoidRootPart
+            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+            local locations = {
+                ["Morro"] = Vector3.new(-348.64, 65.94, -458.08),
+                ["Praça"] = Vector3.new(-26.17, 3.48, -0.93),
+                ["Banco"] = Vector3.new(1.99, 3.32, 236.65),
+                ["Hospital"] = Vector3.new(-303.2, 3.40, 13.74),
+                ["Prefeitura"] = Vector3.new(-354.65, 7.32, -102.16),
+                ["Fazenda"] = Vector3.new(-766.41, 2.92, -61.10),
+                ["Mercado"] = Vector3.new(16.31, 3.32, -107.07),
+                ["Shopping"] = Vector3.new(151.05, 3.52, -190.64),
+                ["Aeroporto"] = Vector3.new(290.23, 4.32, 42.57),
+                ["Hotel"] = Vector3.new(159.10, 3.32, 164.97),
+                ["Beira-mar 1"] = Vector3.new(55.69, 2.94, -1403.60),
+                ["Beira-mar 2"] = Vector3.new(42.39, 2.94, 1336.14)
+            }
+
+            if locations[selectedLocation] then
+                local success, errorMessage = pcall(function()
+                    -- Desativar física (impedir movimento durante o teleporte)
+                    if humanoid then
+                        humanoid:ChangeState(Enum.HumanoidStateType.Physics) -- Forçar estado neutro
+                        humanoid.WalkSpeed = 0 -- Impedir movimento
+                    end
+                    humanoidRootPart.Anchored = true -- Ancorar para evitar física externa
+
+                    -- Realizar o teleporte
+                    humanoidRootPart.CFrame = CFrame.new(locations[selectedLocation])
+
+                    -- Manter ancorado por 0,4 segundos
+                    task.wait(0.4)
+
+                    -- Restaurar estado
+                    humanoidRootPart.Anchored = false
+                    if humanoid then
+                        humanoid.WalkSpeed = 16 -- Restaurar velocidade padrão (ajuste conforme necessário)
+                        humanoid:ChangeState(Enum.HumanoidStateType.Running) -- Voltar ao estado normal
+                    end
+                end)
+
+                if not success then
+                    warn("Erro ao teleportar: " .. tostring(errorMessage))
+                    -- Garantir que o personagem não fique preso
+                    humanoidRootPart.Anchored = false
+                    if humanoid then
+                        humanoid.WalkSpeed = 16
+                        humanoid:ChangeState(Enum.HumanoidStateType.Running)
+                    end
+                end
+            else
+                print("Local não encontrado!")
+            end
+        else
+            print("Personagem não encontrado!")
+        end
+    end
 })
 
 
--- === Abas da Interface === --
-local Tab1 = Window:Tab({ Title = "Main", Icon = "house-plus" })
-local Tab2 = Window:Tab({ Title = "Casa", Icon = "house" })
-local Tab3 = Window:Tab({ Title = "Carro", Icon = "car" })
-local Tab4 = Window:Tab({ Title = "RGB Color", Icon = "palette" })
-local Tab5 = Window:Tab({ Title = "Troll Musica", Icon = "music" })
-local Tab6 = Window:Tab({ Title = "Music All", Icon = "audio-lines" })
-local Tab7 = Window:Tab({ Title = "Scripts", Icon = "layers" })
-local Tab8 = Window:Tab({ Title = "Jogadores", Icon = "users" })
-local Tab9 = Window:Tab({ Title = "Teleportes", Icon = "map-pin" })
-local Tab10 = Window:Tab({ Title = "Troll", Icon = "skull" })
 
 
--- Serviços
+-----------------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 10: Troll === --
+-----------------------------------------------------------------------------------------------------------------------------------------
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -206,7 +2616,7 @@ local couch = nil
 local isSpectating = false
 local spectatedPlayer = nil
 local characterConnection = nil
-local flingToggle = nil
+local flingToggle = nil -- Para armazenar a referência do toggle
 
 -- Cria um RemoteEvent para comunicação com o servidor
 local SetNetworkOwnerEvent = Instance.new("RemoteEvent")
@@ -234,25 +2644,16 @@ local success, errorMessage = pcall(function()
     loadstring(serverScriptCode)()
 end)
 if not success then
-    print("Erro ao criar script no servidor: " .. tostring(errorMessage))
+    warn("Erro ao criar script no servidor: " .. tostring(errorMessage))
 end
 
 -- Função para desativar temporariamente o CarClient
 local function disableCarClient()
     local backpack = LocalPlayer:WaitForChild("Backpack")
     local carClient = backpack:FindFirstChild("CarClient")
-    if not carClient then
-        local startTime = tick()
-        repeat
-            carClient = backpack:FindFirstChild("CarClient")
-            task.wait()
-        until carClient or (tick() - startTime > 5)
-    end
     if carClient and carClient:IsA("LocalScript") then
         carClient.Disabled = true
-        print("CarClient desativado.")
-    else
-        print("CarClient não encontrado após espera. Prosseguindo sem desativar.")
+        print("CarClient desativado com sucesso!")
     end
 end
 
@@ -260,18 +2661,9 @@ end
 local function enableCarClient()
     local backpack = LocalPlayer:WaitForChild("Backpack")
     local carClient = backpack:FindFirstChild("CarClient")
-    if not carClient then
-        local startTime = tick()
-        repeat
-            carClient = backpack:FindFirstChild("CarClient")
-            task.wait()
-        until carClient or (tick() - startTime > 5)
-    end
     if carClient and carClient:IsA("LocalScript") then
         carClient.Disabled = false
-        print("CarClient reativado.")
-    else
-        print("CarClient não encontrado após espera. Prosseguindo sem reativar.")
+        print("CarClient reativado com sucesso!")
     end
 end
 
@@ -290,12 +2682,9 @@ end
 local function updateDropdown(dropdown)
     local success, errorMessage = pcall(function()
         local playerNames = getPlayerNames()
-        dropdown:Clear()
-        for _, name in ipairs(playerNames) do
-            dropdown:Add(name)
-        end
+        dropdown:Refresh(playerNames)
         if selectedPlayer and not table.find(playerNames, selectedPlayer.Name) then
-            dropdown:SetValue(nil)
+            dropdown:SetValue("")
             selectedPlayer = nil
             if isSpectating then
                 stopSpectating()
@@ -303,7 +2692,7 @@ local function updateDropdown(dropdown)
         end
     end)
     if not success then
-        print("Erro ao atualizar dropdown: " .. tostring(errorMessage))
+        warn("Erro ao atualizar dropdown: " .. tostring(errorMessage))
     end
 end
 
@@ -340,7 +2729,7 @@ local function spectatePlayer(playerName)
             end
             local success, errorMessage = pcall(updateCamera)
             if not success then
-                print("Erro ao atualizar câmera no modo visualização: " .. tostring(errorMessage))
+                warn("Erro ao atualizar câmera no modo visualização: " .. tostring(errorMessage))
                 stopSpectating()
             end
         end)
@@ -438,17 +2827,17 @@ local SpectateToggle = Tab10:Toggle({
             if selectedPlayer then
                 local success, errorMessage = pcall(spectatePlayer, selectedPlayer.Name)
                 if not success then
-                    print("Erro ao ativar modo visualização: " .. tostring(errorMessage))
+                    warn("Erro ao ativar modo visualização: " .. tostring(errorMessage))
                     SpectateToggle:SetValue(false)
                 end
             else
-                print("Selecione um jogador antes de ativar a visualização.")
+                warn("Selecione um jogador antes de ativar a visualização.")
                 SpectateToggle:SetValue(false)
             end
         else
             local success, errorMessage = pcall(stopSpectating)
             if not success then
-                print("Erro ao desativar modo visualização: " .. tostring(errorMessage))
+                warn("Erro ao desativar modo visualização: " .. tostring(errorMessage))
             end
         end
     end
@@ -497,7 +2886,7 @@ local function equipSofa()
             ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
         end)
         if not success then
-            print("Erro ao pegar o sofá: " .. tostring(err))
+            warn("Erro ao pegar o sofá: " .. tostring(err))
             return false
         end
         repeat
@@ -505,7 +2894,7 @@ local function equipSofa()
             task.wait()
         until sofa or task.wait(5)
         if not sofa then
-            print("Falha ao pegar o sofá!")
+            warn("Falha ao pegar o sofá!")
             return false
         end
     end
@@ -518,7 +2907,7 @@ end
 -- Função para matar com sofá
 local function killWithSofa(targetPlayer)
     if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then
-        print("Selecione um jogador válido antes de iniciar!")
+        warn("Selecione um jogador válido antes de iniciar!")
         return
     end
     if not equipSofa() then return end
@@ -529,7 +2918,7 @@ end
 -- Função para puxar com sofá
 local function pullWithSofa(targetPlayer)
     if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then
-        print("Selecione um jogador válido antes de iniciar!")
+        warn("Selecione um jogador válido antes de iniciar!")
         return
     end
     if not equipSofa() then return end
@@ -537,25 +2926,14 @@ local function pullWithSofa(targetPlayer)
     originalPosition = LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position
 end
 
--- Função para matar com ônibus (usando Body)
+-- Função para matar com ônibus
 local function killWithBus(targetPlayer)
-    if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then 
-        print("Selecione um jogador válido antes de iniciar!")
-        return 
-    end
+    if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then return end
     local character = LocalPlayer.Character
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     local myHRP = character:FindFirstChild("HumanoidRootPart")
-    if not humanoid or not myHRP then 
-        print("Seu personagem ainda não está totalmente carregado.")
-        return 
-    end
+    if not humanoid or not myHRP then return end
     savedPosition = myHRP.Position
-    
-    -- Desativa o CarClient antes de qualquer operação
-    disableCarClient()
-    
-    -- Teleporta para a posição inicial
     pcall(function()
         myHRP.Anchored = true
         myHRP.CFrame = CFrame.new(Vector3.new(1181.83, 76.08, -1158.83))
@@ -569,64 +2947,46 @@ local function killWithBus(targetPlayer)
     end)
     task.wait(0.5)
     
-    -- Remove todos os veículos existentes
+    -- Desativar CarClient antes de deletar veículos
+    disableCarClient()
+    
     local args = { [1] = "DeleteAllVehicles" }
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
-    
-    -- Spawna o ônibus
     args = { [1] = "PickingCar", [2] = "SchoolBus" }
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
-    task.wait(1.5)
-    
+    task.wait(1)
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
-    if not vehiclesFolder then 
-        print("Pasta Vehicles não encontrada no Workspace!")
-        enableCarClient()
-        return 
+    if not vehiclesFolder then
+        warn("Pasta Vehicles não encontrada no Workspace!")
+        return
     end
     local busName = LocalPlayer.Name .. "Car"
     local bus = vehiclesFolder:FindFirstChild(busName)
-    if not bus then 
-        print("Ônibus não encontrado em Workspace.Vehicles com o nome: " .. busName)
-        enableCarClient()
-        return 
+    if not bus then
+        warn("Ônibus não encontrado em Workspace.Vehicles com o nome: " .. busName)
+        return
     end
-    
-    -- Usa Body como a parte principal do ônibus
-    local busBody = bus:FindFirstChild("Body")
-    if not busBody then 
-        print("Parte 'Body' não encontrada no ônibus! Verifique a estrutura do modelo.")
-        enableCarClient()
-        return 
-    end
-    
-    -- Teleporta o jogador para a posição fixa do assento fornecida
     pcall(function()
         myHRP.Anchored = true
-        myHRP.CFrame = CFrame.new(Vector3.new(1171.71, 79.12, -1166.68))
+        myHRP.CFrame = CFrame.new(Vector3.new(1171.15, 79.45, -1166.2))
         task.wait(0.2)
         myHRP.Velocity = Vector3.zero
         myHRP.RotVelocity = Vector3.zero
         myHRP.Anchored = false
         humanoid:ChangeState(Enum.HumanoidStateType.Seated)
     end)
-    
-    -- Aguarda até que o jogador esteja sentado
     local sitStart = tick()
     repeat
         task.wait()
-        if tick() - sitStart > 10 then 
-            print("Timeout: Jogador local não foi detectado como sentado!")
-            enableCarClient()
-            return 
+        if tick() - sitStart > 10 then
+            warn("Timeout: Jogador local não foi detectado como sentado!")
+            return
         end
     until humanoid.Sit
-    
-    -- Configura o ônibus para seguir o alvo
     for _, part in ipairs(bus:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CanCollide = false
@@ -650,10 +3010,7 @@ local function killWithBus(targetPlayer)
         local targetCharacter = targetPlayer.Character or targetPlayer.CharacterAdded:Wait()
         local newTargetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
         local newTargetHumanoid = targetCharacter:FindFirstChild("Humanoid")
-        if not newTargetHRP or not newTargetHumanoid then 
-            running = false
-            return 
-        end
+        if not newTargetHRP or not newTargetHumanoid then return end
         if not myHRP or not humanoid then
             running = false
             return
@@ -689,27 +3046,31 @@ local function killWithBus(targetPlayer)
             end)
             task.wait(0.5)
             
-            -- Remove o ônibus
+            -- Desativar CarClient antes de deletar veículos
+            disableCarClient()
+            
             local args = { [1] = "DeleteAllVehicles" }
             pcall(function()
                 ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
             end)
-            
-            -- Restaura a posição do jogador
             if character then
                 local myHRP = character:FindFirstChild("HumanoidRootPart")
-                if myHRP and savedPosition then
-                    pcall(function()
-                        myHRP.Anchored = true
-                        myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
-                        task.wait(0.2)
-                        myHRP.Velocity = Vector3.zero
-                        myHRP.RotVelocity = Vector3.zero
-                        myHRP.Anchored = false
-                        if humanoid then
-                            humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-                        end
-                    end)
+                if myHRP then
+                    if savedPosition then
+                        pcall(function()
+                            myHRP.Anchored = true
+                            myHRP.CFrame = CFrame.new(savedPosition + Vector3.new(0, 5, 0))
+                            task.wait(0.2)
+                            myHRP.Velocity = Vector3.zero
+                            myHRP.RotVelocity = Vector3.zero
+                            myHRP.Anchored = false
+                            if humanoid then
+                                humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                            end
+                        end)
+                    else
+                        warn("savedPosition não está definida para teleporte de volta!")
+                    end
                 end
             end
             if character then
@@ -733,9 +3094,6 @@ local function killWithBus(targetPlayer)
             pcall(function()
                 ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeUp", 1)
             end)
-            
-            -- Reativa o CarClient
-            enableCarClient()
         end
     end)
 end
@@ -756,7 +3114,7 @@ followConnection = RunService.Heartbeat:Connect(function()
             )
         end)
         if not success then
-            print("Erro no loop de matar/puxar: " .. tostring(errorMessage))
+            warn("Erro no loop de matar/puxar: " .. tostring(errorMessage))
             isFollowingKill = false
             isFollowingPull = false
         end
@@ -798,7 +3156,7 @@ sitCheckConnection = RunService.Heartbeat:Connect(function()
             end
         end)
         if not success then
-            print("Erro na verificação de assento: " .. tostring(errorMessage))
+            warn("Erro na verificação de assento: " .. tostring(errorMessage))
             isFollowingKill = false
             isFollowingPull = false
         end
@@ -812,15 +3170,15 @@ Tab10:Button({
     Desc = "Inicia o matar com o método selecionado",
     Callback = function()
         if isFollowingKill or isFollowingPull or running then
-            print("Uma ação já está ativa. Use o botão Parar primeiro.")
+            warn("Uma ação já está ativa. Use o botão Parar primeiro.")
             return
         end
         if not selectedPlayer then
-            print("Nenhum jogador selecionado!")
+            warn("Nenhum jogador selecionado!")
             return
         end
         if not selectedKillPullMethod then
-            print("Nenhum método de matar/puxar selecionado!")
+            warn("Nenhum método de matar/puxar selecionado!")
             return
         end
         if selectedKillPullMethod == "Sofá" then
@@ -839,21 +3197,21 @@ Tab10:Button({
     Desc = "Inicia o puxar com o método selecionado",
     Callback = function()
         if isFollowingKill or isFollowingPull or running then
-            print("Uma ação já está ativa. Use o botão Parar primeiro.")
+            warn("Uma ação já está ativa. Use o botão Parar primeiro.")
             return
         end
         if not selectedPlayer then
-            print("Nenhum jogador selecionado!")
+            warn("Nenhum jogador selecionado!")
             return
         end
         if not selectedKillPullMethod then
-            print("Nenhum método de matar/puxar selecionado!")
+            warn("Nenhum método de matar/puxar selecionado!")
             return
         end
         if selectedKillPullMethod == "Sofá" then
             pullWithSofa(selectedPlayer)
         else
-            print("Puxar só funciona com Sofá!")
+            warn("Puxar só funciona com Sofá!")
         end
     end
 })
@@ -899,14 +3257,13 @@ Tab10:Button({
             originalPosition = nil
         end
         
+        -- Desativar CarClient antes de deletar veículos
         disableCarClient()
         
         local args = { [1] = "DeleteAllVehicles" }
         pcall(function()
             ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
         end)
-        task.wait(0.5)
-        enableCarClient()
     end
 })
 print("Botão para parar matar ou puxar criado com sucesso!")
@@ -933,7 +3290,7 @@ local function equipBola()
             ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Too1l"):InvokeServer(unpack(args))
         end)
         if not success then
-            print("Erro ao pegar a bola: " .. tostring(err))
+            warn("Erro ao pegar a bola: " .. tostring(err))
             return false
         end
         repeat
@@ -941,7 +3298,7 @@ local function equipBola()
             task.wait()
         until bola or task.wait(5)
         if not bola then
-            print("Falha ao pegar a bola!")
+            warn("Falha ao pegar a bola!")
             return false
         end
     end
@@ -951,17 +3308,17 @@ local function equipBola()
     return true
 end
 
--- Função para fling com bola
+-- Função para fling com bola (com potência aumentada absurdamente)
 local function flingWithBall(targetPlayer)
     if not targetPlayer or not targetPlayer.Character then
-        print("Selecione um jogador válido antes de iniciar o fling!")
+        warn("Selecione um jogador válido antes de iniciar o fling!")
         return
     end
     local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     local myHRP = character:FindFirstChild("HumanoidRootPart")
     if not humanoid or not myHRP then
-        print("Seu personagem ainda não está totalmente carregado.")
+        warn("Seu personagem ainda não está totalmente carregado.")
         return
     end
     if not equipBola() then return end
@@ -972,17 +3329,17 @@ local function flingWithBall(targetPlayer)
     end)
     local workspaceCom = Workspace:FindFirstChild("WorkspaceCom")
     if not workspaceCom then
-        print("WorkspaceCom não encontrado!")
+        warn("WorkspaceCom não encontrado!")
         return
     end
     local soccerBalls = workspaceCom:FindFirstChild("001_SoccerBalls")
     if not soccerBalls then
-        print("001_SoccerBalls não encontrado!")
+        warn("001_SoccerBalls não encontrado!")
         return
     end
     soccerBall = soccerBalls:FindFirstChild("Soccer" .. LocalPlayer.Name)
     if not soccerBall then
-        print("Bola de futebol não encontrada em Workspace.WorkspaceCom.001_SoccerBalls.Soccer" .. LocalPlayer.Name)
+        warn("Bola de futebol não encontrada em Workspace.WorkspaceCom.001_SoccerBalls.Soccer" .. LocalPlayer.Name)
         return
     end
     originalProperties = {
@@ -1049,7 +3406,8 @@ local function flingWithBall(targetPlayer)
             end
             local fling = Instance.new("BodyVelocity")
             fling.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-            fling.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 500000 + Vector3.new(0, 250000, 0)
+            -- Aumentando a potência do fling para valores absurdamente altos
+            fling.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 500000 + Vector3.new(0, 250000, 0) -- Aumentado de 100000 para 500000 (horizontal) e 50000 para 250000 (vertical)
             fling.Parent = hrp
             task.delay(0.3, function()
                 fling:Destroy()
@@ -1066,14 +3424,14 @@ end
 -- Função para fling com sofá
 local function flingWithSofa(targetPlayer)
     if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then
-        print("Selecione um jogador válido antes de iniciar!")
+        warn("Selecione um jogador válido antes de iniciar!")
         return
     end
     local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     local myHRP = character:FindFirstChild("HumanoidRootPart")
     if not humanoid or not myHRP then
-        print("Seu personagem ainda não está totalmente carregado.")
+        warn("Seu personagem ainda não está totalmente carregado.")
         return
     end
     savedPosition = myHRP.Position
@@ -1089,7 +3447,7 @@ local function flingWithSofa(targetPlayer)
         end
     end
     if not couch then
-        print("Sofá não encontrado no personagem ou no Workspace!")
+        warn("Sofá não encontrado no personagem ou no Workspace!")
         return
     end
     if couch:IsA("BasePart") then
@@ -1149,7 +3507,7 @@ local function flingWithSofa(targetPlayer)
                     part.CanCollide = false
                     pcall(function() part:SetNetworkOwner(nil) end)
                 end
-        end
+            end
             walkFlingInstance = Instance.new("BodyVelocity")
             walkFlingInstance.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
             walkFlingInstance.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
@@ -1200,6 +3558,7 @@ local function flingWithSofa(targetPlayer)
                     end
                 end
             end
+            -- Desativar o toggle automaticamente
             if flingToggle then
                 flingToggle:SetValue(false)
             end
@@ -1207,25 +3566,20 @@ local function flingWithSofa(targetPlayer)
     end)
 end
 
--- Função para fling com ônibus (usando Body)
+-- Função para fling com ônibus (sem busca por chassi)
 local function flingWithBus(targetPlayer)
     if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then
-        print("Selecione um jogador válido antes de iniciar!")
+        warn("Selecione um jogador válido antes de iniciar!")
         return
     end
     local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     local myHRP = character:FindFirstChild("HumanoidRootPart")
     if not humanoid or not myHRP then
-        print("Seu personagem ainda não está totalmente carregado.")
+        warn("Seu personagem ainda não está totalmente carregado.")
         return
     end
     savedPosition = myHRP.Position
-    
-    -- Desativa o CarClient antes de qualquer operação
-    disableCarClient()
-    
-    -- Teleporta para a posição inicial
     pcall(function()
         myHRP.Anchored = true
         myHRP.CFrame = CFrame.new(Vector3.new(1181.83, 76.08, -1158.83))
@@ -1239,64 +3593,46 @@ local function flingWithBus(targetPlayer)
     end)
     task.wait(0.5)
     
-    -- Remove todos os veículos existentes
+    -- Desativar CarClient antes de deletar veículos
+    disableCarClient()
+    
     local args = { [1] = "DeleteAllVehicles" }
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
-    
-    -- Spawna o ônibus
     args = { [1] = "PickingCar", [2] = "SchoolBus" }
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
-    task.wait(1.5)
-    
+    task.wait(1)
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
-    if not vehiclesFolder then 
-        print("Pasta Vehicles não encontrada no Workspace!")
-        enableCarClient()
-        return 
+    if not vehiclesFolder then
+        warn("Pasta Vehicles não encontrada no Workspace!")
+        return
     end
     local busName = LocalPlayer.Name .. "Car"
     local bus = vehiclesFolder:FindFirstChild(busName)
-    if not bus then 
-        print("Ônibus não encontrado em Workspace.Vehicles com o nome: " .. busName)
-        enableCarClient()
-        return 
+    if not bus then
+        warn("Ônibus não encontrado em Workspace.Vehicles com o nome: " .. busName)
+        return
     end
-    
-    -- Usa Body como a parte principal do ônibus
-    local busBody = bus:FindFirstChild("Body")
-    if not busBody then 
-        print("Parte 'Body' não encontrada no ônibus! Verifique a estrutura do modelo.")
-        enableCarClient()
-        return 
-    end
-    
-    -- Teleporta o jogador para a posição fixa do assento fornecida
     pcall(function()
         myHRP.Anchored = true
-        myHRP.CFrame = CFrame.new(Vector3.new(1171.71, 79.12, -1166.68))
+        myHRP.CFrame = CFrame.new(Vector3.new(1171.15, 79.45, -1166.2))
         task.wait(0.2)
         myHRP.Velocity = Vector3.zero
         myHRP.RotVelocity = Vector3.zero
         myHRP.Anchored = false
         humanoid:ChangeState(Enum.HumanoidStateType.Seated)
     end)
-    
-    -- Aguarda até que o jogador esteja sentado
     local sitStart = tick()
     repeat
         task.wait()
-        if tick() - sitStart > 10 then 
-            print("Timeout: Jogador local não foi detectado como sentado!")
-            enableCarClient()
-            return 
+        if tick() - sitStart > 10 then
+            warn("Timeout: Jogador local não foi detectado como sentado!")
+            return
         end
     until humanoid.Sit
-    
-    -- Configura o ônibus para seguir o alvo
     for _, part in ipairs(bus:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CanCollide = false
@@ -1358,19 +3694,20 @@ local function flingWithBus(targetPlayer)
                 bus:PivotTo(CFrame.new(Vector3.new(-59599.73, 2040070.50, -293391.16)))
             end)
             
+            -- Aplicar fling apenas no jogador, sem buscar chassi no ônibus
             walkFlingInstancePlayer = Instance.new("BodyVelocity")
             walkFlingInstancePlayer.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
             walkFlingInstancePlayer.Velocity = Vector3.new(math.random(-5, 5), 5, math.random(-5, 5)).Unit * 1000000 + Vector3.new(0, 1000000, 0)
             walkFlingInstancePlayer.Parent = myHRP
             task.wait(0.5)
             
-            -- Remove o ônibus
+            -- Desativar CarClient antes de deletar veículos
+            disableCarClient()
+            
             local args = { [1] = "DeleteAllVehicles" }
             pcall(function()
                 ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
             end)
-            task.wait(0.5)
-            
             if walkFlingInstancePlayer then
                 walkFlingInstancePlayer:Destroy()
                 for _, part in ipairs(character:GetDescendants()) do
@@ -1390,34 +3727,22 @@ local function flingWithBus(targetPlayer)
                     humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
                 end
             end)
+            -- Desativar o toggle automaticamente
             if flingToggle then
                 flingToggle:SetValue(false)
             end
-            
-            -- Reativa o CarClient
-            enableCarClient()
         end
     end)
 end
 
--- Função para fling com barco (usando Body)
+-- Função para fling com barco
 local function flingWithBoat(targetPlayer)
-    if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then 
-        print("Selecione um jogador válido antes de iniciar!")
-        return 
-    end
+    if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then return end
     local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     local myHRP = character:FindFirstChild("HumanoidRootPart")
-    if not humanoid or not myHRP then 
-        print("Seu personagem ainda não está totalmente carregado.")
-        return 
-    end
+    if not humanoid or not myHRP then return end
     savedPosition = myHRP.Position
-    
-    -- Desativa o CarClient antes de qualquer operação
-    disableCarClient()
-    
     pcall(function()
         myHRP.Anchored = true
         myHRP.CFrame = CFrame.new(Vector3.new(-3359.52, -5.05, -501.94))
@@ -1430,79 +3755,44 @@ local function flingWithBoat(targetPlayer)
         end
     end)
     
-    -- Remove todos os veículos existentes
+    -- Desativar CarClient antes de deletar veículos
+    disableCarClient()
+    
     local args = { [1] = "DeleteAllVehicles" }
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
     task.wait(0.4)
-    
-    -- Spawna o barco
     args = { [1] = "PickingBoat", [2] = "MilitaryBoatFree" }
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
     task.wait(1.5)
-    
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
-    if not vehiclesFolder then 
-        print("Pasta Vehicles não encontrada no Workspace!")
-        enableCarClient()
-        return 
+    if not vehiclesFolder then
+        warn("Pasta Vehicles não encontrada no Workspace!")
+        return
     end
     local boatName = LocalPlayer.Name .. "Car"
     local boat = vehiclesFolder:FindFirstChild(boatName)
-    if not boat then 
-        print("Barco não encontrado em Workspace.Vehicles com o nome: " .. boatName)
-        enableCarClient()
-        return 
+    if not boat then
+        warn("Barco não encontrado em Workspace.Vehicles com o nome: " .. boatName)
+        return
     end
-    
-    -- Usa Body como a parte principal do barco
-    local boatBody = boat:FindFirstChild("Body")
-    if not boatBody then 
-        print("Parte 'Body' não encontrada no barco! Verifique a estrutura do modelo.")
-        enableCarClient()
-        return 
-    end
-    
-    -- Encontra o assento do motorista (VehicleSeat)
-    local vehicleSeat = nil
-    for _, part in ipairs(boat:GetDescendants()) do
-        if part:IsA("VehicleSeat") then
-            vehicleSeat = part
-            break
-        end
-    end
-    if not vehicleSeat then 
-        print("Assento do motorista não encontrado no barco!")
-        enableCarClient()
-        return 
-    end
-    
-    -- Teleporta o jogador para a posição do assento
     pcall(function()
         myHRP.Anchored = true
-        myHRP.CFrame = vehicleSeat.CFrame + Vector3.new(0, 2, 0)
+        myHRP.CFrame = CFrame.new(Vector3.new(-3358.85, 5.25, -521.95))
         task.wait(0.2)
         myHRP.Velocity = Vector3.zero
         myHRP.RotVelocity = Vector3.zero
         myHRP.Anchored = false
         humanoid:ChangeState(Enum.HumanoidStateType.Seated)
-        vehicleSeat:Sit(humanoid)
     end)
-    
-    -- Aguarda até que o jogador esteja sentado
     local sitStart = tick()
     repeat
         task.wait()
-        if tick() - sitStart > 10 then 
-            print("Timeout: Jogador local não foi detectado como sentado!")
-            enableCarClient()
-            return 
-        end
+        if tick() - sitStart > 10 then break end
     until humanoid.Sit
-    
     for _, part in ipairs(boat:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CanCollide = true
@@ -1540,6 +3830,7 @@ local function flingWithBoat(targetPlayer)
         end)
         table.insert(touchedConnections, conn)
     else
+        warn("Parte 'Body' não encontrada no barco! Usando todas as partes...")
         for _, part in ipairs(boat:GetDescendants()) do
             if part:IsA("BasePart") then
                 local conn = part.Touched:Connect(function(hit)
@@ -1576,14 +3867,7 @@ local function flingWithBoat(targetPlayer)
         local targetCharacter = targetPlayer.Character or targetPlayer.CharacterAdded:Wait()
         local newTargetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
         local newTargetHumanoid = targetCharacter:FindFirstChild("Humanoid")
-        if not newTargetHRP or not newTargetHumanoid then 
-            running = false
-            for _, conn in ipairs(touchedConnections) do
-                conn:Disconnect()
-            end
-            touchedConnections = {}
-            return 
-        end
+        if not newTargetHRP or not newTargetHumanoid then return end
         if not myHRP or not humanoid then
             running = false
             for _, conn in ipairs(touchedConnections) do
@@ -1607,7 +3891,7 @@ local function flingWithBoat(targetPlayer)
     end)
 end
 
--- Função para parar o fling
+-- Função para parar o fling (usada pelo toggle)
 local function stopFling()
     running = false
     if connection then
@@ -1629,12 +3913,14 @@ local function stopFling()
         couch.CanTouch = originalProperties.CanTouch
     end
     
+    -- Desativar CarClient antes de deletar veículos
+    disableCarClient()
+    
     local args = { [1] = "DeleteAllVehicles" }
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
-    task.wait(0.5)
-    
+    task.wait(0.2)
     local character = LocalPlayer.Character
     if character then
         for _, part in ipairs(character:GetDescendants()) do
@@ -1673,9 +3959,6 @@ local function stopFling()
             end)
         end
     end
-    
-    -- Reativa o CarClient
-    enableCarClient()
 end
 
 -- Toggle para ativar/desativar o fling
@@ -1687,17 +3970,17 @@ flingToggle = Tab10:Toggle({
     Callback = function(state)
         if state then
             if isFollowingKill or isFollowingPull or running then
-                print("Uma ação já está ativa. Use o botão Parar (Matar ou Puxar) primeiro.")
+                warn("Uma ação já está ativa. Use o botão Parar (Matar ou Puxar) primeiro.")
                 flingToggle:SetValue(false)
                 return
             end
             if not selectedPlayer then
-                print("Nenhum jogador selecionado!")
+                warn("Nenhum jogador selecionado!")
                 flingToggle:SetValue(false)
                 return
             end
             if not selectedFlingMethod then
-                print("Nenhum método de fling selecionado!")
+                warn("Nenhum método de fling selecionado!")
                 flingToggle:SetValue(false)
                 return
             end
@@ -1717,10 +4000,33 @@ flingToggle = Tab10:Toggle({
 })
 print("Toggle para ativar/desativar o fling criado com sucesso!")
 
--- Aviso sobre o fling com barco
+print("Script inicializado com sucesso! A UI deve estar visível agora.")
+
 Tab10:Paragraph({ 
     Title = "fling barco op mais n recomendo ele pod causar travamento!!! e use o noclip ", 
     Desc = ""
 })
 
-print("Script inicializado com sucesso! A UI deve estar visível agora.")
+
+-- Executa as funções na ordem correta
+local success, err = pcall(function()
+    -- 1. Tela de carregamento já está exibida
+    -- 2. Configura RolePlayName e bio
+    local rolePlaySuccess = setupRolePlay()
+    if not rolePlaySuccess then
+        warn("Falha ao configurar RolePlayName ou bio!")
+    end
+
+    -- 3. Inicializa a interface WindUI
+    local uiSuccess = initializeUI()
+    if not uiSuccess then
+        warn("Falha ao inicializar a interface WindUI!")
+    end
+end)
+
+-- 4. Remove a tela de carregamento após tudo
+screenGui:Destroy()
+
+if not success then
+    warn("Erro durante a inicialização: " .. tostring(err))
+end
