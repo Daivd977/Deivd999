@@ -276,6 +276,9 @@ local function disableCarClient()
     local carClient = backpack:FindFirstChild("CarClient")
     if carClient and carClient:IsA("LocalScript") then
         carClient.Disabled = true
+        print("CarClient desativado.")
+    else
+        print("CarClient não encontrado para desativar.")
     end
 end
 
@@ -285,6 +288,9 @@ local function enableCarClient()
     local carClient = backpack:FindFirstChild("CarClient")
     if carClient and carClient:IsA("LocalScript") then
         carClient.Disabled = false
+        print("CarClient reativado.")
+    else
+        print("CarClient não encontrado para reativar.")
     end
 end
 
@@ -553,14 +559,25 @@ local function pullWithSofa(targetPlayer)
     originalPosition = LocalPlayer.Character:FindFirstChild("HumanoidRootPart").Position
 end
 
--- Função para matar com ônibus (já ajustada anteriormente)
+-- Função para matar com ônibus (ajustada para teleporte e assento)
 local function killWithBus(targetPlayer)
-    if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then return end
+    if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then 
+        print("Selecione um jogador válido antes de iniciar!")
+        return 
+    end
     local character = LocalPlayer.Character
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     local myHRP = character:FindFirstChild("HumanoidRootPart")
-    if not humanoid or not myHRP then return end
+    if not humanoid or not myHRP then 
+        print("Seu personagem ainda não está totalmente carregado.")
+        return 
+    end
     savedPosition = myHRP.Position
+    
+    -- Desativa o CarClient antes de qualquer operação
+    disableCarClient()
+    
+    -- Teleporta para a posição inicial
     pcall(function()
         myHRP.Anchored = true
         myHRP.CFrame = CFrame.new(Vector3.new(1181.83, 76.08, -1158.83))
@@ -574,38 +591,77 @@ local function killWithBus(targetPlayer)
     end)
     task.wait(0.5)
     
-    disableCarClient()
-    
+    -- Remove todos os veículos existentes
     local args = { [1] = "DeleteAllVehicles" }
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
+    
+    -- Spawna o ônibus
     args = { [1] = "PickingCar", [2] = "SchoolBus" }
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
-    task.wait(1)
+    task.wait(1.5) -- Aumentei o tempo de espera para garantir que o ônibus spawne
+    
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
-    if not vehiclesFolder then return end
+    if not vehiclesFolder then 
+        print("Pasta Vehicles não encontrada no Workspace!")
+        enableCarClient()
+        return 
+    end
     local busName = LocalPlayer.Name .. "Car"
     local bus = vehiclesFolder:FindFirstChild(busName)
-    if not bus then return end
+    if not bus then 
+        print("Ônibus não encontrado em Workspace.Vehicles com o nome: " .. busName)
+        enableCarClient()
+        return 
+    end
     local busBody = bus:FindFirstChild("BusBody")
-    if not busBody then return end
+    if not busBody then 
+        print("Parte 'BusBody' não encontrada no ônibus!")
+        enableCarClient()
+        return 
+    end
+    
+    -- Encontra o assento do motorista (VehicleSeat)
+    local vehicleSeat = nil
+    for _, part in ipairs(bus:GetDescendants()) do
+        if part:IsA("VehicleSeat") then
+            vehicleSeat = part
+            break
+        end
+    end
+    if not vehicleSeat then 
+        print("Assento do motorista não encontrado no ônibus!")
+        enableCarClient()
+        return 
+    end
+    
+    -- Teleporta o jogador para a posição do assento
     pcall(function()
         myHRP.Anchored = true
-        myHRP.CFrame = CFrame.new(Vector3.new(1171.15, 79.45, -1166.2))
+        myHRP.CFrame = vehicleSeat.CFrame + Vector3.new(0, 2, 0) -- Posiciona o jogador acima do assento
         task.wait(0.2)
         myHRP.Velocity = Vector3.zero
         myHRP.RotVelocity = Vector3.zero
         myHRP.Anchored = false
-        humanoid:ChangeState(Enum.HumanoidStateType.Seated)
+        humanoid:ChangeState(Enum.HumanoidStateType.Seated) -- Força o estado de sentado
+        vehicleSeat:Sit(humanoid) -- Força o jogador a sentar no assento
     end)
+    
+    -- Aguarda até que o jogador esteja sentado
     local sitStart = tick()
     repeat
         task.wait()
-        if tick() - sitStart > 10 then return end
+        if tick() - sitStart > 10 then 
+            print("Timeout: Jogador local não foi detectado como sentado!")
+            enableCarClient()
+            return 
+        end
     until humanoid.Sit
+    
+    -- Configura o ônibus para seguir o alvo
     for _, part in ipairs(bus:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CanCollide = false
@@ -629,7 +685,10 @@ local function killWithBus(targetPlayer)
         local targetCharacter = targetPlayer.Character or targetPlayer.CharacterAdded:Wait()
         local newTargetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
         local newTargetHumanoid = targetCharacter:FindFirstChild("Humanoid")
-        if not newTargetHRP or not newTargetHumanoid then return end
+        if not newTargetHRP or not newTargetHumanoid then 
+            running = false
+            return 
+        end
         if not myHRP or not humanoid then
             running = false
             return
@@ -665,12 +724,13 @@ local function killWithBus(targetPlayer)
             end)
             task.wait(0.5)
             
-            disableCarClient()
-            
+            -- Remove o ônibus
             local args = { [1] = "DeleteAllVehicles" }
             pcall(function()
                 ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
             end)
+            
+            -- Restaura a posição do jogador
             if character then
                 local myHRP = character:FindFirstChild("HumanoidRootPart")
                 if myHRP and savedPosition then
@@ -708,6 +768,9 @@ local function killWithBus(targetPlayer)
             pcall(function()
                 ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Clothe1s"):FireServer("CharacterSizeUp", 1)
             end)
+            
+            -- Reativa o CarClient
+            enableCarClient()
         end
     end)
 end
@@ -877,6 +940,8 @@ Tab10:Button({
         pcall(function()
             ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
         end)
+        task.wait(0.5)
+        enableCarClient()
     end
 })
 print("Botão para parar matar ou puxar criado com sucesso!")
@@ -1177,7 +1242,7 @@ local function flingWithSofa(targetPlayer)
     end)
 end
 
--- Função para fling com ônibus (já ajustada anteriormente)
+-- Função para fling com ônibus (ajustada para teleporte e assento)
 local function flingWithBus(targetPlayer)
     if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then
         print("Selecione um jogador válido antes de iniciar!")
@@ -1191,6 +1256,11 @@ local function flingWithBus(targetPlayer)
         return
     end
     savedPosition = myHRP.Position
+    
+    -- Desativa o CarClient antes de qualquer operação
+    disableCarClient()
+    
+    -- Teleporta para a posição inicial
     pcall(function()
         myHRP.Anchored = true
         myHRP.CFrame = CFrame.new(Vector3.new(1181.83, 76.08, -1158.83))
@@ -1204,38 +1274,77 @@ local function flingWithBus(targetPlayer)
     end)
     task.wait(0.5)
     
-    disableCarClient()
-    
+    -- Remove todos os veículos existentes
     local args = { [1] = "DeleteAllVehicles" }
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
+    
+    -- Spawna o ônibus
     args = { [1] = "PickingCar", [2] = "SchoolBus" }
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
-    task.wait(1)
+    task.wait(1.5) -- Aumentei o tempo de espera para garantir que o ônibus spawne
+    
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
-    if not vehiclesFolder then return end
+    if not vehiclesFolder then 
+        print("Pasta Vehicles não encontrada no Workspace!")
+        enableCarClient()
+        return 
+    end
     local busName = LocalPlayer.Name .. "Car"
     local bus = vehiclesFolder:FindFirstChild(busName)
-    if not bus then return end
+    if not bus then 
+        print("Ônibus não encontrado em Workspace.Vehicles com o nome: " .. busName)
+        enableCarClient()
+        return 
+    end
     local busBody = bus:FindFirstChild("BusBody")
-    if not busBody then return end
+    if not busBody then 
+        print("Parte 'BusBody' não encontrada no ônibus!")
+        enableCarClient()
+        return 
+    end
+    
+    -- Encontra o assento do motorista (VehicleSeat)
+    local vehicleSeat = nil
+    for _, part in ipairs(bus:GetDescendants()) do
+        if part:IsA("VehicleSeat") then
+            vehicleSeat = part
+            break
+        end
+    end
+    if not vehicleSeat then 
+        print("Assento do motorista não encontrado no ônibus!")
+        enableCarClient()
+        return 
+    end
+    
+    -- Teleporta o jogador para a posição do assento
     pcall(function()
         myHRP.Anchored = true
-        myHRP.CFrame = CFrame.new(Vector3.new(1171.15, 79.45, -1166.2))
+        myHRP.CFrame = vehicleSeat.CFrame + Vector3.new(0, 2, 0) -- Posiciona o jogador acima do assento
         task.wait(0.2)
         myHRP.Velocity = Vector3.zero
         myHRP.RotVelocity = Vector3.zero
         myHRP.Anchored = false
-        humanoid:ChangeState(Enum.HumanoidStateType.Seated)
+        humanoid:ChangeState(Enum.HumanoidStateType.Seated) -- Força o estado de sentado
+        vehicleSeat:Sit(humanoid) -- Força o jogador a sentar no assento
     end)
+    
+    -- Aguarda até que o jogador esteja sentado
     local sitStart = tick()
     repeat
         task.wait()
-        if tick() - sitStart > 10 then return end
+        if tick() - sitStart > 10 then 
+            print("Timeout: Jogador local não foi detectado como sentado!")
+            enableCarClient()
+            return 
+        end
     until humanoid.Sit
+    
+    -- Configura o ônibus para seguir o alvo
     for _, part in ipairs(bus:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CanCollide = false
@@ -1303,12 +1412,13 @@ local function flingWithBus(targetPlayer)
             walkFlingInstancePlayer.Parent = myHRP
             task.wait(0.5)
             
-            disableCarClient()
-            
+            -- Remove o ônibus
             local args = { [1] = "DeleteAllVehicles" }
             pcall(function()
                 ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
             end)
+            task.wait(0.5)
+            
             if walkFlingInstancePlayer then
                 walkFlingInstancePlayer:Destroy()
                 for _, part in ipairs(character:GetDescendants()) do
@@ -1331,11 +1441,14 @@ local function flingWithBus(targetPlayer)
             if flingToggle then
                 flingToggle:SetValue(false)
             end
+            
+            -- Reativa o CarClient
+            enableCarClient()
         end
     end)
 end
 
--- Função para fling com barco (ajustada para não buscar "Chassis")
+-- Função para fling com barco (ajustada para evitar erro do CarClient)
 local function flingWithBoat(targetPlayer)
     if not targetPlayer or not targetPlayer.Character or not LocalPlayer.Character then 
         print("Selecione um jogador válido antes de iniciar!")
@@ -1349,6 +1462,10 @@ local function flingWithBoat(targetPlayer)
         return 
     end
     savedPosition = myHRP.Position
+    
+    -- Desativa o CarClient antes de qualquer operação
+    disableCarClient()
+    
     pcall(function()
         myHRP.Anchored = true
         myHRP.CFrame = CFrame.new(Vector3.new(-3359.52, -5.05, -501.94))
@@ -1361,52 +1478,77 @@ local function flingWithBoat(targetPlayer)
         end
     end)
     
-    disableCarClient()
-    
+    -- Remove todos os veículos existentes
     local args = { [1] = "DeleteAllVehicles" }
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
     task.wait(0.4)
+    
+    -- Spawna o barco
     args = { [1] = "PickingBoat", [2] = "MilitaryBoatFree" }
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
     task.wait(1.5)
+    
     local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
     if not vehiclesFolder then 
         print("Pasta Vehicles não encontrada no Workspace!")
+        enableCarClient()
         return 
     end
     local boatName = LocalPlayer.Name .. "Car"
     local boat = vehiclesFolder:FindFirstChild(boatName)
     if not boat then 
         print("Barco não encontrado em Workspace.Vehicles com o nome: " .. boatName)
+        enableCarClient()
         return 
     end
-    -- Verifica se a parte "Body" existe (parte principal do barco)
     local boatBody = boat:FindFirstChild("Body")
     if not boatBody then 
         print("Parte 'Body' não encontrada no barco! Verifique a estrutura do modelo.")
+        enableCarClient()
         return 
     end
+    
+    -- Encontra o assento do motorista (VehicleSeat)
+    local vehicleSeat = nil
+    for _, part in ipairs(boat:GetDescendants()) do
+        if part:IsA("VehicleSeat") then
+            vehicleSeat = part
+            break
+        end
+    end
+    if not vehicleSeat then 
+        print("Assento do motorista não encontrado no barco!")
+        enableCarClient()
+        return 
+    end
+    
+    -- Teleporta o jogador para a posição do assento
     pcall(function()
         myHRP.Anchored = true
-        myHRP.CFrame = CFrame.new(Vector3.new(-3358.85, 5.25, -521.95))
+        myHRP.CFrame = vehicleSeat.CFrame + Vector3.new(0, 2, 0) -- Posiciona o jogador acima do assento
         task.wait(0.2)
         myHRP.Velocity = Vector3.zero
         myHRP.RotVelocity = Vector3.zero
         myHRP.Anchored = false
-        humanoid:ChangeState(Enum.HumanoidStateType.Seated)
+        humanoid:ChangeState(Enum.HumanoidStateType.Seated) -- Força o estado de sentado
+        vehicleSeat:Sit(humanoid) -- Força o jogador a sentar no assento
     end)
+    
+    -- Aguarda até que o jogador esteja sentado
     local sitStart = tick()
     repeat
         task.wait()
         if tick() - sitStart > 10 then 
             print("Timeout: Jogador local não foi detectado como sentado!")
+            enableCarClient()
             return 
         end
     until humanoid.Sit
+    
     for _, part in ipairs(boat:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CanCollide = true
@@ -1533,13 +1675,12 @@ local function stopFling()
         couch.CanTouch = originalProperties.CanTouch
     end
     
-    disableCarClient()
-    
     local args = { [1] = "DeleteAllVehicles" }
     pcall(function()
         ReplicatedStorage:WaitForChild("RE"):WaitForChild("1Ca1r"):FireServer(unpack(args))
     end)
-    task.wait(0.2)
+    task.wait(0.5)
+    
     local character = LocalPlayer.Character
     if character then
         for _, part in ipairs(character:GetDescendants()) do
@@ -1578,6 +1719,9 @@ local function stopFling()
             end)
         end
     end
+    
+    -- Reativa o CarClient
+    enableCarClient()
 end
 
 -- Toggle para ativar/desativar o fling
@@ -1619,7 +1763,6 @@ flingToggle = Tab10:Toggle({
 })
 print("Toggle para ativar/desativar o fling criado com sucesso!")
 
-print("Script inicializado com sucesso! A UI deve estar visível agora.")
 
 Tab10:Paragraph({ 
     Title = "fling barco op mais n recomendo ele pod causar travamento!!! e use o noclip ", 
