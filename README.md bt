@@ -153,7 +153,7 @@ local function initializeUI()
 
     local Version = "1.4.0"
     local Window = WindUI:CreateWindow({
-        Title = "Lolyta Hub 3.1,.__._.__.",
+        Title = "Lolyta Hub 3.1,",
         Icon = "door-open",
         Author = "Lolycon666",
         Folder = "Lolyta hub v.1.666",
