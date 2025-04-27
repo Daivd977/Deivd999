@@ -188,17 +188,7 @@ local function initializeUI()
     local Tab9 = Window:Tab({ Title = "Teleportes", Icon = "map-pin" })
     local Tab10 = Window:Tab({ Title = "Troll", Icon = "skull" })
 
-    -- Exemplo de conteúdo para a aba Main
-    Tab1:Button({
-        Title = "Teste",
-        Description = "Botão de teste",
-        Callback = function()
-            print("Botão de teste clicado!")
-        end
-    })
-
-    return true
-end
+    
 
 
 ---------------------------------------------------------------------------------------------------------------------------------
@@ -4007,17 +3997,18 @@ Tab10:Paragraph({
     Desc = ""
 })
 
-
 -- Executa as funções na ordem correta
 local success, err = pcall(function()
-    -- 1. Tela de carregamento já está exibida
+    -- 1. Exibe a tela de carregamento por 5 segundos
+    task.wait(5)
+
     -- 2. Configura RolePlayName e bio
     local rolePlaySuccess = setupRolePlay()
     if not rolePlaySuccess then
         warn("Falha ao configurar RolePlayName ou bio!")
     end
 
-    -- 3. Inicializa a interface WindUI
+    -- 3. Inicializa a interface WindUI (imediatamente após o RolePlay)
     local uiSuccess = initializeUI()
     if not uiSuccess then
         warn("Falha ao inicializar a interface WindUI!")
@@ -4030,3 +4021,5 @@ screenGui:Destroy()
 if not success then
     warn("Erro durante a inicialização: " .. tostring(err))
 end
+
+
