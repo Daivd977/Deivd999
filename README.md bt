@@ -83,6 +83,53 @@ textLabel.Font = Enum.Font.FredokaOne
 textLabel.TextScaled = true
 textLabel.Parent = screenGui
 
+-- Função que carrega o hub e os scripts após a tela de carregamento
+local function loadHub()
+    local RE = ReplicatedStorage:FindFirstChild("RE")
+    if not RE then
+        warn("Erro: ReplicatedStorage.RE não encontrado!")
+        return
+    end
+
+    local function fireServer(eventName, args)
+        local event = RE:FindFirstChild(eventName)
+        if event then
+            pcall(function()
+                event:FireServer(unpack(args))
+            end)
+        else
+            warn("Erro: Evento remoto " .. eventName .. " não encontrado!")
+        end
+    end
+
+    -- Define o nome "Lolyta Hub 💖" com cor rosa escuro
+    local argsName = {
+        [1] = "RolePlayName",
+        [2] = "Lolyta Hub 💖"
+    }
+    fireServer("RolePlayNameText", argsName)
+
+    -- Define a cor do nome como rosa escuro
+    local argsNameColor = {
+        [1] = "PickingRPNameColor",
+        [2] = Color3.new(0.8, 0.2, 0.4)
+    }
+    fireServer("RolePlayNameColor", argsNameColor)
+
+    -- Define a bio "scripter" com cor preta
+    local argsBio = {
+        [1] = "RolePlayBio",
+        [2] = "scripter"
+    }
+    fireServer("RolePlayBioText", argsBio)
+
+    -- Define a cor da bio como preta
+    local argsBioColor = {
+        [1] = "PickingRPBioColor",
+        [2] = Color3.new(0, 0, 0)
+    }
+    fireServer("RolePlayBioColor", argsBioColor)
+end
 
 -- Executa a função de carregamento
 loadHub()
@@ -127,10 +174,17 @@ Window:EditOpenButton({
     Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29"))
 })
 
-
 -- === Abas da Interface === --
-
-local Tab10 = Window:Tab({ Title = "troll", Icon = "Ball" })
+local Tab1 = Window:Tab({ Title = "Main", Icon = "house-plus" })
+local Tab2 = Window:Tab({ Title = "Casa", Icon = "house" })
+local Tab3 = Window:Tab({ Title = "Carro", Icon = "car" })
+local Tab4 = Window:Tab({ Title = "RGB Color", Icon = "palette" })
+local Tab5 = Window:Tab({ Title = "Troll Musica", Icon = "music" })
+local Tab6 = Window:Tab({ Title = "Music All", Icon = "audio-lines" })
+local Tab7 = Window:Tab({ Title = "Scripts", Icon = "layers" })
+local Tab8 = Window:Tab({ Title = "Jogadores", Icon = "users" })
+local Tab9 = Window:Tab({ Title = "Teleportes", Icon = "map-pin" })
+local Tab10 = Window:Tab({ Title = "Troll", Icon = "skull" })
 
 -- Carrega a biblioteca Fluent para criar a interface gráfica
 local UILib = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Default.lua"))()
