@@ -203,20 +203,27 @@ local Tab10 = Window:Tab({ Title = "Troll", Icon = "skull" })
 
 
 Tab1:Button({
-    Title = "Pegar sofá",
+    Title = "Pegar sofáV1",
     Desc = "Brookhaven",
     Callback = function()
         invokeServer("1Too1l", {"PickingTools", "Couch"})
     end,
 })
 
+Tab1:Button({
+    Title = "Pegar sofáV2",
+    Desc = "Brookhaven",
+    Callback = function()
+        invokeServer("1Too1l", {"PickingTools", "Couch"})
+    end,
+})
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 Tab1:Button({
     Title = "TP ALL",
-    Desc = "Teleporte para todos os players",
+    Desc = "Teleporte para todos os players oloko",
     Callback = function()
         local startingPosition = LocalPlayer.Character:GetPrimaryPartCFrame()
         for _, player in ipairs(Players:GetPlayers()) do
