@@ -2,6 +2,7 @@
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
+local LocalPlayer = Players.LocalPlayer
 
 -- Função para gerar nomes aleatórios para evitar conflitos
 local function randomString()
@@ -67,7 +68,7 @@ local ToggleButton = Instance.new("TextButton")
 ToggleButton.Size = UDim2.new(0, 180, 0, 30)
 ToggleButton.Position = UDim2.new(0, 10, 0, 80)
 ToggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-ToggleButton.Text = "Ativar Cabeça Grande: OFF"
+ToggleButton.Text = "Cabeça Grande: OFF"
 ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleButton.Font = Enum.Font.SourceSans
 ToggleButton.TextSize = 16
@@ -81,7 +82,7 @@ local connections = {} -- Armazena conexões de eventos
 
 -- Função para aplicar tamanho da cabeça
 local function applyHeadSize(player, size)
-    if player.Character and player.Character:FindFirstChild("Head") then
+    if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
         local head = player.Character.Head
         if not originalHeadSizes[player] then
             originalHeadSizes[player] = head.Size -- Salva o tamanho original
@@ -97,7 +98,7 @@ end
 
 -- Função para restaurar tamanho da cabeça
 local function restoreHeadSize(player)
-    if player.Character and player.Character:FindFirstChild("Head") and originalHeadSizes[player] then
+    if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") and originalHeadSizes[player] then
         local head = player.Character.Head
         head.Size = originalHeadSizes[player]
         local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
@@ -107,23 +108,29 @@ local function restoreHeadSize(player)
     end
 end
 
+-- Função para atualizar todos os jogadores
+local function updateAllPlayers()
+    if isHeadSizeEnabled then
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                applyHeadSize(player, headSize)
+            end
+        end
+    else
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                restoreHeadSize(player)
+            end
+        end
+    end
+end
+
 -- Função para ativar/desativar o efeito de cabeça grande
 local function toggleHeadSize()
     isHeadSizeEnabled = not isHeadSizeEnabled
-    ToggleButton.Text = "Ativar Cabeça Grande: " .. (isHeadSizeEnabled and "ON" or "OFF")
+    ToggleButton.Text = "Cabeça Grande: " .. (isHeadSizeEnabled and "ON" or "OFF")
     ToggleButton.BackgroundColor3 = isHeadSizeEnabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(60, 60, 60)
-
-    if isHeadSizeEnabled then
-        -- Aplica o tamanho da cabeça a todos os jogadores
-        for _, player in ipairs(Players:GetPlayers()) do
-            applyHeadSize(player, headSize)
-        end
-    else
-        -- Restaura o tamanho original
-        for _, player in ipairs(Players:GetPlayers()) do
-            restoreHeadSize(player)
-        end
-    end
+    updateAllPlayers()
 end
 
 -- Atualizar tamanho da cabeça quando o texto é inserido
@@ -133,9 +140,7 @@ HeadSizeInput.FocusLost:Connect(function(enterPressed)
         if input and input > 0 then
             headSize = input
             if isHeadSizeEnabled then
-                for _, player in ipairs(Players:GetPlayers()) do
-                    applyHeadSize(player, headSize)
-                end
+                updateAllPlayers()
             end
         else
             HeadSizeInput.Text = tostring(headSize) -- Restaura valor válido
@@ -148,12 +153,25 @@ ToggleButton.MouseButton1Click:Connect(toggleHeadSize)
 
 -- Aplicar o efeito quando novos jogadores entram
 Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function()
-        if isHeadSizeEnabled then
-            applyHeadSize(player, headSize)
-        end
-    end)
+    if player ~= LocalPlayer then
+        player.CharacterAdded:Connect(function()
+            if isHeadSizeEnabled then
+                applyHeadSize(player, headSize)
+            end
+        end)
+    end
 end)
+
+-- Atualizar quando jogadores recarregam o personagem
+for _, player in ipairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then
+        player.CharacterAdded:Connect(function()
+            if isHeadSizeEnabled then
+                applyHeadSize(player, headSize)
+            end
+        end)
+    end
+end
 
 -- Fechar a UI e desativar efeitos
 CloseButton.MouseButton1Click:Connect(function()
@@ -171,15 +189,14 @@ end)
 
 -- Função para causar dano ao acertar qualquer jogador
 local function setupDamageOnHit()
-    local localPlayer = Players.LocalPlayer
-    local mouse = localPlayer:GetMouse()
+    local mouse = LocalPlayer:GetMouse()
 
     -- Detectar cliques do mouse (para armas ou qualquer coisa)
     table.insert(connections, mouse.Button1Down:Connect(function()
         local target = mouse.Target
         if target then
             local humanoid = target.Parent:FindFirstChildOfClass("Humanoid")
-            if humanoid and humanoid.Parent ~= localPlayer.Character then
+            if humanoid and humanoid.Parent ~= LocalPlayer.Character then
                 -- Causar dano ao humanoid
                 humanoid:TakeDamage(10) -- Ajuste o valor do dano conforme necessário
             end
@@ -189,14 +206,14 @@ local function setupDamageOnHit()
     -- Detectar colisões com qualquer objeto
     local function onTouch(hit)
         local humanoid = hit.Parent:FindFirstChildOfClass("Humanoid")
-        if humanoid and humanoid.Parent ~= localPlayer.Character then
+        if humanoid and humanoid.Parent ~= LocalPlayer.Character then
             humanoid:TakeDamage(10) -- Ajuste o valor do dano conforme necessário
         end
     end
 
     -- Conectar evento de toque para todas as partes do personagem local
-    if localPlayer.Character then
-        for _, part in ipairs(localPlayer.Character:GetChildren()) do
+    if LocalPlayer.Character then
+        for _, part in ipairs(LocalPlayer.Character:GetChildren()) do
             if part:IsA("BasePart") then
                 table.insert(connections, part.Touched:Connect(onTouch))
             end
@@ -204,7 +221,7 @@ local function setupDamageOnHit()
     end
 
     -- Conectar para novos personagens
-    localPlayer.CharacterAdded:Connect(function(character)
+    LocalPlayer.CharacterAdded:Connect(function(character)
         for _, part in ipairs(character:GetChildren()) do
             if part:IsA("BasePart") then
                 table.insert(connections, part.Touched:Connect(onTouch))
