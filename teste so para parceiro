@@ -2,6 +2,7 @@
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
+local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
 -- Função para gerar nomes aleatórios para evitar conflitos
@@ -82,47 +83,50 @@ local connections = {} -- Armazena conexões de eventos
 
 -- Função para aplicar tamanho da cabeça
 local function applyHeadSize(player, size)
-    if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
-        local head = player.Character.Head
-        if not originalHeadSizes[player] then
-            originalHeadSizes[player] = head.Size -- Salva o tamanho original
+    if player == LocalPlayer then return end
+    pcall(function()
+        if player.Character and player.Character:FindFirstChild("Head") then
+            local head = player.Character.Head
+            if not originalHeadSizes[player] then
+                originalHeadSizes[player] = head.Size
+            end
+            head.Size = Vector3.new(size, size, size)
+            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.HeadScale = size
+            end
         end
-        head.Size = Vector3.new(size, size, size)
-        -- Ajusta a escala da cabeça para manter proporções
-        local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.HeadScale = size
-        end
-    end
+    end)
 end
 
 -- Função para restaurar tamanho da cabeça
 local function restoreHeadSize(player)
-    if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") and originalHeadSizes[player] then
-        local head = player.Character.Head
-        head.Size = originalHeadSizes[player]
-        local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.HeadScale = 1 -- Restaura escala padrão
+    if player == LocalPlayer then return end
+    pcall(function()
+        if player.Character and player.Character:FindFirstChild("Head") and originalHeadSizes[player] then
+            local head = player.Character.Head
+            head.Size = originalHeadSizes[player]
+            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.HeadScale = 1
+            end
         end
-    end
+    end)
 end
 
 -- Função para atualizar todos os jogadores
 local function updateAllPlayers()
-    if isHeadSizeEnabled then
+    pcall(function()
         for _, player in ipairs(Players:GetPlayers()) do
             if player ~= LocalPlayer then
-                applyHeadSize(player, headSize)
+                if isHeadSizeEnabled then
+                    applyHeadSize(player, headSize)
+                else
+                    restoreHeadSize(player)
+                end
             end
         end
-    else
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer then
-                restoreHeadSize(player)
-            end
-        end
-    end
+    end)
 end
 
 -- Função para ativar/desativar o efeito de cabeça grande
@@ -130,7 +134,40 @@ local function toggleHeadSize()
     isHeadSizeEnabled = not isHeadSizeEnabled
     ToggleButton.Text = "Cabeça Grande: " .. (isHeadSizeEnabled and "ON" or "OFF")
     ToggleButton.BackgroundColor3 = isHeadSizeEnabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(60, 60, 60)
+    
+    -- Limpar conexões anteriores
+    for _, connection in ipairs(connections) do
+        if connection then
+            connection:Disconnect()
+        end
+    end
+    connections = {}
+    
     updateAllPlayers()
+    
+    if isHeadSizeEnabled then
+        -- Iniciar loop de reaplicação
+        table.insert(connections, RunService.Stepped:Connect(function()
+            pcall(function()
+                for _, player in ipairs(Players:GetPlayers()) do
+                    if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
+                        local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+                        if humanoid and humanoid.HeadScale ~= headSize then
+                            applyHeadSize(player, headSize)
+                        end
+                    end
+                end
+            end)
+        end))
+        
+        -- Aplicação inicial repetida
+        for i = 1, 5 do
+            spawn(function()
+                wait(i)
+                updateAllPlayers()
+            end)
+        end
+    end
 end
 
 -- Atualizar tamanho da cabeça quando o texto é inserido
@@ -143,7 +180,7 @@ HeadSizeInput.FocusLost:Connect(function(enterPressed)
                 updateAllPlayers()
             end
         else
-            HeadSizeInput.Text = tostring(headSize) -- Restaura valor válido
+            HeadSizeInput.Text = tostring(headSize)
         end
     end
 end)
@@ -156,34 +193,38 @@ Players.PlayerAdded:Connect(function(player)
     if player ~= LocalPlayer then
         player.CharacterAdded:Connect(function()
             if isHeadSizeEnabled then
+                wait(3) -- Atraso aumentado
                 applyHeadSize(player, headSize)
             end
         end)
     end
 end)
 
--- Atualizar quando jogadores recarregam o personagem
+-- Monitorar jogadores existentes
 for _, player in ipairs(Players:GetPlayers()) do
     if player ~= LocalPlayer then
         player.CharacterAdded:Connect(function()
             if isHeadSizeEnabled then
+                wait(3) -- Atraso aumentado
                 applyHeadSize(player, headSize)
             end
         end)
+        if player.Character then
+            applyHeadSize(player, headSize)
+        end
     end
 end
 
 -- Fechar a UI e desativar efeitos
 CloseButton.MouseButton1Click:Connect(function()
-    -- Desativar o efeito de cabeça grande
     if isHeadSizeEnabled then
         toggleHeadSize()
     end
-    -- Desconectar eventos
     for _, connection in ipairs(connections) do
-        connection:Disconnect()
+        if connection then
+            connection:Disconnect()
+        end
     end
-    -- Destruir a UI
     ScreenGui:Destroy()
 end)
 
@@ -191,27 +232,27 @@ end)
 local function setupDamageOnHit()
     local mouse = LocalPlayer:GetMouse()
 
-    -- Detectar cliques do mouse (para armas ou qualquer coisa)
     table.insert(connections, mouse.Button1Down:Connect(function()
         local target = mouse.Target
         if target then
             local humanoid = target.Parent:FindFirstChildOfClass("Humanoid")
             if humanoid and humanoid.Parent ~= LocalPlayer.Character then
-                -- Causar dano ao humanoid
-                humanoid:TakeDamage(10) -- Ajuste o valor do dano conforme necessário
+                humanoid:TakeDamage(10)
             end
         end
     end))
 
-    -- Detectar colisões com qualquer objeto
     local function onTouch(hit)
         local humanoid = hit.Parent:FindFirstChildOfClass("Humanoid")
         if humanoid and humanoid.Parent ~= LocalPlayer.Character then
-            humanoid:TakeDamage(10) -- Ajuste o valor do dano conforme necessário
+            humanoid:TakeDamage(10)
+        end
+        humanoid = hit.Parent.Parent:FindFirstChildOfClass("Humanoid")
+        if humanoid and humanoid.Parent ~= LocalPlayer.Character then
+            humanoid:TakeDamage(10)
         end
     end
 
-    -- Conectar evento de toque para todas as partes do personagem local
     if LocalPlayer.Character then
         for _, part in ipairs(LocalPlayer.Character:GetChildren()) do
             if part:IsA("BasePart") then
@@ -220,7 +261,6 @@ local function setupDamageOnHit()
         end
     end
 
-    -- Conectar para novos personagens
     LocalPlayer.CharacterAdded:Connect(function(character)
         for _, part in ipairs(character:GetChildren()) do
             if part:IsA("BasePart") then
@@ -232,41 +272,3 @@ end
 
 -- Iniciar o sistema de dano
 setupDamageOnHit()
-
---dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh
---dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh--dsjfdfhuyhgyhfuigfiujhufuidjuhfydg
---jduhdufhudsfhfguihfyughgfduyghuyfdgh
