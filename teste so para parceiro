@@ -1,3 +1,5 @@
+-- copy avatar 
+
 -- Carrega a WindUI
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
 local Version = "1.4.0"
@@ -34,14 +36,18 @@ local Tab1 = Window:Tab({ Title = "Main", Icon = "house-plus" })
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local MarketplaceService = game:GetService("MarketplaceService")
 
 local LocalPlayer = Players.LocalPlayer
 local selectedPlayerName = nil
 local selectedMethod = "Avatar Atual (Brookhaven)"
-local lastBodyIds = {} -- Armazenar os últimos IDs do corpo lidos
 
 -- Função para converter Color3 ou BrickColor em nome de cor do Roblox
 local function color3ToColorName(color)
+    if not color or not typeof(color) == "Color3" then
+        return "Nougat"
+    end
+
     local colorMap = {
         [Color3.fromRGB(242, 243, 243)] = "White",
         [Color3.fromRGB(163, 162, 165)] = "Light gray",
@@ -70,21 +76,19 @@ local function color3ToColorName(color)
         color3Value = Color3.new(math.clamp(color.R, 0, 1), math.clamp(color.G, 0, 1), math.clamp(color.B, 0, 1))
     end
 
+    for refColor, colorName in pairs(colorMap) do
+        if refColor.R == color3Value.R and refColor.G == color3Value.G and refColor.B == color3Value.B then
+            return colorName
+        end
+    end
+
     local closestColorName = "Nougat"
     local minDistance = math.huge
-
     for refColor, colorName in pairs(colorMap) do
         local distance = (refColor.R - color3Value.R)^2 + (refColor.G - color3Value.G)^2 + (refColor.B - color3Value.B)^2
         if distance < minDistance then
             minDistance = distance
             closestColorName = colorName
-        end
-    end
-
-    -- Verificar se a cor exata existe no colorMap
-    for refColor, colorName in pairs(colorMap) do
-        if refColor.R == color3Value.R and refColor.G == color3Value.G and refColor.B == color3Value.B then
-            return colorName
         end
     end
 
@@ -102,98 +106,211 @@ local function getPlayerNames()
 end
 
 -- Dropdown de jogadores
-local PlayerDropdown = Tab1:Dropdown({
-    Title = "Selecionar Jogador",
-    Desc = "Escolha um jogador para copiar visual",
-    Value = nil,
-    Multi = false,
-    AllowNone = true,
-    Values = getPlayerNames(),
-    Callback = function(name)
-        selectedPlayerName = name
-        print("Jogador selecionado: " .. tostring(name))
-    end
-})
+local PlayerDropdown
+local success, err = pcall(function()
+    PlayerDropdown = Tab1:Dropdown({
+        Title = "Selecionar Jogador",
+        Desc = "Escolha um jogador para copiar visual",
+        Value = nil,
+        Multi = false,
+        AllowNone = true,
+        Values = getPlayerNames(),
+        Callback = function(name)
+            selectedPlayerName = name
+        end
+    })
+end)
 
--- Atualizar a lista de jogadores automaticamente
-spawn(function()
-    while true do
-        PlayerDropdown:SetValues(getPlayerNames())
-        print("Lista de jogadores atualizada automaticamente!")
-        task.wait(5)
+-- Atualizar a lista de jogadores
+local function updatePlayerList()
+    local currentPlayers = getPlayerNames()
+    if type(currentPlayers) ~= "table" then
+        return
     end
+
+    local playerList = {}
+    for _, name in ipairs(currentPlayers) do
+        if type(name) == "string" then
+            table.insert(playerList, name)
+        end
+    end
+
+    local success, err = pcall(function()
+        if PlayerDropdown then
+            PlayerDropdown:SetValues(playerList)
+        end
+    end)
+    if not success then
+        local success2, err2 = pcall(function()
+            PlayerDropdown = Tab1:Dropdown({
+                Title = "Selecionar Jogador",
+                Desc = "Escolha um jogador para copiar visual",
+                Value = nil,
+                Multi = false,
+                AllowNone = true,
+                Values = playerList,
+                Callback = function(name)
+                    selectedPlayerName = name
+                end
+            })
+        end)
+    end
+end
+
+-- Limpar jogadores que saíram
+local function cleanPlayerList()
+    local currentPlayers = getPlayerNames()
+    local dropdownValues = {}
+    local success, err = pcall(function()
+        dropdownValues = PlayerDropdown:GetValues() or {}
+    end)
+    if not success then
+        return
+    end
+
+    local updatedList = {}
+    for _, name in ipairs(dropdownValues) do
+        if table.find(currentPlayers, name) then
+            table.insert(updatedList, name)
+        end
+    end
+
+    local success, err = pcall(function()
+        if PlayerDropdown then
+            PlayerDropdown:SetValues(updatedList)
+        end
+    end)
+    if not success then
+        local success2, err2 = pcall(function()
+            PlayerDropdown = Tab1:Dropdown({
+                Title = "Selecionar Jogador",
+                Desc = "Escolha um jogador para copiar visual",
+                Value = nil,
+                Multi = false,
+                AllowNone = true,
+                Values = updatedList,
+                Callback = function(name)
+                    selectedPlayerName = name
+                end
+            })
+        end)
+    end
+end
+
+-- Inicializar a lista de jogadores
+updatePlayerList()
+
+-- Botão para atualizar a lista de jogadores manualmente
+local success, err = pcall(function()
+    Tab1:Button({
+        Title = "Atualizar Lista de Jogadores",
+        Desc = "Atualiza manualmente a lista de jogadores",
+        Callback = function()
+            updatePlayerList()
+        end
+    })
+end)
+
+-- Botão para limpar jogadores que saíram
+local success, err = pcall(function()
+    Tab1:Button({
+        Title = "Limpar Jogadores que Sairam",
+        Desc = "Remove jogadores que já saíram da lista",
+        Callback = function()
+            cleanPlayerList()
+        end
+    })
 end)
 
 -- Dropdown para selecionar o método de cópia
-local MethodDropdown = Tab1:Dropdown({
-    Title = "Método de Cópia",
-    Desc = "Escolha entre copiar o avatar atual ou o real",
-    Value = "Avatar Atual (Brookhaven)",
-    Multi = false,
-    AllowNone = false,
-    Values = {"Avatar Atual (Brookhaven)", "Avatar Real (Roblox)"},
-    Callback = function(method)
-        selectedMethod = method
-        print("Método de cópia selecionado: " .. method)
+local MethodDropdown
+local success, err = pcall(function()
+    MethodDropdown = Tab1:Dropdown({
+        Title = "Método de Cópia",
+        Desc = "Escolha entre copiar o avatar atual ou o real",
+        Value = "Avatar Atual (Brookhaven)",
+        Multi = false,
+        AllowNone = false,
+        Values = {"Avatar Atual (Brookhaven)", "Avatar Real (Roblox)"},
+        Callback = function(method)
+            selectedMethod = method
+        end
+    })
+end)
+
+-- Função para obter a descrição do jogador alvo
+local function getTargetDescription()
+    if not selectedPlayerName then
+        return nil
     end
-})
 
--- Botão para copiar aparência
-Tab1:Button({
-    Title = "Copiar Visual Completo",
-    Desc = "Copia roupas, acessórios, cor e corpo",
-    Callback = function()
-        if not selectedPlayerName then
-            warn("Nenhum jogador selecionado.")
-            return
+    local target = Players:FindFirstChild(selectedPlayerName)
+    if not target then
+        return nil
+    end
+
+    local desc
+    if selectedMethod == "Avatar Atual (Brookhaven)" then
+        if not target.Character then
+            return nil
         end
-
-        local target = Players:FindFirstChild(selectedPlayerName)
-        if not target then
-            warn("Jogador inválido.")
-            return
+        local humanoid = target.Character:FindFirstChildWhichIsA("Humanoid")
+        if not humanoid then
+            return nil
         end
-
-        -- Obter a descrição dependendo do método selecionado
-        local desc
-        if selectedMethod == "Avatar Atual (Brookhaven)" then
-            if not target.Character then
-                warn("Personagem do jogador não encontrado.")
-                return
-            end
-            local humanoid = target.Character:FindFirstChildWhichIsA("Humanoid")
-            if not humanoid then
-                warn("Humanoid não encontrado.")
-                return
-            end
-            desc = humanoid:GetAppliedDescription()
-            if not desc then
-                warn("Descrição não encontrada.")
-                return
-            end
-            print("Usando avatar atual do Brookhaven.")
-        else
-            local success, result = pcall(function()
-                return Players:GetHumanoidDescriptionFromUserId(target.UserId)
-            end)
-            if not success then
-                warn("Erro ao obter avatar real do Roblox: " .. tostring(result))
-                return
-            end
-            desc = result
-            print("Usando avatar real do Roblox.")
+        desc = humanoid:GetAppliedDescription()
+        if not desc then
+            return nil
         end
-
-        -- Obter a descrição do próprio personagem para comparar
-        local localHumanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
-        local localDesc = localHumanoid and localHumanoid:GetAppliedDescription()
-        if not localDesc then
-            warn("Descrição do próprio personagem não encontrada. Prosseguindo sem comparação.")
+    else
+        local success, result = pcall(function()
+            return Players:GetHumanoidDescriptionFromUserId(target.UserId)
+        end)
+        if not success then
+            return nil
         end
+        desc = result
+    end
 
-        -- Copiar acessórios
-        local currentAccessories = {}
-        if localDesc then
+    return desc, target
+end
+
+
+
+-- Botão para copiar visual completo
+local success, err = pcall(function()
+    Tab1:Button({
+        Title = "Copiar Visual Completo",
+        Desc = "Copia roupas, acessórios, animações, cor e corpo",
+        Callback = function()
+            local desc, target = getTargetDescription()
+            if not desc then return end
+
+            local localHumanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+            local localDesc = localHumanoid and localHumanoid:GetAppliedDescription()
+
+            -- Copiar acessórios
+            local currentAccessories = {}
+            if localDesc then
+                local accessoryFields = {
+                    "HatAccessory",
+                    "HairAccessory",
+                    "FaceAccessory",
+                    "NeckAccessory",
+                    "FrontAccessory",
+                    "BackAccessory",
+                    "WaistAccessory"
+                }
+                for _, field in ipairs(accessoryFields) do
+                    local ids = localDesc[field]
+                    if ids and ids ~= "" then
+                        for id in string.gmatch(ids, "%d+") do
+                            table.insert(currentAccessories, tonumber(id))
+                        end
+                    end
+                end
+            end
+
             local accessoryFields = {
                 "HatAccessory",
                 "HairAccessory",
@@ -203,282 +320,173 @@ Tab1:Button({
                 "BackAccessory",
                 "WaistAccessory"
             }
+            local accessoryIds = {}
             for _, field in ipairs(accessoryFields) do
-                local ids = localDesc[field]
+                local ids = desc[field]
                 if ids and ids ~= "" then
                     for id in string.gmatch(ids, "%d+") do
-                        table.insert(currentAccessories, tonumber(id))
+                        local accessoryId = tonumber(id)
+                        if accessoryId and accessoryId ~= 0 and not table.find(currentAccessories, accessoryId) then
+                            table.insert(accessoryIds, accessoryId)
+                        end
                     end
                 end
             end
-        end
 
-        -- Método 1: Obter acessórios do HumanoidDescription
-        local accessoryFields = {
-            "HatAccessory",
-            "HairAccessory",
-            "FaceAccessory",
-            "NeckAccessory",
-            "FrontAccessory",
-            "BackAccessory",
-            "WaistAccessory"
-        }
-        local accessoryIds = {}
-        for _, field in ipairs(accessoryFields) do
-            local ids = desc[field]
-            if ids and ids ~= "" then
-                for id in string.gmatch(ids, "%d+") do
-                    local accessoryId = tonumber(id)
-                    if accessoryId and accessoryId ~= 0 and not table.find(currentAccessories, accessoryId) then
-                        table.insert(accessoryIds, accessoryId)
-                        print("Acessório encontrado no HumanoidDescription (" .. field .. ") ID:", accessoryId)
-                    end
-                end
-            else
-                print("Nenhum " .. field .. " encontrado no HumanoidDescription.")
-            end
-        end
-
-        -- Método 2: Obter acessórios diretamente do Character (se disponível e método for Avatar Atual)
-        if selectedMethod == "Avatar Atual (Brookhaven)" and target.Character then
-            local characterAccessories = target.Character:GetChildren()
-            for _, item in ipairs(characterAccessories) do
-                if item:IsA("Accessory") then
-                    local handle = item:FindFirstChild("Handle")
-                    if handle then
-                        -- Tentar encontrar o ID do acessório de várias formas
-                        local assetId = handle:FindFirstChild("AssetId") or handle:FindFirstChild("AccessoryId")
-                        if not assetId then
-                            -- Tentar extrair o ID do nome ou propriedades
-                            local possibleId = item:FindFirstChild("AccessoryId") or item:FindFirstChild("AssetId")
-                            if not possibleId then
-                                -- Última tentativa: usar o ID do acessório diretamente
+            if selectedMethod == "Avatar Atual (Brookhaven)" and target.Character then
+                local characterChildren = target.Character:GetChildren()
+                for _, item in ipairs(characterChildren) do
+                    if item:IsA("Accessory") then
+                        local handle = item:FindFirstChild("Handle")
+                        if handle then
+                            local assetId = handle:FindFirstChild("AssetId") or handle:FindFirstChild("AccessoryId")
+                            if not assetId then
                                 local success, itemId = pcall(function()
-                                    return game:GetService("MarketplaceService"):GetProductInfo(item.Name).AssetId
+                                    return MarketplaceService:GetProductInfo(tonumber(item.Name:match("%d+")) or 0).AssetId
                                 end)
                                 if success and itemId then
                                     assetId = Instance.new("IntValue")
                                     assetId.Value = itemId
+                                else
+                                    local possibleId = item:FindFirstChild("AccessoryId") or item:FindFirstChild("AssetId")
+                                    if possibleId then
+                                        assetId = possibleId
+                                    else
+                                        for _, child in ipairs(item:GetDescendants()) do
+                                            if child:IsA("StringValue") and child.Name == "AssetId" then
+                                                assetId = Instance.new("IntValue")
+                                                assetId.Value = tonumber(child.Value) or 0
+                                                break
+                                            end
+                                        end
+                                    end
                                 end
-                            else
-                                assetId = possibleId
                             end
-                        end
-                        if assetId and assetId.Value and not table.find(currentAccessories, assetId.Value) and not table.find(accessoryIds, assetId.Value) then
-                            table.insert(accessoryIds, assetId.Value)
-                            print("Acessório encontrado no Character ID:", assetId.Value)
+                            if assetId and assetId.Value and assetId.Value ~= 0 and not table.find(currentAccessories, assetId.Value) and not table.find(accessoryIds, assetId.Value) then
+                                table.insert(accessoryIds, assetId.Value)
+                            end
                         end
                     end
                 end
             end
-        end
 
-        -- Aplicar acessórios
-        for _, accessoryId in ipairs(accessoryIds) do
-            local args = { accessoryId }
-            print("Copiando acessório ID:", accessoryId)
-            local success, err = pcall(function()
-                ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(unpack(args))
-            end)
-            if not success then
-                warn("Erro ao copiar acessório ID " .. accessoryId .. ": " .. tostring(err))
-            else
-                print("Acessório ID " .. accessoryId .. " copiado com sucesso!")
-            end
-            task.wait(1.5) -- Aumentar o atraso para evitar bugs
-        end
-
-        -- Copiar roupas (camisa, calça e rosto)
-        if desc.Shirt and desc.Shirt ~= 0 and (not localDesc or localDesc.Shirt ~= desc.Shirt) then
-            local shirtArgs = { desc.Shirt }
-            print("Copiando camisa ID:", desc.Shirt)
-            local success, err = pcall(function()
-                ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(unpack(shirtArgs))
-            end)
-            if not success then
-                warn("Erro ao copiar camisa ID " .. desc.Shirt .. ": " .. tostring(err))
-            end
-            task.wait(1)
-        else
-            print("Camisa ID " .. tostring(desc.Shirt) .. " já equipada ou inválida. Pulando.")
-        end
-
-        if desc.Pants and desc.Pants ~= 0 and (not localDesc or localDesc.Pants ~= desc.Pants) then
-            local pantsArgs = { desc.Pants }
-            print("Copiando calça ID:", desc.Pants)
-            local success, err = pcall(function()
-                ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(unpack(pantsArgs))
-            end)
-            if not success then
-                warn("Erro ao copiar calça ID " .. desc.Pants .. ": " .. tostring(err))
-            end
-            task.wait(1)
-        else
-            print("Calça ID " .. tostring(desc.Pants) .. " já equipada ou inválida. Pulando.")
-        end
-
-        if desc.Face and desc.Face ~= 0 and (not localDesc or localDesc.Face ~= desc.Face) then
-            local faceArgs = { desc.Face }
-            print("Copiando rosto ID:", desc.Face)
-            local success, err = pcall(function()
-                ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(unpack(faceArgs))
-            end)
-            if not success then
-                warn("Erro ao copiar rosto ID " .. desc.Face .. ": " .. tostring(err))
-            end
-            task.wait(1)
-        else
-            print("Rosto ID " .. tostring(desc.Face) .. " já equipado ou inválido. Pulando.")
-        end
-
-        -- Copiar partes do corpo (bundles)
-        local bodyFields = {
-            "Head",
-            "LeftArm",
-            "LeftLeg",
-            "RightArm",
-            "RightLeg",
-            "Torso"
-        }
-        local bodyIds = {}
-        local usedIds = {}
-
-        -- Obter partes do corpo atuais do próprio personagem
-        local currentBodyIds = {}
-        if localDesc then
-            for i, field in ipairs(bodyFields) do
-                local id = localDesc[field]
-                local numId = tonumber(id)
-                if numId and numId ~= 0 then
-                    currentBodyIds[field] = numId
-                else
-                    currentBodyIds[field] = 0
-                end
-            end
-        end
-
-        -- Copiar os IDs do corpo do HumanoidDescription
-        print("Lendo IDs do corpo do HumanoidDescription:")
-        for i, field in ipairs(bodyFields) do
-            local id = desc[field]
-            local numId = tonumber(id) or 0
-            print("ID bruto para " .. field .. ": " .. tostring(id))
-            print("ID convertido para " .. field .. ": " .. numId)
-            if not usedIds[numId] or numId == 0 then
-                if not currentBodyIds[field] or currentBodyIds[field] ~= numId then
-                    bodyIds[i] = numId
-                    usedIds[numId] = true
-                    print("ID válido para " .. field .. ": " .. numId)
-                else
-                    print("ID para " .. field .. " já é " .. numId .. ". Pulando.")
-                    bodyIds[i] = nil
-                end
-            else
-                warn("ID duplicado para " .. field .. ": " .. numId .. ". Substituindo por 0.")
-                bodyIds[i] = 0
-                print("ID para " .. field .. " definido como 0 devido a duplicata.")
-            end
-        end
-
-        -- Armazenar os IDs lidos para o botão de copiar
-        lastBodyIds = {}
-        for i, field in ipairs(bodyFields) do
-            local id = desc[field]
-            lastBodyIds[i] = tonumber(id) or 0
-        end
-
-        -- Filtrar bodyIds para remover nulos
-        local finalBodyIds = {}
-        for i, id in ipairs(bodyIds) do
-            if id ~= nil then
-                finalBodyIds[i] = id
-            end
-        end
-
-        -- Forçar o corpo manualmente apenas se necessário
-        local expectedBody = {86499666, 86499698, 86499716, 4637243648, 4637242166, 86498113}
-        local shouldForceBody = false
-        if #finalBodyIds == 0 then
-            shouldForceBody = true
-            warn("Nenhuma parte do corpo para copiar com base na comparação. Tentando aplicar o corpo manualmente.")
-        else
-            -- Comparar os IDs com o corpo esperado
-            local matchesExpected = true
-            for i = 1, #bodyFields do
-                local readId = lastBodyIds[i] or 0
-                if readId ~= expectedBody[i] then
-                    matchesExpected = false
-                    break
-                end
-            end
-            if not matchesExpected then
-                shouldForceBody = true
-                warn("Os IDs do corpo não correspondem ao esperado. Tentando aplicar o corpo manualmente.")
-            end
-        end
-
-        if shouldForceBody then
-            finalBodyIds = expectedBody
-            print("Forçando corpo manualmente:", finalBodyIds)
-        end
-
-        -- Tentar aplicar o corpo
-        if #finalBodyIds > 0 then
-            print("Copiando partes do corpo:", finalBodyIds)
-            local success, err = pcall(function()
-                local result = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ChangeCharacterBody"):InvokeServer(finalBodyIds)
-                print("Resultado do ChangeCharacterBody:", result)
-                return result
-            end)
-            if not success then
-                warn("Erro ao copiar partes do corpo: " .. tostring(err))
-            else
-                print("Partes do corpo copiadas com sucesso!")
-            end
-            task.wait(1.5) -- Aumentar o atraso para evitar bugs
-        else
-            warn("Nenhuma parte do corpo para copiar após filtragem.")
-        end
-
-        -- Copiar cor do corpo
-        local bodyColor = nil
-        if selectedMethod == "Avatar Atual (Brookhaven)" and target.Character then
-            local bodyColors = target.Character:FindFirstChild("Body Colors")
-            if bodyColors then
-                bodyColor = bodyColors.TorsoColor
-                print("Cor do torso encontrada no BodyColors:", bodyColor)
-            end
-        end
-        if not bodyColor then
-            bodyColor = desc.TorsoColor or desc.HeadColor or Color3.fromRGB(199, 172, 120)
-            print("Usando cor do HumanoidDescription como fallback:", bodyColor)
-        end
-
-        local colorName = color3ToColorName(bodyColor)
-        local localBodyColors = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Body Colors")
-        local currentColorName = localBodyColors and color3ToColorName(localBodyColors.TorsoColor) or nil
-
-        -- Forçar a aplicação da cor se for diferente, mesmo que "parecida"
-        if not currentColorName or currentColorName ~= colorName or (bodyColor.R ~= localBodyColors.TorsoColor.R or bodyColor.G ~= localBodyColors.TorsoColor.G or bodyColor.B ~= localBodyColors.TorsoColor.B) then
-            print("Copiando cor do corpo:", colorName)
-            local success, err = pcall(function()
-                ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ChangeBodyColor"):FireServer(colorName)
-            end)
-            if not success then
-                warn("Erro ao copiar cor do corpo: " .. tostring(err))
-                print("Tentando cor padrão 'Nougat'...")
-                local success2, err2 = pcall(function()
-                    ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ChangeBodyColor"):FireServer("Nougat")
+            for _, accessoryId in ipairs(accessoryIds) do
+                local args = { accessoryId }
+                local success, err = pcall(function()
+                    ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(unpack(args))
                 end)
-                if not success2 then
-                    warn("Erro ao aplicar cor padrão: " .. tostring(err2))
+                task.wait(1.5)
+            end
+
+            -- Copiar partes do corpo
+            local bodyFields = {
+                "Head",
+                "LeftArm",
+                "LeftLeg",
+                "RightArm",
+                "RightLeg",
+                "Torso"
+            }
+            for _, field in ipairs(bodyFields) do
+                local id = desc[field]
+                local numId = tonumber(id) or 0
+                if numId ~= 0 then
+                    local success, err = pcall(function()
+                        ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(numId)
+                    end)
+                    if not success then
+                        if localHumanoid then
+                            local tempDesc = localHumanoid:GetAppliedDescription()
+                            tempDesc[field] = numId
+                            local success2, err2 = pcall(function()
+                                localHumanoid:ApplyDescription(tempDesc)
+                            end)
+                        end
+                    end
+                end
+                task.wait(0.5)
+            end
+
+            -- Copiar animações
+            local animationFields = {
+                "IdleAnimation",
+                "WalkAnimation",
+                "RunAnimation",
+                "JumpAnimation",
+                "ClimbAnimation",
+                "FallAnimation"
+            }
+            for _, field in ipairs(animationFields) do
+                local id = desc[field]
+                if id and id ~= 0 then
+                    local success, err = pcall(function()
+                        ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ChangeCharacterBody"):InvokeServer({ [field] = id })
+                    end)
+                    task.wait(0.5)
                 end
             end
-        else
-            print("Cor do corpo já é " .. colorName .. " e os valores RGB são idênticos. Pulando.")
-        end
-        task.wait(1)
 
-        print("✅ Aparência copiada com sucesso!")
-    end
-})
+            -- Copiar roupas (camisa, calça e rosto)
+            if desc.Shirt and desc.Shirt ~= 0 and (not localDesc or localDesc.Shirt ~= desc.Shirt) then
+                local shirtArgs = { desc.Shirt }
+                local success, err = pcall(function()
+                    ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(unpack(shirtArgs))
+                end)
+                task.wait(1)
+            end
+
+            if desc.Pants and desc.Pants ~= 0 and (not localDesc or localDesc.Pants ~= desc.Pants) then
+                local pantsArgs = { desc.Pants }
+                local success, err = pcall(function()
+                    ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(unpack(pantsArgs))
+                end)
+                task.wait(1)
+            end
+
+            if desc.Face and desc.Face ~= 0 and (not localDesc or localDesc.Face ~= desc.Face) then
+                local faceArgs = { desc.Face }
+                local success, err = pcall(function()
+                    ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(unpack(faceArgs))
+                end)
+                task.wait(1)
+            end
+
+            -- Copiar cor do corpo
+            local bodyColor = nil
+            if selectedMethod == "Avatar Atual (Brookhaven)" and target.Character then
+                local bodyColors = target.Character:FindFirstChild("Body Colors")
+                if bodyColors then
+                    bodyColor = bodyColors.TorsoColor
+                end
+            end
+            if not bodyColor then
+                bodyColor = desc.TorsoColor or desc.HeadColor or Color3.fromRGB(199, 172, 120)
+            end
+
+            local colorName = color3ToColorName(bodyColor)
+            local localBodyColors = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Body Colors")
+            local currentColorName = localBodyColors and color3ToColorName(localBodyColors.TorsoColor) or nil
+
+            local shouldCopyColor = false
+            if not currentColorName or currentColorName ~= colorName then
+                shouldCopyColor = true
+            elseif localBodyColors and localBodyColors.TorsoColor and typeof(bodyColor) == "Color3" and typeof(localBodyColors.TorsoColor) == "Color3" then
+                if bodyColor.R ~= localBodyColors.TorsoColor.R or bodyColor.G ~= localBodyColors.TorsoColor.G or bodyColor.B ~= localBodyColors.TorsoColor.B then
+                    shouldCopyColor = true
+                end
+            end
+
+            if shouldCopyColor then
+                local success, err = pcall(function()
+                    ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ChangeBodyColor"):FireServer(colorName)
+                end)
+                if not success then
+                    local success2, err2 = pcall(function()
+                        ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ChangeBodyColor"):FireServer("Nougat")
+                    end)
+                end
+            end
+            task.wait(1)
+        end
+    })
+end)
