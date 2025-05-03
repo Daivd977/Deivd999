@@ -1,274 +1,484 @@
--- Serviços do Roblox
+-- Carrega a WindUI
+local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI"))()
+local Version = "1.4.0"
+local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
+
+local Window = WindUI:CreateWindow({
+    Title = "Lolyta Hub 3.1",
+    Icon = "door-open",
+    Author = "Lolycon666",
+    Folder = "Lolyta hub v.1.666",
+    Size = UDim2.fromOffset(580, 460),
+    KeySystem = {
+        Key = "666",
+        Note = "pode nao man",
+        URL = "",
+        SaveKey = true,
+    },
+    Transparent = true,
+    Theme = "Dark",
+    SideBarWidth = 200,
+    HasOutline = false,
+})
+
+Window:EditOpenButton({
+    Title = "Lolyta",
+    Icon = "align-justify",
+    CornerRadius = UDim.new(0, 10),
+    StrokeThickness = 3,
+    Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29"))
+})
+
+-- Definir tab1
+local Tab1 = Window:Tab({ Title = "Main", Icon = "house-plus" })
+
 local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local CoreGui = game:GetService("CoreGui")
-local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
 local LocalPlayer = Players.LocalPlayer
+local selectedPlayerName = nil
+local selectedMethod = "Avatar Atual (Brookhaven)"
+local lastBodyIds = {} -- Armazenar os últimos IDs do corpo lidos
 
--- Função para gerar nomes aleatórios para evitar conflitos
-local function randomString()
-    local length = math.random(10, 20)
-    local array = {}
-    for i = 1, length do
-        array[i] = string.char(math.random(32, 126))
+-- Função para converter Color3 ou BrickColor em nome de cor do Roblox
+local function color3ToColorName(color)
+    local colorMap = {
+        [Color3.fromRGB(242, 243, 243)] = "White",
+        [Color3.fromRGB(163, 162, 165)] = "Light gray",
+        [Color3.fromRGB(27, 42, 53)] = "Black",
+        [Color3.fromRGB(255, 176, 0)] = "Bright orange",
+        [Color3.fromRGB(245, 205, 48)] = "Bright yellow",
+        [Color3.fromRGB(75, 151, 75)] = "Bright green",
+        [Color3.fromRGB(40, 127, 71)] = "Dark green",
+        [Color3.fromRGB(0, 112, 221)] = "Bright blue",
+        [Color3.fromRGB(196, 40, 28)] = "Bright red",
+        [Color3.fromRGB(234, 184, 146)] = "Light orange",
+        [Color3.fromRGB(255, 0, 255)] = "Hot pink",
+        [Color3.fromRGB(159, 161, 172)] = "Gray",
+        [Color3.fromRGB(199, 172, 120)] = "Nougat",
+        [Color3.fromRGB(148, 107, 75)] = "Cork",
+        [Color3.fromRGB(124, 92, 70)] = "Brown",
+        [Color3.fromRGB(218, 133, 65)] = "Sand red",
+        [Color3.fromRGB(175, 148, 131)] = "Linen",
+        [Color3.fromRGB(255, 201, 201)] = "Pastel brown"
+    }
+
+    local color3Value
+    if typeof(color) == "BrickColor" then
+        color3Value = color.Color
+    else
+        color3Value = Color3.new(math.clamp(color.R, 0, 1), math.clamp(color.G, 0, 1), math.clamp(color.B, 0, 1))
     end
-    return table.concat(array)
-end
 
--- Criar a UI
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = randomString()
-ScreenGui.Parent = CoreGui
-ScreenGui.IgnoreGuiInset = true
+    local closestColorName = "Nougat"
+    local minDistance = math.huge
 
-local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 200, 0, 150)
-Frame.Position = UDim2.new(0.5, -100, 0.5, -75)
-Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-Frame.BorderSizePixel = 0
-Frame.Parent = ScreenGui
-Frame.Active = true
-Frame.Draggable = true -- Torna a UI arrastável
-
--- Título
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 30)
-Title.Position = UDim2.new(0, 0, 0, 0)
-Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-Title.Text = "Cabeça Grande"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.Font = Enum.Font.SourceSansBold
-Title.TextSize = 18
-Title.Parent = Frame
-
--- Botão de fechar (X)
-local CloseButton = Instance.new("TextButton")
-CloseButton.Size = UDim2.new(0, 30, 0, 30)
-CloseButton.Position = UDim2.new(1, -30, 0, 0)
-CloseButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-CloseButton.Text = "X"
-CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseButton.Font = Enum.Font.SourceSansBold
-CloseButton.TextSize = 18
-CloseButton.Parent = Frame
-
--- Campo de texto para tamanho da cabeça
-local HeadSizeInput = Instance.new("TextBox")
-HeadSizeInput.Size = UDim2.new(0, 180, 0, 30)
-HeadSizeInput.Position = UDim2.new(0, 10, 0, 40)
-HeadSizeInput.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-HeadSizeInput.Text = "5" -- Tamanho padrão
-HeadSizeInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-HeadSizeInput.Font = Enum.Font.SourceSans
-HeadSizeInput.TextSize = 16
-HeadSizeInput.PlaceholderText = "Tamanho da cabeça"
-HeadSizeInput.Parent = Frame
-
--- Toggle para ativar/desativar o efeito
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(0, 180, 0, 30)
-ToggleButton.Position = UDim2.new(0, 10, 0, 80)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-ToggleButton.Text = "Cabeça Grande: OFF"
-ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.Font = Enum.Font.SourceSans
-ToggleButton.TextSize = 16
-ToggleButton.Parent = Frame
-
--- Variáveis de controle
-local isHeadSizeEnabled = false
-local originalHeadSizes = {} -- Armazena tamanhos originais das cabeças
-local headSize = 5 -- Tamanho padrão da cabeça
-local connections = {} -- Armazena conexões de eventos
-
--- Função para aplicar tamanho da cabeça
-local function applyHeadSize(player, size)
-    if player == LocalPlayer then return end
-    pcall(function()
-        if player.Character and player.Character:FindFirstChild("Head") then
-            local head = player.Character.Head
-            if not originalHeadSizes[player] then
-                originalHeadSizes[player] = head.Size
-            end
-            head.Size = Vector3.new(size, size, size)
-            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid.HeadScale = size
-            end
+    for refColor, colorName in pairs(colorMap) do
+        local distance = (refColor.R - color3Value.R)^2 + (refColor.G - color3Value.G)^2 + (refColor.B - color3Value.B)^2
+        if distance < minDistance then
+            minDistance = distance
+            closestColorName = colorName
         end
-    end)
-end
+    end
 
--- Função para restaurar tamanho da cabeça
-local function restoreHeadSize(player)
-    if player == LocalPlayer then return end
-    pcall(function()
-        if player.Character and player.Character:FindFirstChild("Head") and originalHeadSizes[player] then
-            local head = player.Character.Head
-            head.Size = originalHeadSizes[player]
-            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid.HeadScale = 1
-            end
+    -- Verificar se a cor exata existe no colorMap
+    for refColor, colorName in pairs(colorMap) do
+        if refColor.R == color3Value.R and refColor.G == color3Value.G and refColor.B == color3Value.B then
+            return colorName
         end
-    end)
+    end
+
+    return closestColorName
 end
 
--- Função para atualizar todos os jogadores
-local function updateAllPlayers()
-    pcall(function()
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer then
-                if isHeadSizeEnabled then
-                    applyHeadSize(player, headSize)
-                else
-                    restoreHeadSize(player)
+local function getPlayerNames()
+    local names = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            table.insert(names, player.Name)
+        end
+    end
+    return names
+end
+
+-- Dropdown de jogadores
+local PlayerDropdown = Tab1:Dropdown({
+    Title = "Selecionar Jogador",
+    Desc = "Escolha um jogador para copiar visual",
+    Value = nil,
+    Multi = false,
+    AllowNone = true,
+    Values = getPlayerNames(),
+    Callback = function(name)
+        selectedPlayerName = name
+        print("Jogador selecionado: " .. tostring(name))
+    end
+})
+
+-- Atualizar a lista de jogadores automaticamente
+spawn(function()
+    while true do
+        PlayerDropdown:SetValues(getPlayerNames())
+        print("Lista de jogadores atualizada automaticamente!")
+        task.wait(5)
+    end
+end)
+
+-- Dropdown para selecionar o método de cópia
+local MethodDropdown = Tab1:Dropdown({
+    Title = "Método de Cópia",
+    Desc = "Escolha entre copiar o avatar atual ou o real",
+    Value = "Avatar Atual (Brookhaven)",
+    Multi = false,
+    AllowNone = false,
+    Values = {"Avatar Atual (Brookhaven)", "Avatar Real (Roblox)"},
+    Callback = function(method)
+        selectedMethod = method
+        print("Método de cópia selecionado: " .. method)
+    end
+})
+
+-- Botão para copiar aparência
+Tab1:Button({
+    Title = "Copiar Visual Completo",
+    Desc = "Copia roupas, acessórios, cor e corpo",
+    Callback = function()
+        if not selectedPlayerName then
+            warn("Nenhum jogador selecionado.")
+            return
+        end
+
+        local target = Players:FindFirstChild(selectedPlayerName)
+        if not target then
+            warn("Jogador inválido.")
+            return
+        end
+
+        -- Obter a descrição dependendo do método selecionado
+        local desc
+        if selectedMethod == "Avatar Atual (Brookhaven)" then
+            if not target.Character then
+                warn("Personagem do jogador não encontrado.")
+                return
+            end
+            local humanoid = target.Character:FindFirstChildWhichIsA("Humanoid")
+            if not humanoid then
+                warn("Humanoid não encontrado.")
+                return
+            end
+            desc = humanoid:GetAppliedDescription()
+            if not desc then
+                warn("Descrição não encontrada.")
+                return
+            end
+            print("Usando avatar atual do Brookhaven.")
+        else
+            local success, result = pcall(function()
+                return Players:GetHumanoidDescriptionFromUserId(target.UserId)
+            end)
+            if not success then
+                warn("Erro ao obter avatar real do Roblox: " .. tostring(result))
+                return
+            end
+            desc = result
+            print("Usando avatar real do Roblox.")
+        end
+
+        -- Obter a descrição do próprio personagem para comparar
+        local localHumanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+        local localDesc = localHumanoid and localHumanoid:GetAppliedDescription()
+        if not localDesc then
+            warn("Descrição do próprio personagem não encontrada. Prosseguindo sem comparação.")
+        end
+
+        -- Copiar acessórios
+        local currentAccessories = {}
+        if localDesc then
+            local accessoryFields = {
+                "HatAccessory",
+                "HairAccessory",
+                "FaceAccessory",
+                "NeckAccessory",
+                "FrontAccessory",
+                "BackAccessory",
+                "WaistAccessory"
+            }
+            for _, field in ipairs(accessoryFields) do
+                local ids = localDesc[field]
+                if ids and ids ~= "" then
+                    for id in string.gmatch(ids, "%d+") do
+                        table.insert(currentAccessories, tonumber(id))
+                    end
                 end
             end
         end
-    end)
-end
 
--- Função para ativar/desativar o efeito de cabeça grande
-local function toggleHeadSize()
-    isHeadSizeEnabled = not isHeadSizeEnabled
-    ToggleButton.Text = "Cabeça Grande: " .. (isHeadSizeEnabled and "ON" or "OFF")
-    ToggleButton.BackgroundColor3 = isHeadSizeEnabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(60, 60, 60)
-    
-    -- Limpar conexões anteriores
-    for _, connection in ipairs(connections) do
-        if connection then
-            connection:Disconnect()
+        -- Método 1: Obter acessórios do HumanoidDescription
+        local accessoryFields = {
+            "HatAccessory",
+            "HairAccessory",
+            "FaceAccessory",
+            "NeckAccessory",
+            "FrontAccessory",
+            "BackAccessory",
+            "WaistAccessory"
+        }
+        local accessoryIds = {}
+        for _, field in ipairs(accessoryFields) do
+            local ids = desc[field]
+            if ids and ids ~= "" then
+                for id in string.gmatch(ids, "%d+") do
+                    local accessoryId = tonumber(id)
+                    if accessoryId and accessoryId ~= 0 and not table.find(currentAccessories, accessoryId) then
+                        table.insert(accessoryIds, accessoryId)
+                        print("Acessório encontrado no HumanoidDescription (" .. field .. ") ID:", accessoryId)
+                    end
+                end
+            else
+                print("Nenhum " .. field .. " encontrado no HumanoidDescription.")
+            end
         end
-    end
-    connections = {}
-    
-    updateAllPlayers()
-    
-    if isHeadSizeEnabled then
-        -- Iniciar loop de reaplicação
-        table.insert(connections, RunService.Stepped:Connect(function()
-            pcall(function()
-                for _, player in ipairs(Players:GetPlayers()) do
-                    if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
-                        local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-                        if humanoid and humanoid.HeadScale ~= headSize then
-                            applyHeadSize(player, headSize)
+
+        -- Método 2: Obter acessórios diretamente do Character (se disponível e método for Avatar Atual)
+        if selectedMethod == "Avatar Atual (Brookhaven)" and target.Character then
+            local characterAccessories = target.Character:GetChildren()
+            for _, item in ipairs(characterAccessories) do
+                if item:IsA("Accessory") then
+                    local handle = item:FindFirstChild("Handle")
+                    if handle then
+                        -- Tentar encontrar o ID do acessório de várias formas
+                        local assetId = handle:FindFirstChild("AssetId") or handle:FindFirstChild("AccessoryId")
+                        if not assetId then
+                            -- Tentar extrair o ID do nome ou propriedades
+                            local possibleId = item:FindFirstChild("AccessoryId") or item:FindFirstChild("AssetId")
+                            if not possibleId then
+                                -- Última tentativa: usar o ID do acessório diretamente
+                                local success, itemId = pcall(function()
+                                    return game:GetService("MarketplaceService"):GetProductInfo(item.Name).AssetId
+                                end)
+                                if success and itemId then
+                                    assetId = Instance.new("IntValue")
+                                    assetId.Value = itemId
+                                end
+                            else
+                                assetId = possibleId
+                            end
+                        end
+                        if assetId and assetId.Value and not table.find(currentAccessories, assetId.Value) and not table.find(accessoryIds, assetId.Value) then
+                            table.insert(accessoryIds, assetId.Value)
+                            print("Acessório encontrado no Character ID:", assetId.Value)
                         end
                     end
                 end
-            end)
-        end))
-        
-        -- Aplicação inicial repetida
-        for i = 1, 5 do
-            spawn(function()
-                wait(i)
-                updateAllPlayers()
-            end)
+            end
         end
-    end
-end
 
--- Atualizar tamanho da cabeça quando o texto é inserido
-HeadSizeInput.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local input = tonumber(HeadSizeInput.Text)
-        if input and input > 0 then
-            headSize = input
-            if isHeadSizeEnabled then
-                updateAllPlayers()
+        -- Aplicar acessórios
+        for _, accessoryId in ipairs(accessoryIds) do
+            local args = { accessoryId }
+            print("Copiando acessório ID:", accessoryId)
+            local success, err = pcall(function()
+                ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(unpack(args))
+            end)
+            if not success then
+                warn("Erro ao copiar acessório ID " .. accessoryId .. ": " .. tostring(err))
+            else
+                print("Acessório ID " .. accessoryId .. " copiado com sucesso!")
+            end
+            task.wait(1.5) -- Aumentar o atraso para evitar bugs
+        end
+
+        -- Copiar roupas (camisa, calça e rosto)
+        if desc.Shirt and desc.Shirt ~= 0 and (not localDesc or localDesc.Shirt ~= desc.Shirt) then
+            local shirtArgs = { desc.Shirt }
+            print("Copiando camisa ID:", desc.Shirt)
+            local success, err = pcall(function()
+                ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(unpack(shirtArgs))
+            end)
+            if not success then
+                warn("Erro ao copiar camisa ID " .. desc.Shirt .. ": " .. tostring(err))
+            end
+            task.wait(1)
+        else
+            print("Camisa ID " .. tostring(desc.Shirt) .. " já equipada ou inválida. Pulando.")
+        end
+
+        if desc.Pants and desc.Pants ~= 0 and (not localDesc or localDesc.Pants ~= desc.Pants) then
+            local pantsArgs = { desc.Pants }
+            print("Copiando calça ID:", desc.Pants)
+            local success, err = pcall(function()
+                ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(unpack(pantsArgs))
+            end)
+            if not success then
+                warn("Erro ao copiar calça ID " .. desc.Pants .. ": " .. tostring(err))
+            end
+            task.wait(1)
+        else
+            print("Calça ID " .. tostring(desc.Pants) .. " já equipada ou inválida. Pulando.")
+        end
+
+        if desc.Face and desc.Face ~= 0 and (not localDesc or localDesc.Face ~= desc.Face) then
+            local faceArgs = { desc.Face }
+            print("Copiando rosto ID:", desc.Face)
+            local success, err = pcall(function()
+                ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Wear"):InvokeServer(unpack(faceArgs))
+            end)
+            if not success then
+                warn("Erro ao copiar rosto ID " .. desc.Face .. ": " .. tostring(err))
+            end
+            task.wait(1)
+        else
+            print("Rosto ID " .. tostring(desc.Face) .. " já equipado ou inválido. Pulando.")
+        end
+
+        -- Copiar partes do corpo (bundles)
+        local bodyFields = {
+            "Head",
+            "LeftArm",
+            "LeftLeg",
+            "RightArm",
+            "RightLeg",
+            "Torso"
+        }
+        local bodyIds = {}
+        local usedIds = {}
+
+        -- Obter partes do corpo atuais do próprio personagem
+        local currentBodyIds = {}
+        if localDesc then
+            for i, field in ipairs(bodyFields) do
+                local id = localDesc[field]
+                local numId = tonumber(id)
+                if numId and numId ~= 0 then
+                    currentBodyIds[field] = numId
+                else
+                    currentBodyIds[field] = 0
+                end
+            end
+        end
+
+        -- Copiar os IDs do corpo do HumanoidDescription
+        print("Lendo IDs do corpo do HumanoidDescription:")
+        for i, field in ipairs(bodyFields) do
+            local id = desc[field]
+            local numId = tonumber(id) or 0
+            print("ID bruto para " .. field .. ": " .. tostring(id))
+            print("ID convertido para " .. field .. ": " .. numId)
+            if not usedIds[numId] or numId == 0 then
+                if not currentBodyIds[field] or currentBodyIds[field] ~= numId then
+                    bodyIds[i] = numId
+                    usedIds[numId] = true
+                    print("ID válido para " .. field .. ": " .. numId)
+                else
+                    print("ID para " .. field .. " já é " .. numId .. ". Pulando.")
+                    bodyIds[i] = nil
+                end
+            else
+                warn("ID duplicado para " .. field .. ": " .. numId .. ". Substituindo por 0.")
+                bodyIds[i] = 0
+                print("ID para " .. field .. " definido como 0 devido a duplicata.")
+            end
+        end
+
+        -- Armazenar os IDs lidos para o botão de copiar
+        lastBodyIds = {}
+        for i, field in ipairs(bodyFields) do
+            local id = desc[field]
+            lastBodyIds[i] = tonumber(id) or 0
+        end
+
+        -- Filtrar bodyIds para remover nulos
+        local finalBodyIds = {}
+        for i, id in ipairs(bodyIds) do
+            if id ~= nil then
+                finalBodyIds[i] = id
+            end
+        end
+
+        -- Forçar o corpo manualmente apenas se necessário
+        local expectedBody = {86499666, 86499698, 86499716, 4637243648, 4637242166, 86498113}
+        local shouldForceBody = false
+        if #finalBodyIds == 0 then
+            shouldForceBody = true
+            warn("Nenhuma parte do corpo para copiar com base na comparação. Tentando aplicar o corpo manualmente.")
+        else
+            -- Comparar os IDs com o corpo esperado
+            local matchesExpected = true
+            for i = 1, #bodyFields do
+                local readId = lastBodyIds[i] or 0
+                if readId ~= expectedBody[i] then
+                    matchesExpected = false
+                    break
+                end
+            end
+            if not matchesExpected then
+                shouldForceBody = true
+                warn("Os IDs do corpo não correspondem ao esperado. Tentando aplicar o corpo manualmente.")
+            end
+        end
+
+        if shouldForceBody then
+            finalBodyIds = expectedBody
+            print("Forçando corpo manualmente:", finalBodyIds)
+        end
+
+        -- Tentar aplicar o corpo
+        if #finalBodyIds > 0 then
+            print("Copiando partes do corpo:", finalBodyIds)
+            local success, err = pcall(function()
+                local result = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ChangeCharacterBody"):InvokeServer(finalBodyIds)
+                print("Resultado do ChangeCharacterBody:", result)
+                return result
+            end)
+            if not success then
+                warn("Erro ao copiar partes do corpo: " .. tostring(err))
+            else
+                print("Partes do corpo copiadas com sucesso!")
+            end
+            task.wait(1.5) -- Aumentar o atraso para evitar bugs
+        else
+            warn("Nenhuma parte do corpo para copiar após filtragem.")
+        end
+
+        -- Copiar cor do corpo
+        local bodyColor = nil
+        if selectedMethod == "Avatar Atual (Brookhaven)" and target.Character then
+            local bodyColors = target.Character:FindFirstChild("Body Colors")
+            if bodyColors then
+                bodyColor = bodyColors.TorsoColor
+                print("Cor do torso encontrada no BodyColors:", bodyColor)
+            end
+        end
+        if not bodyColor then
+            bodyColor = desc.TorsoColor or desc.HeadColor or Color3.fromRGB(199, 172, 120)
+            print("Usando cor do HumanoidDescription como fallback:", bodyColor)
+        end
+
+        local colorName = color3ToColorName(bodyColor)
+        local localBodyColors = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Body Colors")
+        local currentColorName = localBodyColors and color3ToColorName(localBodyColors.TorsoColor) or nil
+
+        -- Forçar a aplicação da cor se for diferente, mesmo que "parecida"
+        if not currentColorName or currentColorName ~= colorName or (bodyColor.R ~= localBodyColors.TorsoColor.R or bodyColor.G ~= localBodyColors.TorsoColor.G or bodyColor.B ~= localBodyColors.TorsoColor.B) then
+            print("Copiando cor do corpo:", colorName)
+            local success, err = pcall(function()
+                ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ChangeBodyColor"):FireServer(colorName)
+            end)
+            if not success then
+                warn("Erro ao copiar cor do corpo: " .. tostring(err))
+                print("Tentando cor padrão 'Nougat'...")
+                local success2, err2 = pcall(function()
+                    ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ChangeBodyColor"):FireServer("Nougat")
+                end)
+                if not success2 then
+                    warn("Erro ao aplicar cor padrão: " .. tostring(err2))
+                end
             end
         else
-            HeadSizeInput.Text = tostring(headSize)
+            print("Cor do corpo já é " .. colorName .. " e os valores RGB são idênticos. Pulando.")
         end
+        task.wait(1)
+
+        print("✅ Aparência copiada com sucesso!")
     end
-end)
-
--- Conectar o toggle
-ToggleButton.MouseButton1Click:Connect(toggleHeadSize)
-
--- Aplicar o efeito quando novos jogadores entram
-Players.PlayerAdded:Connect(function(player)
-    if player ~= LocalPlayer then
-        player.CharacterAdded:Connect(function()
-            if isHeadSizeEnabled then
-                wait(3) -- Atraso aumentado
-                applyHeadSize(player, headSize)
-            end
-        end)
-    end
-end)
-
--- Monitorar jogadores existentes
-for _, player in ipairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer then
-        player.CharacterAdded:Connect(function()
-            if isHeadSizeEnabled then
-                wait(3) -- Atraso aumentado
-                applyHeadSize(player, headSize)
-            end
-        end)
-        if player.Character then
-            applyHeadSize(player, headSize)
-        end
-    end
-end
-
--- Fechar a UI e desativar efeitos
-CloseButton.MouseButton1Click:Connect(function()
-    if isHeadSizeEnabled then
-        toggleHeadSize()
-    end
-    for _, connection in ipairs(connections) do
-        if connection then
-            connection:Disconnect()
-        end
-    end
-    ScreenGui:Destroy()
-end)
-
--- Função para causar dano ao acertar qualquer jogador
-local function setupDamageOnHit()
-    local mouse = LocalPlayer:GetMouse()
-
-    table.insert(connections, mouse.Button1Down:Connect(function()
-        local target = mouse.Target
-        if target then
-            local humanoid = target.Parent:FindFirstChildOfClass("Humanoid")
-            if humanoid and humanoid.Parent ~= LocalPlayer.Character then
-                humanoid:TakeDamage(10)
-            end
-        end
-    end))
-
-    local function onTouch(hit)
-        local humanoid = hit.Parent:FindFirstChildOfClass("Humanoid")
-        if humanoid and humanoid.Parent ~= LocalPlayer.Character then
-            humanoid:TakeDamage(10)
-        end
-        humanoid = hit.Parent.Parent:FindFirstChildOfClass("Humanoid")
-        if humanoid and humanoid.Parent ~= LocalPlayer.Character then
-            humanoid:TakeDamage(10)
-        end
-    end
-
-    if LocalPlayer.Character then
-        for _, part in ipairs(LocalPlayer.Character:GetChildren()) do
-            if part:IsA("BasePart") then
-                table.insert(connections, part.Touched:Connect(onTouch))
-            end
-        end
-    end
-
-    LocalPlayer.CharacterAdded:Connect(function(character)
-        for _, part in ipairs(character:GetChildren()) do
-            if part:IsA("BasePart") then
-                table.insert(connections, part.Touched:Connect(onTouch))
-            end
-        end
-    end)
-end
-
--- Iniciar o sistema de dano
-setupDamageOnHit()
+})
