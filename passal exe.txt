@@ -50,7 +50,7 @@ end
 if not isAllowed then
     game.StarterGui:SetCore("SendNotification", {
         Title = "Acesso Negado",
-        Text = "Você não tem permissão para usar o Lolyta Hub 3.1 Contate o criador para ser adicionado à lista.",
+        Text = "Você não tem permissão para usar o Lolyta Hub 3.2 Contate o criador para ser adicionado à lista.",
         Duration = 5
     })
     return
@@ -149,7 +149,7 @@ local Version = "1.4.0"
 local WindUI = loadstring(game:HttpGet("https://tree-hub.vercel.app/api/UI/WindUI/" .. Version))()
 
 local Window = WindUI:CreateWindow({
-    Title = "Lolyta Hub 3.1",
+    Title = "Lolyta Hub 3.3",
     Icon = "door-open",
     Author = "Lolycon666",
     Folder = "Lolyta hub v.1.666",
@@ -173,6 +173,7 @@ Window:EditOpenButton({
     StrokeThickness = 3,
     Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29"))
 })
+
 
 -- Abas da Interface
 local Tab1 = Window:Tab({ Title = "Main", Icon = "house-plus" })
@@ -988,6 +989,82 @@ Tab2:Button({
 ---------------------------------------------------------------------------------------------------------------------------------
 
 Tab3:Paragraph({ 
+    Title = "ant mandrake nova funçao laga o server por isso que n pode ser imediato quando clicar no botao para parar ", 
+    Desc = ""
+})
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local isSpawning = false -- Variável para controlar o estado do spawn
+
+-- Verifica se o Remote Event existe
+local RE = ReplicatedStorage:FindFirstChild("RE")
+local Remote = RE and RE:FindFirstChild("1Ca1r")
+
+if not RE or not Remote then
+    warn("Erro: Remote Event não encontrado em ReplicatedStorage.RE.1Ca1r")
+    return
+end
+
+-- Botão 1: Iniciar spawn rápido
+local StartButton = Tab3:Button({
+    Title = "Iniciar opp",
+    Desc = "use com moderaçao",
+    Callback = function()
+        if not isSpawning then
+            isSpawning = true
+            print("Iniciando spawn de carros")
+            task.spawn(function()
+                while isSpawning do
+                    local args = {
+                        "PickingCar",
+                        "Easter2025EasterMonsterTruck"
+                    }
+                    pcall(function()
+                        Remote:FireServer(unpack(args))
+                    end)
+                    task.wait(0.1) -- Intervalo de 0.1 segundo para spawn rápido
+                end
+                print("Spawn de carros parado")
+            end)
+        else
+            print("Spawn já está ativo")
+        end
+    end,
+})
+
+-- Botão 2: Parar spawn
+local StopButton = Tab3:Button({
+    Title = "Parar Spawn",
+    Desc = "Para o spawn de carros",
+    Callback = function()
+        if isSpawning then
+            isSpawning = false
+            print("Spawn parado pelo botão")
+        else
+            print("Nenhum spawn ativo para parar")
+        end
+    end,
+})
+
+-- Botão 3: Deletar todos os carros
+local DeleteButton = Tab3:Button({
+    Title = "Deletar Todos os Carros",
+    Desc = "Remove todos os carros spawnados",
+    Callback = function()
+        local args = {
+            "DeleteAllVehicles"
+        }
+        pcall(function()
+            Remote:FireServer(unpack(args))
+        end)
+        print("Tentativa de deletar todos os carros")
+    end,
+})
+
+
+
+
+Tab3:Paragraph({ 
     Title = "Instruções para o teleporta todods os carros do server no void ", 
     Desc = "para que funcione perfeitamente use o void protection do systemBroken na tab sripts la vai tar ele e vai em game e voidprotection"
 })
@@ -1377,7 +1454,7 @@ local musicOptions = {
         {name = "forro ja cançou", id = "74812784884330"},
         {name = "lenbro ate hoje", id = "71531533552899"},
         {name = "escolha certa", id = "107088620814881"},
-        {name = "nome na ajenda", id = "140095882383991"},
+        
         {name = "forro da rezenha", id = "120973520531216"},
         {name = "forro dudu", id = "74404168179733"},
         {name = "forro sao joao", id = "106364874935196"},
@@ -1447,13 +1524,17 @@ local musicOptions = {
         {name = "musica", id = "4354908569"}, -- Placeholder ID para título
         {name = "ANXIETY (Amapiano Re-fix)", id = "101483901475189"},
         {name = "Meu corpo, minhas regras", id = "127587901595282"},
-        {name = "FALAR (YPKE)", id = "81289143488329"},
+        
         {name = "$$$$gg$$$$gg", id = "137471775091253"},
         {name = "Megalovania but its only the melodies", id = "104500091160463"},
         {name = "androphono strikes back", id = "78312089943968"},
         {name = "Bamm Bamm", id = "128730685516895"},
         {name = "chupa cabra", id = "132890273173295"},
-        {name = "longe de mais", id = "124478512057763"}
+        {name = "longe de mais", id = "124478512057763"},
+        {name = "Garoto de Copacabana", id = "135648634110254"},
+        {name = "CELL!", id = "117634275895085"},
+        {name = "Boa vibe em Ubatuba", id = "139059061493558"}
+        
         
         
        
@@ -1533,60 +1614,23 @@ local musicOptions = {
     ["Funk"] = {
         {name = "funks", id = "4354908569"},
         {name = "sua mulher funk", id = "90844637105538"},
-        {name = "carro ", id = "100788814736643"},
         {name = "efuga na viatura", id = "131891110268352"},
-        {name = "da queles momentos", id = "123134215207264"},
-        {name = "ela vem para provacar", id = "79916408808299"},
         {name = "funkphonk fumando verde", id = "112143944982807"},
+        {name = "cauma xmara", id = "95664293972405"},
+        {name = "que que sharke", id = "129546408528391"},
+        {name = "Il Cacto Hipopotamo FUNK", id = "104491656009142"},
+        {name = "Espressora Signora FUNK", id = "123394392737234"},
         {name = "trippi troop funk", id = "73049389767013"},
         {name = "bombini funkphonk", id = "88814770244609"},
-        {name = "rachador", id = "109411226739991"},
-        {name = "cauma xmara", id = "95664293972405"},
-        {name = "tipo tasmania phonkfunk", id = "104300546340195"},
-        {name = "que que sharke", id = "129546408528391"},
-        {name = "cappuccino assassino funk", id = "122197083209373"},
-        {name = "kawai funk", id = "130053797131700"},
-        {name = "acordei passando mal", id = "83875675100660"},
-        {name = "mechamou de amor", id = "81791559745283"},
-        {name = "oeee ja ven sentando", id = "130944058486069"},
-        {name = "orror (omega007)", id = "73638649204496"},
-        {name = "que pro", id = "97239186078279"},
-        {name = "3 em um dot funk", id = "92191873659720"},
-        {name = "naved novinha", id = "102930993846348"},
-        {name = "preparaaa raaaaa", id = "98063604604756"},
-        {name = "vagalumes", id = "72026860897382"},
-        {name = "nova geraçao", id = "140065053895542"},
-        {name = "lovezin", id = "130664328738685"},
-        {name = "to voando alto", id = "110475831724424"},
-        {name = "CVVV", id = "94245278418076"},
-        {name = "MW funk", id = "73473695797214"},
-        {name = "menor TV", id = "93993692602344"},
-        {name = "de duplinha", id = "80112997683181"},
-        {name = "tropa da jamaika", id = "104498738218748"},
         {name = "pre treino", id = "136869502216760"},
-        {name = "Of the king (Omega)", id = "75080131478471"},
         {name = "CVRL", id = "124244582950595"},
         {name = "batida Brega Violino (Beat Brega Funk) ", id = "99399643204701"},
-        {name = "Espressora Signora FUNK", id = "123394392737234"},
         {name = "Dança do Canguru (Pke Gaz1nh)", id = "86876136192157"},
-        {name = "Il Cacto Hipopotamo FUNK", id = "104491656009142"},
-        {name = "Dingo o Bell (Omega)", id = "93847687239132"},
         {name = "espere 30segundos!! Ondas sonoras", id = "127757321382838"},
         {name = "MONTAGEM ARABIANA (Pke Gaz1nh)", id = "78076624091098"},
-        {name = "MONTAGEM 15 AN0", id = "82838053504552"},
-        {name = "Clube das Winx", id = "101870752447864"},
-        {name = "MONTAGEM PALHAÇO DAS TREVAS", id = "98342120038327"},
-        {name = "AQUI NO CH.. (GAZ1NH)", id = "132455229546431"},
-        {name = "AUTOMOTIVO DUPLA DINAMICA", id = "73361598376791"},
-        {name = "SENTA, SENTA, SENTA", id = "140417852590557"},
-        {name = "Boladona", id = "96625339070598"},
-        {name = "ARROCHA ", id = "103249564479431"},
-        {name = "MEGA DOS AUTOMOTIVO", id = "82353927625851"},
-        {name = "escravos do po", id = "108995231462803"},
-        {name = "Song yes ", id = "99683269181092"},
-        {name = "ANTARES", id = "86565558723655"},
-        {name = "Manda o papo (NGI)", id = "132642647937688"}
-        
+        {name = "Manda o papo (NGI)", id = "132642647937688"},
+        {name = "Viver bem", id = "82805460494325"}
+       
         
         
     }
@@ -1718,11 +1762,11 @@ local musicOptions = {
         {name = "Automotivo Blondie (Pke Gaz1nh)", id = "74564219749776"},
         {name = "สวัสดีคนไทย v2", id = "118225359190317"},
         {name = "MTG TU VAI SENTAR (Pke Gaz1nh)", id = "115317874112657"},
-        {name = "TOMADA PHONK", id = "96610114209889"},
-        {name = "riightt rs ", id = "98153718682753"},
         {name = "SARRA FUNK", id = "96249826607044"},
         {name = "Catuquanvan", id = "88038595663211"},
-        {name = "F-D-1 (slowed)", id = "124958445624871"}
+        {name = "F-D-1 (slowed)", id = "124958445624871"},
+        {name = "Sucessagem", id = "88551699463723"},
+       
         
         
         
@@ -1901,10 +1945,16 @@ local musicOptions = {
         {name = "sai", id = 121169949217007}, 
         {name = "risada boa dms", id = 127589011971759}, 
         {name = "vacilo perna de pau", id = 106809680656199},
-        {name = "gomo gomo no!!!", id = 137067472449625},
+        {name = "gomo gomo no!!!", id = 137067472449625}, 
         
-        
-        {name = "cavalo!!", id = 78871573440184},
+        {name = "iraaaa", id = 136752451575091},
+        {name = "não fica se achando muito não", id = 101588606280167}, 
+        {name = "WhatsApp notificaçao", id = 107004225739474},
+        {name = "Shiiii", id = 120566727202986}, 
+        {name = "ai_tomaa miku", id = 139770074770361},  
+        {name = "kuru_kuru", id = 122465710753374},
+        {name = "PM ROCAM", id = 96161547081609},  
+        {name = "cavalo!!", id = 78871573440184}, 
        
 
         {name = "deixa os garoto brinca", id = 80291355054807},
@@ -1927,6 +1977,7 @@ local musicOptions = {
         {name = "busss", id = 139841197791567},
         {name = "Estourado wItb", id = 137478052262430},
         {name = "sla", id = 116672405522828},
+        {name = "HA HA HA", id = 138236682866721},
 
     }
 }
