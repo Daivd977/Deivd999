@@ -1732,13 +1732,7 @@ local DropdownPlayerTab8 = Tab8:AddDropdown({
     end
 })
 
-Tab8:AddButton({
-    Name = "Atualizar Lista de Jogadores",
-    Description = "Atualiza a lista de jogadores no dropdown",
-    Callback = function()
-        updateDropdown(DropdownPlayerTab8, SpectateToggleTab8)
-    end
-})
+
 
 Tab8:AddButton({
     Name = "Teleportar para Jogador",
@@ -1780,6 +1774,12 @@ Players.PlayerRemoving:Connect(function(player)
         DropdownPlayerTab8:Set("")
     end
 end)
+-- Atualização automática quando um novo jogador entra
+Players.PlayerAdded:Connect(function()
+    task.wait(1) -- pequeno delay para garantir que o jogador esteja pronto
+    updateDropdown(DropdownPlayerTab8, SpectateToggleTab8)
+end)
+
 
 -- Inicializa o dropdown
 updateDropdown(DropdownPlayerTab8, SpectateToggleTab8)
@@ -2083,13 +2083,7 @@ local SpectateToggleTab10 = Tab10:AddToggle({
     end
 })
 
-Tab10:AddButton({
-    Name = "Atualizar Lista de Jogadores",
-    Description = "Atualiza a lista de jogadores no dropdown",
-    Callback = function()
-        updateDropdown(DropdownPlayerTab10, SpectateToggleTab10)
-    end
-})
+
 
 -- Remoção automática de jogadores que saem
 Players.PlayerRemoving:Connect(function(player)
@@ -2107,6 +2101,13 @@ Players.PlayerRemoving:Connect(function(player)
         DropdownPlayerTab10:Set("")
     end
 end)
+
+-- Atualização automática quando um novo jogador entra
+Players.PlayerAdded:Connect(function()
+    task.wait(1) -- pequeno delay para garantir que o jogador esteja pronto
+    updateDropdown(DropdownPlayerTab8, SpectateToggleTab8)
+end)
+
 
 -- Inicializa o dropdown
 updateDropdown(DropdownPlayerTab10, SpectateToggleTab10)
