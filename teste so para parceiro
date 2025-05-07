@@ -15,7 +15,7 @@ local AllowedUsers = {
     "Tiago_RJ4",    --tam bem n sei quem e mais ta usando     
     "lacradoor123",  --n sei quem e mais ta ai
     "enzin12346BR",  --sem dc
-      --migzinn0
+    "RED_MIGZINN",  --migzinn0
     "Davilorenzopro123",  --v4mp08078
     "XxFriend03",  --vini078752
     "branquelo_0908",      --kitedzin7ss 
@@ -155,7 +155,7 @@ local Window = redzlib:MakeWindow({
 
 
 
-local Tab1 = Window:MakeTab({"main", "house-plus"})
+local Tab1 = Window:MakeTab({"player local", "house-plus"})
 local Tab2 = Window:MakeTab({"Casa", "house"})
 local Tab3 = Window:MakeTab({"Carro", "car"})
 local Tab4 = Window:MakeTab({"RGB Color", "palette"})
@@ -170,22 +170,12 @@ local Tab10 = Window:MakeTab({"Troll", "skull"})
                                                    -- === Tab 1: Main === --
 ---------------------------------------------------------------------------------------------------------------------------------
 
+-- === Tab 1: Main === --
 Tab1:AddDiscordInvite({
     Name = "Lolyta Hub",
-    Description = "entrar no servidor",
+    Description = "entrar no server",
     Logo = "rbxassetid://86261083499524",
     Invite = "https://discord.gg/mMS5ctuq",
-})
-
--- === Tab 1: Main === --
-
--- Botão para pegar sofá
-Tab1:AddButton({
-    Name = "Pegar sofá",
-    Description = "Brookhaven",
-    Callback = function()
-        invokeServer("1Too1l", {"PickingTools", "Couch"})
-    end
 })
 
 -- Toggle para ESP
@@ -408,7 +398,21 @@ local function setNoclip(state)
     end
 end
 
+-- Inicializa Noclip como desativado
 setNoclip(false)
+
+-- Configura o CharacterAdded no início
+local characterAddedConnection
+characterAddedConnection = LocalPlayer.CharacterAdded:Connect(function(character)
+    if noclipEnabled then
+        local humanoid = character:WaitForChild("Humanoid", 5)
+        local rootPart = character:WaitForChild("HumanoidRootPart", 5)
+        if humanoid and rootPart then
+            task.wait(0.2)
+            setNoclip(true)
+        end
+    end
+end)
 
 Tab1:AddToggle({
     Name = "Noclip",
@@ -416,16 +420,18 @@ Tab1:AddToggle({
     Default = false,
     Callback = function(value)
         setNoclip(value)
-    end
-})
-
-LocalPlayer.CharacterAdded:Connect(function(character)
-    if noclipEnabled then
-        local humanoid = character:WaitForChild("Humanoid", 5)
-        local rootPart = character:WaitForChild("HumanoidRootPart", 5)
-        if humanoid and rootPart then
-            task.wait(0.2)
-            setNoclip(true)
+        if not value and characterAddedConnection then
+            characterAddedConnection:Disconnect()
+            characterAddedConnection = LocalPlayer.CharacterAdded:Connect(function(character)
+                if noclipEnabled then
+                    local humanoid = character:WaitForChild("Humanoid", 5)
+                    local rootPart = character:WaitForChild("HumanoidRootPart", 5)
+                    if humanoid and rootPart then
+                        task.wait(0.2)
+                        setNoclip(true)
+                    end
+                end
+            end)
         end
     end
 })
@@ -505,7 +511,6 @@ Tab1:AddButton({
 
 -- Toggle para Anti-Sit
 local antiSitConnection = nil
-local characterAddedConnection = nil
 local antiSitEnabled = false
 
 Tab1:AddToggle({
@@ -538,12 +543,14 @@ Tab1:AddToggle({
                 applyAntiSit(LocalPlayer.Character)
             end
 
-            if characterAddedConnection then
-                characterAddedConnection:Disconnect()
-            end
+            local characterAddedConnection
             characterAddedConnection = LocalPlayer.CharacterAdded:Connect(function(character)
+                if not antiSitEnabled then
+                    characterAddedConnection:Disconnect()
+                    return
+                end
                 local humanoid = character:WaitForChild("Humanoid", 5)
-                if humanoid and antiSitEnabled then
+                if humanoid then
                     applyAntiSit(character)
                 end
             end)
@@ -552,10 +559,6 @@ Tab1:AddToggle({
                 antiSitConnection:Disconnect()
                 antiSitConnection = nil
             end
-            if characterAddedConnection then
-                characterAddedConnection:Disconnect()
-                characterAddedConnection = nil
-            end
 
             if LocalPlayer.Character then
                 local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
@@ -563,6 +566,408 @@ Tab1:AddToggle({
                     humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated, true)
                 end
             end
+        end
+    end
+})
+
+---------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 2: casa === --
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+-- === Tab 2: Casa === --
+
+Tab2:AddParagraph({
+    Title = "Funções para você usar em você",
+    Content = ""
+})
+
+-- Botão para remover ban de todas as casas
+Tab2:AddButton({
+    Name = "Remover Ban de Todas as Casas",
+    Description = "Tenta remover o ban de todas as casas (1 a 37)",
+    Callback = function()
+        local successCount = 0
+        local failCount = 0
+        for i = 1, 37 do
+            local bannedBlockName = "BannedBlock" .. i
+            local bannedBlock = Workspace:FindFirstChild(bannedBlockName, true)
+            if bannedBlock then
+                local success, _ = pcall(function()
+                    bannedBlock:Destroy()
+                end)
+                if success then
+                    successCount = successCount + 1
+                else
+                    failCount = failCount + 1
+                end
+            end
+        end
+        for _, house in pairs(Workspace:GetDescendants()) do
+            if house.Name:match("BannedBlock") then
+                local success, _ = pcall(function()
+                    house:Destroy()
+                end)
+                if success then
+                    successCount = successCount + 1
+                else
+                    failCount = failCount + 1
+                end
+            end
+        end
+        if successCount > 0 then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Sucesso",
+                Text = "Bans removidos de " .. successCount .. " casas!",
+                Duration = 5
+            })
+        end
+        if failCount > 0 then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Aviso",
+                Text = "Falha ao remover bans de " .. failCount .. " casas.",
+                Duration = 5
+            })
+        end
+        if successCount == 0 and failCount == 0 then
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "Aviso",
+                Text = "Nenhum ban encontrado para remover.",
+                Duration = 5
+            })
+        end
+    end
+})
+
+Tab2:AddParagraph({
+    Title = "Pegar permissão de casas! Desativado!!!!!",
+    Content = ""
+})
+
+---------------------------------------------------------------------------------------------------------------------------------
+                                          -- === Tab 3: Carro === --
+---------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+-- === Tab 3: Carro === --
+
+Tab3:AddParagraph({
+    Title = "Ant Mandrake: Nova função laga o server, não é imediata ao parar",
+    Content = ""
+})
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local isSpamming = false
+
+local RE = ReplicatedStorage:FindFirstChild("RE")
+local Remote = RE and RE:FindFirstChild("1Ca1r")
+
+if not RE or not Remote then
+    return
+end
+
+Tab3:AddButton({
+    Name = "Iniciar opp",
+    Description = "Use com moderação",
+    Callback = function()
+        if not isSpamming then
+            isSpamming = true
+            task.spawn(function()
+                while isSpamming do
+                    local args = {
+                        "PickingCar",
+                        "Easter2025EasterMonsterTruck"
+                    }
+                    pcall(function()
+                        Remote:FireServer(unpack(args))
+                    end)
+                    task.wait(0.1)
+                end
+            end)
+        end
+    end
+})
+
+Tab3:AddButton({
+    Name = "Parar Spawn",
+    Description = "Para o spawn de carros",
+    Callback = function()
+        if isSpamming then
+            isSpamming = false
+        end
+    end
+})
+
+Tab3:AddButton({
+    Name = "Deletar Todos os Carros",
+    Description = "Remove todos os carros spawnados",
+    Callback = function()
+        local args = {
+            "DeleteAllVehicles"
+        }
+        pcall(function()
+            Remote:FireServer(unpack(args))
+        end)
+    end
+})
+
+Tab3:AddParagraph({
+    Title = "Instruções para teleportar todos os carros do server no void",
+    Content = "Para funcionar perfeitamente, use o Void Protection do SystemBroken na aba Scripts, em Game > VoidProtection"
+})
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+
+Tab3:AddToggle({
+    Name = "Matar todos os carros do server",
+    Description = "Teleporta os carros para o void",
+    Default = false,
+    Callback = function(state)
+        local LocalPlayer = Players.LocalPlayer
+        local originalPosition
+        local teleportActive = state
+        local fallDamageDisabled = false
+
+        local function toggleFallDamage(disable)
+            if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("Humanoid") then return end
+            local humanoid = LocalPlayer.Character.Humanoid
+            if disable then
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, true)
+                humanoid.PlatformStand = false
+                fallDamageDisabled = true
+            else
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
+                humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, true)
+                fallDamageDisabled = false
+            end
+        end
+
+        local function teleportToSeat(seat, car)
+            if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("Humanoid") then return false end
+            local humanoid = LocalPlayer.Character.Humanoid
+            local rootPart = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if not rootPart then return false end
+
+            humanoid.Sit = false
+            task.wait(0.1)
+
+            rootPart.CFrame = seat.CFrame + Vector3.new(0, 5, 0)
+            task.wait(0.1)
+
+            seat:Sit(humanoid)
+            task.wait(0.5)
+            return humanoid.SeatPart == seat
+        end
+
+        local function teleportToVoid(car)
+            if not car then return end
+            if not car.PrimaryPart then
+                local body = car:FindFirstChild("Body", true) or car:FindFirstChild("Chassis", true)
+                if body and body:IsA("BasePart") then
+                    car.PrimaryPart = body
+                else
+                    return
+                end
+            end
+            local voidPosition = Vector3.new(0, -1000, 0)
+            car:SetPrimaryPartCFrame(CFrame.new(voidPosition))
+            task.wait(0.5)
+        end
+
+        local function exitCarAndReturn()
+            if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("Humanoid") then return end
+            local humanoid = LocalPlayer.Character.Humanoid
+            if humanoid.SeatPart then
+                humanoid.Sit = false
+            end
+            task.wait(0.1)
+            if originalPosition then
+                LocalPlayer.Character:PivotTo(CFrame.new(originalPosition))
+            end
+        end
+
+        if state then
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                originalPosition = LocalPlayer.Character.HumanoidRootPart.Position
+            else
+                return
+            end
+
+            toggleFallDamage(true)
+
+            spawn(function()
+                local vehiclesFolder = Workspace:FindFirstChild("Vehicles")
+                if not vehiclesFolder then return end
+
+                local cars = {}
+                for _, car in ipairs(vehiclesFolder:GetChildren()) do
+                    if car.Name:match("Car$") then
+                        table.insert(cars, car)
+                    end
+                end
+
+                for _, car in ipairs(cars) do
+                    if not teleportActive then break end
+
+                    local vehicleSeat = car:FindFirstChildWhichIsA("VehicleSeat", true)
+                    if vehicleSeat and vehicleSeat.Occupant == nil then
+                        local success = teleportToSeat(vehicleSeat, car)
+                        if success then
+                            teleportToVoid(car)
+                            exitCarAndReturn()
+                            task.wait(1)
+                        end
+                    end
+                end
+
+                if teleportActive then
+                    teleportActive = false
+                    toggleFallDamage(false)
+                end
+            end)
+        else
+            teleportActive = false
+            toggleFallDamage(false)
+        end
+    end
+})
+
+local fallDamageDisabled = false
+Players.LocalPlayer.CharacterAdded:Connect(function(character)
+    local humanoid = character:WaitForChild("Humanoid")
+    if fallDamageDisabled then
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, true)
+        humanoid.PlatformStand = false
+    else
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
+        humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, true)
+    end
+end)
+
+
+-----------------------------------------------------------------------------------------------------
+                                          -- === Tab 4: RGB Color === --
+---------------------------------------------------------------------------------------------------------------------------------
+
+-- === Tab 4: RGB Color === --
+
+local vibrantColors = {
+    Color3.new(1, 0, 0),
+    Color3.new(0, 1, 0),
+    Color3.new(0, 0, 1),
+    Color3.new(1, 1, 0),
+    Color3.new(1, 0, 1),
+    Color3.new(0, 1, 1),
+    Color3.new(1, 0.5, 0),
+    Color3.new(0.5, 0, 1)
+}
+
+local function fireServer(eventName, args)
+    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+    local event = ReplicatedStorage:FindFirstChild("RE") and ReplicatedStorage.RE:FindFirstChild(eventName)
+    if event then
+        pcall(function()
+            event:FireServer(unpack(args))
+        end)
+    end
+end
+
+local nameAndBioRGBActive = false
+Tab4:AddToggle({
+    Name = "Nome e Bio RGB Sincronizado",
+    Description = "Ativa cores RGB sincronizadas para Nome e Bio",
+    Default = false,
+    Callback = function(state)
+        nameAndBioRGBActive = state
+        if state then
+            task.spawn(function()
+                while nameAndBioRGBActive and LocalPlayer.Character do
+                    local color = vibrantColors[math.random(1, #vibrantColors)]
+                    local nameArgs = { [1] = "PickingRPNameColor", [2] = color }
+                    local bioArgs = { [1] = "PickingRPBioColor", [2] = color }
+                    fireServer("1RPNam1eColo1r", nameArgs)
+                    fireServer("1RPNam1eColo1r", bioArgs)
+                    task.wait(1)
+                end
+            end)
+        end
+    end
+})
+
+local nameRGBActive = false
+Tab4:AddToggle({
+    Name = "Nome RGB",
+    Description = "Ativa cores RGB para o Nome",
+    Default = false,
+    Callback = function(state)
+        nameRGBActive = state
+        if state then
+            task.spawn(function()
+                while nameRGBActive and LocalPlayer.Character do
+                    local color = vibrantColors[math.random(1, #vibrantColors)]
+                    local args = { [1] = "PickingRPNameColor", [2] = color }
+                    fireServer("1RPNam1eColo1r", args)
+                    task.wait(1)
+                end
+            end)
+        end
+    end
+})
+
+local bioRGBActive = false
+Tab4:AddToggle({
+    Name = "Bio RGB",
+    Description = "Ativa cores RGB aleatórias na sua bio",
+    Default = false,
+    Callback = function(state)
+        bioRGBActive = state
+        if state then
+            task.spawn(function()
+                while bioRGBActive and LocalPlayer.Character do
+                    local color = vibrantColors[math.random(1, #vibrantColors)]
+                    local args = { [1] = "PickingRPBioColor", [2] = color }
+                    fireServer("1RPNam1eColo1r", args)
+                    task.wait(1)
+                end
+            end)
+        end
+    end
+})
+
+local carRGBActive = false
+Tab4:AddToggle({
+    Name = "Car RGB",
+    Description = "Precisa do premium (atenção, pode dar kick!!!! Não recomendo usar!!!)",
+    Default = false,
+    Callback = function(state)
+        carRGBActive = state
+        if state then
+            local character = LocalPlayer.Character
+            if not character then
+                carRGBActive = false
+                return
+            end
+            task.spawn(function()
+                while carRGBActive and LocalPlayer.Character do
+                    local color = vibrantColors[math.random(1, #vibrantColors)]
+                    local args = { [1] = "PickingCarColor", [2] = color }
+                    local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                    local event = ReplicatedStorage:FindFirstChild("RE") and ReplicatedStorage.RE:FindFirstChild("1Player1sCa1r")
+                    if event then
+                        pcall(function()
+                            event:FireServer(unpack(args))
+                        end)
+                    end
+                    task.wait(1)
+                end
+            end)
         end
     end
 })
