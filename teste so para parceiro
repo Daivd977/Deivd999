@@ -147,9 +147,9 @@ screenGui:Destroy()
 local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/tbao143/Library-ui/refs/heads/main/Redzhubui"))()
 
 local Window = redzlib:MakeWindow({
-    Title = "Lolyta Hub 3.4   :Versao sem bugs!!",
+    Title = "Lolyta Hub 3.4______:Versao sem bugs!!",
     SubTitle = "by Lolytadev",
-    SaveFolder = "Versao NEW"
+    SaveFolder = "Versao nova"
   })
 
   Window:AddMinimizeButton({
@@ -1570,6 +1570,10 @@ Tab7:AddButton({
 
 
 
+-- === Tab 8: Jogadores === --
+
+local Tab8 = Window:MakeTab({"Jogadores", "users"}) -- Ícone de grupo de pessoas
+
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -1593,7 +1597,7 @@ local function updateDropdown(dropdown, spectateToggle)
     pcall(function()
         local currentValue = dropdown:Get()
         local playerNames = getPlayerNames()
-        dropdown:Refresh(playerNames, true) -- Força atualização da lista
+        dropdown:Refresh(playerNames) -- Atualiza a lista de jogadores
         if currentValue and not table.find(playerNames, currentValue) then
             dropdown:Set("") -- Limpa seleção se jogador saiu
             if isSpectating then
@@ -1729,6 +1733,14 @@ local DropdownPlayerTab8 = Tab8:AddDropdown({
 })
 
 Tab8:AddButton({
+    Name = "Atualizar Lista de Jogadores",
+    Description = "Atualiza a lista de jogadores no dropdown",
+    Callback = function()
+        updateDropdown(DropdownPlayerTab8, SpectateToggleTab8)
+    end
+})
+
+Tab8:AddButton({
     Name = "Teleportar para Jogador",
     Description = "Clique para teletransportar para o jogador selecionado",
     Callback = function()
@@ -1757,11 +1769,9 @@ local SpectateToggleTab8 = Tab8:AddToggle({
     end
 })
 
--- Atualização automática do dropdown de Tab8
-Players.PlayerAdded:Connect(function()
-    updateDropdown(DropdownPlayerTab8, SpectateToggleTab8)
-end)
 
+
+-- Remoção automática de jogadores que saem
 Players.PlayerRemoving:Connect(function(player)
     updateDropdown(DropdownPlayerTab8, SpectateToggleTab8)
     if spectatedPlayer and spectatedPlayer == player then
@@ -1857,6 +1867,10 @@ local TeleportButton = Tab9:AddButton({
 
 
 
+-- === Tab 10: Troll === --
+
+
+
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -1935,7 +1949,7 @@ local function updateDropdown(dropdown, spectateToggle)
     pcall(function()
         local currentValue = dropdown:Get()
         local playerNames = getPlayerNames()
-        dropdown:Refresh(playerNames, true) -- Força atualização da lista
+        dropdown:Refresh(playerNames) -- Atualiza a lista de jogadores
         if currentValue and not table.find(playerNames, currentValue) then
             dropdown:Set("")
             selectedPlayer = nil
@@ -2069,11 +2083,15 @@ local SpectateToggleTab10 = Tab10:AddToggle({
     end
 })
 
--- Atualização automática do dropdown de Tab10
-Players.PlayerAdded:Connect(function()
-    updateDropdown(DropdownPlayerTab10, SpectateToggleTab10)
-end)
+Tab10:AddButton({
+    Name = "Atualizar Lista de Jogadores",
+    Description = "Atualiza a lista de jogadores no dropdown",
+    Callback = function()
+        updateDropdown(DropdownPlayerTab10, SpectateToggleTab10)
+    end
+})
 
+-- Remoção automática de jogadores que saem
 Players.PlayerRemoving:Connect(function(player)
     updateDropdown(DropdownPlayerTab10, SpectateToggleTab10)
     if selectedPlayer == player then
@@ -2957,7 +2975,7 @@ local function stopFling()
                 myHRP.Velocity = Vector3.zero
                 myHRP.RotVelocity = Vector3.zero
                 myHRP.Anchored = false
-                if myHumanoid then humanoid:ChangeState(Enum.HumanoidStateType.GettingUp) end
+                if myHumanoid then myHumanoid:ChangeState(Enum.HumanoidStateType.GettingUp) end
             end)
         end
     end
