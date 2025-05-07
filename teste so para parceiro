@@ -22,6 +22,8 @@ local AllowedUsers = {
     "vitorpandins", --vito boquetudo
     "CorxFlam",
     "mo3udjo",
+    "fld_333",
+
 }
 
 -- Serviços do Roblox
@@ -140,10 +142,12 @@ task.wait(3)
 screenGui:Destroy()
 
 
+
+
 local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/tbao143/Library-ui/refs/heads/main/Redzhubui"))()
 
 local Window = redzlib:MakeWindow({
-    Title = "Lolyta Hub 3.3",
+    Title = "Lolyta Hub 3.3   :Versao em bugs!!",
     SubTitle = "by Lolytadev",
     SaveFolder = "Versao NEW"
   })
@@ -160,7 +164,7 @@ local Tab2 = Window:MakeTab({"Casa", "home"})
 local Tab3 = Window:MakeTab({"Carro", "car"})
 local Tab4 = Window:MakeTab({"RGB Color", "palette"})
 local Tab5 = Window:MakeTab({"Troll Musica", "music"})
-local Tab6 = Window:MakeTab({"Music All", "audio-lines"})
+local Tab6 = Window:MakeTab({"Music All", "volume-up"})
 local Tab7 = Window:MakeTab({"Scripts", "layers"})
 local Tab8 = Window:MakeTab({"Jogadores", "users"})
 local Tab9 = Window:MakeTab({"Teleportes", "map-pin"})
@@ -1473,6 +1477,8 @@ createSoundDropdown("Selecione um terror ou efeito", {
 ----------------------------------------------------------------------------------------------------------------------------------------------
 
 
+
+
 -- === Tab 7: Scripts Universais === --
 
 Tab7:AddButton({
@@ -1557,7 +1563,6 @@ Tab7:AddButton({
 })
 
 
-
 -----------------------------------------------------------------------------------------------------------------------------------------
                                           -- === Tab 8: Jogadores === --
 -----------------------------------------------------------------------------------------------------------------------------------------
@@ -1582,7 +1587,7 @@ local function getPlayerNames()
     return playerNames
 end
 
-local function updateDropdown(dropdown)
+local function updateDropdown(dropdown, spectateToggle, isTab10)
     pcall(function()
         local currentValue = dropdown:Get()
         local playerNames = getPlayerNames()
@@ -1591,7 +1596,18 @@ local function updateDropdown(dropdown)
             dropdown:Set("")
             if isSpectating then
                 stopSpectating()
-                pcall(function() SpectateToggle:Set(false) end)
+                if spectateToggle then
+                    pcall(function() spectateToggle:Set(false) end)
+                end
+                if isTab10 and selectedPlayer then
+                    selectedPlayer = nil
+                    isFollowingKill = false
+                    isFollowingPull = false
+                    running = false
+                    if connection then connection:Disconnect() connection = nil end
+                    if flingConnection then flingConnection:Disconnect() flingConnection = nil end
+                    if flingToggle then pcall(function() flingToggle:Set(false) end) end
+                end
             end
         end
     end)
@@ -1692,11 +1708,12 @@ end
 LocalPlayer.CharacterAdded:Connect(function(character)
     if isSpectating then
         stopSpectating()
-        pcall(function() SpectateToggle:Set(false) end)
+        pcall(function() SpectateToggleTab8:Set(false) end)
+        pcall(function() SpectateToggleTab10:Set(false) end)
     end
 end)
 
-local DropdownPlayer = Tab8:AddDropdown({
+local DropdownPlayerTab8 = Tab8:AddDropdown({
     Name = "Selecionar Jogador",
     Description = "Selecione o jogador para teletransportar ou visualizar",
     Default = "",
@@ -1706,7 +1723,7 @@ local DropdownPlayer = Tab8:AddDropdown({
         if selectedPlayerName == "" or selectedPlayerName == nil then
             if isSpectating then
                 stopSpectating()
-                pcall(function() SpectateToggle:Set(false) end)
+                pcall(function() SpectateToggleTab8:Set(false) end)
             end
         else
             if isSpectating then
@@ -1718,35 +1735,27 @@ local DropdownPlayer = Tab8:AddDropdown({
 })
 
 Tab8:AddButton({
-    Name = "Atualizar Lista de Jogadores",
-    Description = "Atualiza a lista de jogadores no dropdown",
-    Callback = function()
-        updateDropdown(DropdownPlayer)
-    end
-})
-
-Tab8:AddButton({
     Name = "Teleportar para Jogador",
     Description = "Clique para teletransportar para o jogador selecionado",
     Callback = function()
-        local selectedPlayerName = DropdownPlayer:Get()
+        local selectedPlayerName = DropdownPlayerTab8:Get()
         if selectedPlayerName and selectedPlayerName ~= "" then
             pcall(teleportToPlayer, selectedPlayerName)
         end
     end
 })
 
-local SpectateToggle = Tab8:AddToggle({
+local SpectateToggleTab8 = Tab8:AddToggle({
     Name = "Visualizar Jogador",
     Description = "Ativa ou desativa o modo de visualização",
     Default = false,
     Callback = function(state)
         if state then
-            local selectedPlayerName = DropdownPlayer:Get()
+            local selectedPlayerName = DropdownPlayerTab8:Get()
             if selectedPlayerName and selectedPlayerName ~= "" then
                 pcall(spectatePlayer, selectedPlayerName)
             else
-                SpectateToggle:Set(false)
+                SpectateToggleTab8:Set(false)
             end
         else
             pcall(stopSpectating)
@@ -1754,17 +1763,31 @@ local SpectateToggle = Tab8:AddToggle({
     end
 })
 
-updateDropdown(DropdownPlayer)
-Players.PlayerAdded:Connect(function() updateDropdown(DropdownPlayer) end)
-Players.PlayerRemoving:Connect(function(player)
-    updateDropdown(DropdownPlayer)
-    if spectatedPlayer and spectatedPlayer == player then
-        stopSpectating()
-        SpectateToggle:Set(false)
-        DropdownPlayer:Set("")
+-- Atualização automática do dropdown de Tab8
+local lastUpdateTab8 = tick()
+local updateInterval = 5 -- Atualiza a cada 5 segundos
+local updateConnectionTab8 = RunService.Heartbeat:Connect(function()
+    if tick() - lastUpdateTab8 >= updateInterval then
+        updateDropdown(DropdownPlayerTab8, SpectateToggleTab8, false)
+        lastUpdateTab8 = tick()
     end
 end)
 
+Players.PlayerAdded:Connect(function()
+    updateDropdown(DropdownPlayerTab8, SpectateToggleTab8, false)
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+    updateDropdown(DropdownPlayerTab8, SpectateToggleTab8, false)
+    if spectatedPlayer and spectatedPlayer == player then
+        stopSpectating()
+        SpectateToggleTab8:Set(false)
+        DropdownPlayerTab8:Set("")
+    end
+end)
+
+-- Inicializa o dropdown
+updateDropdown(DropdownPlayerTab8, SpectateToggleTab8, false)
 
 
 -----------------------------------------------------------------------------------------------------------------------------------------
@@ -1841,19 +1864,20 @@ local TeleportButton = Tab9:AddButton({
     end
 })
 
-
-
 -----------------------------------------------------------------------------------------------------------------------------------------
                                           -- === Tab 10: Troll === --
 -----------------------------------------------------------------------------------------------------------------------------------------
+
 -- === Tab 10: Troll === --
 
+local Tab10 = Window:MakeTab({"Troll", "skull-crossbones"}) -- Ícone de caveira com ossos cruzados
+
 local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
-local LocalPlayer = Players.LocalPlayer
 
+local LocalPlayer = Players.LocalPlayer
 local selectedPlayer = nil
 local isFollowingKill = false
 local isFollowingPull = false
@@ -1922,14 +1946,28 @@ local function getPlayerNames()
     return playerNames
 end
 
-local function updateDropdown(dropdown)
+local function updateDropdown(dropdown, spectateToggle)
     pcall(function()
+        local currentValue = dropdown:Get()
         local playerNames = getPlayerNames()
         dropdown:Refresh(playerNames)
-        if selectedPlayer and not table.find(playerNames, selectedPlayer.Name) then
+        if currentValue and not table.find(playerNames, currentValue) then
             dropdown:Set("")
             selectedPlayer = nil
-            if isSpectating then stopSpectating() end
+            if isSpectating then
+                stopSpectating()
+                if spectateToggle then
+                    pcall(function() spectateToggle:Set(false) end)
+                end
+            end
+            if running or isFollowingKill or isFollowingPull then
+                running = false
+                isFollowingKill = false
+                isFollowingPull = false
+                if connection then connection:Disconnect() connection = nil end
+                if flingConnection then flingConnection:Disconnect() flingConnection = nil end
+                if flingToggle then pcall(function() flingToggle:Set(false) end) end
+            end
         end
     end)
 end
@@ -1993,10 +2031,13 @@ local function stopSpectating()
 end
 
 LocalPlayer.CharacterAdded:Connect(function(character)
-    if isSpectating then stopSpectating() end
+    if isSpectating then
+        stopSpectating()
+        pcall(function() SpectateToggleTab10:Set(false) end)
+    end
 end)
 
-local DropdownPlayer = Tab10:AddDropdown({
+local DropdownPlayerTab10 = Tab10:AddDropdown({
     Name = "Selecionar Jogador",
     Description = "Escolha um jogador para matar, puxar, visualizar ou aplicar fling",
     Default = "",
@@ -2024,15 +2065,7 @@ local DropdownPlayer = Tab10:AddDropdown({
     end
 })
 
-Tab10:AddButton({
-    Name = "Atualizar Lista de Jogadores",
-    Description = "Atualiza a lista de jogadores no dropdown",
-    Callback = function()
-        updateDropdown(DropdownPlayer)
-    end
-})
-
-local SpectateToggle = Tab10:AddToggle({
+local SpectateToggleTab10 = Tab10:AddToggle({
     Name = "Visualizar Jogador",
     Description = "Ativa/desativa a visualização do jogador selecionado",
     Default = false,
@@ -2041,7 +2074,7 @@ local SpectateToggle = Tab10:AddToggle({
             if selectedPlayer then
                 pcall(spectatePlayer, selectedPlayer.Name)
             else
-                SpectateToggle:Set(false)
+                SpectateToggleTab10:Set(false)
             end
         else
             pcall(stopSpectating)
@@ -2049,7 +2082,22 @@ local SpectateToggle = Tab10:AddToggle({
     end
 })
 
+-- Atualização automática do dropdown de Tab10
+local lastUpdateTab10 = tick()
+local updateInterval = 5 -- Atualiza a cada 5 segundos
+local updateConnectionTab10 = RunService.Heartbeat:Connect(function()
+    if tick() - lastUpdateTab10 >= updateInterval then
+        updateDropdown(DropdownPlayerTab10, SpectateToggleTab10)
+        lastUpdateTab10 = tick()
+    end
+end)
+
+Players.PlayerAdded:Connect(function()
+    updateDropdown(DropdownPlayerTab10, SpectateToggleTab10)
+end)
+
 Players.PlayerRemoving:Connect(function(player)
+    updateDropdown(DropdownPlayerTab10, SpectateToggleTab10)
     if selectedPlayer == player then
         selectedPlayer = nil
         if isSpectating then stopSpectating() end
@@ -2059,11 +2107,13 @@ Players.PlayerRemoving:Connect(function(player)
             if flingConnection then flingConnection:Disconnect() flingConnection = nil end
             if flingToggle then flingToggle:Set(false) end
         end
+        SpectateToggleTab10:Set(false)
+        DropdownPlayerTab10:Set("")
     end
-    updateDropdown(DropdownPlayer)
 end)
 
-updateDropdown(DropdownPlayer)
+-- Inicializa o dropdown
+updateDropdown(DropdownPlayerTab10, SpectateToggleTab10)
 
 local DropdownKillPullMethod = Tab10:AddDropdown({
     Name = "Selecionar Método (Matar/Puxar)",
